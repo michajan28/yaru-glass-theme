@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  issue-policy:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    steps:
+      - name: Require issue-based feature or bugfix PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+          PR_BODY: ${{ github.event.pull_request.body || '' }}
+          PR_HEAD: ${{ github.event.pull_request.head.ref }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+
+          branch = os.environ["PR_HEAD"]
+          match = re.fullmatch(
+              r"(?:feature|bugfix)/([1-9][0-9]*)-[a-z0-9]+(?:-[a-z0-9]+)*",
+              branch,
+          )
+          if not match:
+              sys.exit("Use feature/<issue-number>-<lowercase-slug> or bugfix/<issue-number>-<lowercase-slug>.")
+          if os.environ["PR_BASE"] != "main":
+              sys.exit("Pull requests must target main.")
+
+          issue_number = match.group(1)
+          closing = re.search(
+              rf"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#({issue_number})\b",
+              os.environ["PR_BODY"],
+              re.IGNORECASE,
+          )
+          if not closing:
+              sys.exit(f"PR description must close the branch issue with 'Closes #{issue_number}'.")
+
+          result = subprocess.run(
+              ["gh", "api", f"repos/{os.environ['GITHUB_REPOSITORY']}/issues/{issue_number}"],
+              capture_output=True,
+              check=True,
+              text=True,
+          )
+          issue = json.loads(result.stdout)
+          if issue.get("pull_request"):
+              sys.exit(f"#{issue_number} is a pull request, not an issue.")
+          print(f"Validated {branch} against issue #{issue_number} and base main.")
+          PY
+
+  tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Install GNOME test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y gjs gnome-shell
+
+      - name: Run Python test suite
+        run: /usr/bin/python3 -m unittest discover -s tests -p 'test_*.py' -v
+
+      - name: Check shell script syntax
+        run: bash -n scripts/install.sh scripts/uninstall.sh scripts/make-package.sh

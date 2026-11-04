@@ -1,0 +1,139 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Check out tagged commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify release tag and source branch
+        id: release
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="$(tr -d '\n' < VERSION)"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::VERSION must contain a semantic X.Y.Z version"
+            exit 1
+          fi
+          if [[ "$TAG" != "v$version" ]]; then
+            echo "::error::Tag $TAG does not match VERSION $version"
+            exit 1
+          fi
+          if [[ ! -s "docs/RELEASE-$version.md" ]]; then
+            echo "::error::Missing docs/RELEASE-$version.md release notes"
+            exit 1
+          fi
+          git fetch origin main --quiet
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Release tag must point to a commit on main"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Install GNOME test and documentation dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y gjs gnome-shell python3-markdown
+
+      - name: Run Python test suite
+        run: /usr/bin/python3 -m unittest discover -s tests -p 'test_*.py' -v
+
+      - name: Check shell script syntax
+        run: bash -n scripts/install.sh scripts/uninstall.sh scripts/make-package.sh
+
+      - name: Build curated release package
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          output_dir="$RUNNER_TEMP/yaru-glass-release"
+          mkdir -p "$output_dir"
+          ./scripts/make-package.sh --curated-profiles "$output_dir"
+
+          archive="$output_dir/yaru-glass-theme-$VERSION.tar.gz"
+          checksum="$archive.sha256"
+          (cd "$output_dir" && sha256sum --check "yaru-glass-theme-$VERSION.tar.gz.sha256")
+
+          if ! git diff --quiet -- docs/MANUAL.html assets/profiles; then
+            echo "::error::Packaging changed generated documentation or curated profiles; commit and retag those changes"
+            git --no-pager diff -- docs/MANUAL.html assets/profiles
+            exit 1
+          fi
+
+          listing="$RUNNER_TEMP/package-contents.txt"
+          tar -tzf "$archive" > "$listing"
+          grep -Fx "yaru-glass-theme-$VERSION/README.md" "$listing"
+          grep -Fx "yaru-glass-theme-$VERSION/docs/RELEASE-$VERSION.md" "$listing"
+          grep -Fx "yaru-glass-theme-$VERSION/tests/test_lifecycle.py" "$listing"
+          if grep -Eq '(^|/)(\.git|dist|__pycache__)(/|$)' "$listing"; then
+            echo "::error::Release package contains excluded repository or runtime data"
+            exit 1
+          fi
+
+      - name: Upload release assets
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-assets
+          path: ${{ runner.temp }}/yaru-glass-release/yaru-glass-theme-${{ steps.release.outputs.version }}.tar.gz*
+          if-no-files-found: error
+          retention-days: 1
+
+  draft:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Check out tagged release notes
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Download release assets
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-assets
+          path: release-assets
+
+      - name: Create draft GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          archive="release-assets/yaru-glass-theme-$VERSION.tar.gz"
+          checksum="$archive.sha256"
+          if release="$(gh release view "$TAG" --json isDraft 2>/dev/null)"; then
+            if [[ "$(jq -r '.isDraft' <<< "$release")" != "true" ]]; then
+              echo "::error::Refusing to overwrite an existing published release"
+              exit 1
+            fi
+            gh release edit "$TAG" \
+              --draft \
+              --title "Yaru Glass $VERSION" \
+              --notes-file "docs/RELEASE-$VERSION.md"
+            gh release upload "$TAG" "$archive" "$checksum" --clobber
+          else
+            gh release create "$TAG" "$archive" "$checksum" \
+              --draft \
+              --verify-tag \
+              --title "Yaru Glass $VERSION" \
+              --notes-file "docs/RELEASE-$VERSION.md"
+          fi

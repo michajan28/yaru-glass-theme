@@ -7,6 +7,12 @@ record them. Validation dates are not treated as publication dates.
 
 ## Unreleased
 
+### Repository
+
+- Add issue-linked feature/bugfix PR checks, pinned GitHub Actions CI and
+  tag-triggered draft release automation. Configure `main` for reviewed,
+  passing PRs and enable repository security alerts and private reporting.
+
 ## 2.2.4
 
 Notification halo and Diagnostics discoverability fix. See

@@ -1,0 +1,32 @@
+name: Bug report
+description: Report a reproducible Yaru Glass problem.
+title: "[Bug]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: Before reporting, check whether a similar issue already exists.
+  - type: input
+    id: environment
+    attributes:
+      label: Ubuntu and GNOME versions
+      placeholder: Ubuntu 24.04 / GNOME Shell 46
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Relevant sanitized diagnostics
+      description: Remove usernames, paths, and other personal data before posting.
