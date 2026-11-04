@@ -41,6 +41,7 @@ class DiagnosticsPage(Gtk.Box):
         self.parent = parent
         self.closed = False
         self.busy = False
+        self.export_chooser = None
         self.stored_verbose = False
         body = self
         description = Gtk.Label(
@@ -94,6 +95,9 @@ class DiagnosticsPage(Gtk.Box):
 
     def on_close(self, *_args):
         self.closed = True
+        if self.export_chooser is not None:
+            self.export_chooser.destroy()
+            self.export_chooser = None
         return False
 
     def run_job(self, work, finished, action="read", failed=None):
@@ -200,17 +204,24 @@ class DiagnosticsPage(Gtk.Box):
         dialog.present()
 
     def choose_export(self, _dialog, response):
-        if response != "save":
+        if response != "save" or self.closed or self.busy:
+            return
+        if self.export_chooser is not None:
             return
         chooser = Gtk.FileChooserNative.new("Save sanitized diagnostic report", self.parent,
                                              Gtk.FileChooserAction.SAVE, "Save", "Cancel")
+        chooser.set_modal(True)
         chooser.set_current_name("yaru-glass-diagnostics.json")
         chooser.connect("response", self.on_export_chosen)
+        self.export_chooser = chooser
         chooser.show()
 
     def on_export_chosen(self, chooser, response):
         file = chooser.get_file() if response == Gtk.ResponseType.ACCEPT else None
         chooser.destroy()
+        self.export_chooser = None
+        if self.closed:
+            return
         if response != Gtk.ResponseType.ACCEPT:
             return
         path = file.get_path() if file else None

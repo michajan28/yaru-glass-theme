@@ -7,6 +7,30 @@ record them. Validation dates are not treated as publication dates.
 
 ## Unreleased
 
+## 2.3.1
+
+Diagnostic report saving and recovery from older development updater validators.
+See [release evidence and validation limits](docs/RELEASE-2.3.1.md).
+
+### Fixed
+
+- Keep the Diagnostics native save dialog alive until a response or Settings
+  closure, preventing premature cancellation while choosing a report destination.
+  Avoid duplicate choosers and release the dialog after cancellation or export.
+- Document the verified 2.3.1 bootstrap for older development installations whose
+  archive validator rejects the added contributor/security documents. The current
+  updater accepts those files; an already-installed older validator needs this
+  one-time preserving bootstrap rather than another normal installer run.
+
+### Tests
+
+- Reproduce the older validator's payload rejection and check the current
+  allowlist accepts both documents.
+- Validate real packages in all three packaging modes through the updater's
+  checksum verification and safe extraction, not just generic tar extraction.
+- Cover native report chooser ownership, cancellation, duplicate requests,
+  Settings closure and existing success/failure export behavior.
+
 ## 2.3.0
 
 User-confirmed app updates, integrated Settings utility pages and readable logs.

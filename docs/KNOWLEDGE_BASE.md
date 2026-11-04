@@ -238,6 +238,9 @@ because unlinking it would let concurrent writers lock different files.
 the GTK thread. A failed verbose write restores the last confirmed switch state;
 export requires confirmation and a new local file. Reports query only known
 extension UUIDs and public versions/states; no arbitrary journal access.
+The page owns its native export chooser until response or page closure. A local
+variable alone lets PyGObject destroy the chooser during asynchronous folder
+loading, cancelling the destination selection.
 `tests/test_diagnostics.py` covers storage, privacy, malformed inputs, concurrency,
 rotation, CLI/report/export and failure behavior. Adjacent appearance/UI/sync and
 lifecycle tests cover stdout, rollback, correlation, responsiveness, retention and
@@ -390,6 +393,11 @@ original backups and installer ownership records for uninstall compatibility.
 The public latest stable release must have exact versioned archive/checksum
 assets. Same-release checksums are integrity checks, not independent signatures.
 The CLI uses no gh/git, login, package manager or external Python dependency.
+The archive allowlist includes the top-level contributor/security documents.
+Older development validators without those entries reject released archives;
+use the verified local-archive bootstrap from 2.3.1 rather than the old updater.
+Packaging regressions must verify and extract the actual script-generated
+archive through `updates.py`, in addition to checking its tar listing.
 
 `update_transaction.py` is deliberately not a wrapper around `install.sh`,
 which reapplies fonts/profiles and activation. It preserves saved preferences,

@@ -1,6 +1,6 @@
 # Yaru Glass
 
-Version **2.3.0** — Ubuntu 24.04 / GNOME Shell 46 and Ubuntu 26.04 / GNOME Shell 50.
+Version **2.3.1** — Ubuntu 24.04 / GNOME Shell 46 and Ubuntu 26.04 / GNOME Shell 50.
 
 See the [changelog](CHANGELOG.md) for release history starting at 1.0.0 and
 unreleased repository changes. Contributor and agent guidance is in
@@ -44,6 +44,14 @@ inline pages after Wallpapers, and logs use readable summaries instead of raw
 JSON. App-grid tiles have clearer hover, focus and pressed states. This release
 was checked on GNOME 46; GNOME 50/VM revalidation is deferred, not claimed.
 See [2.3.0 release evidence and limits](docs/RELEASE-2.3.0.md).
+
+**2.3.1 fixes diagnostic report saving** by keeping the native destination
+dialog alive until it is answered or Settings closes. Release packages are now
+also tested with the updater's own checksum and archive validator. If an older
+development updater reports **Unexpected release payload path**, use the
+[verified 2.3.1 bootstrap](docs/MANUAL.md#one-time-bootstrap-for-existing-accounts)
+once; that older validator cannot install its own fix through Settings.
+See [2.3.1 release evidence and limits](docs/RELEASE-2.3.1.md).
 
 **2.2.1 fixes missing/unselectable Frost/Crystal pipelines** for the panel,
 popups and dock. A color serialization defect made Blur my Shell reject the
@@ -112,7 +120,7 @@ manual **Updates** controls in Settings and `yaru-glass-update check|install`.
 Stable public GitHub releases are checksum-verified and staged without resetting
 preferences, wallpapers, customized profiles or extensions. Failed/interrupted
 replacement has a recovery path. Existing 2.2.4 installations need a one-time
-verified-archive bootstrap using the 2.3.0 release; they
+verified-archive bootstrap using the 2.3.1 release; they
 do not already contain these controls. See [updating and bootstrap](docs/MANUAL.md#6-updating).
 Custom lock screen is now later and unnumbered.
 

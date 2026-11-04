@@ -2,6 +2,7 @@ import os
 import runpy
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 import unittest
@@ -10,6 +11,8 @@ from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src/yaru_glass"))
+import updates
 
 
 def setUpModule():
@@ -186,6 +189,13 @@ for path, class_name in (
                     self.assertEqual(archive.read_bytes(), original_archive)
                     subprocess.run(["sha256sum", "-c", f"{archive.name}.sha256"],
                                    cwd=output_dir, check=True, capture_output=True, text=True)
+                    updates.verify(archive, archive.with_name(archive.name + ".sha256"),
+                                   version)
+                    validated = temporary / ("curated-validated" if curated else
+                                             "custom-validated" if output else "default-validated")
+                    updates.extract(archive, validated, version)
+                    self.assertTrue((validated / "CONTRIBUTING.md").is_file())
+                    self.assertTrue((validated / "SECURITY.md").is_file())
                     with tarfile.open(archive) as package:
                         names = package.getnames()
                         for name in names:

@@ -142,6 +142,21 @@ class ArchiveTests(unittest.TestCase):
         self.assertEqual((destination / "VERSION").read_text(), "2.3.0")
         self.assertTrue((destination / "bin/yaru-glass-update").stat().st_mode & 0o111)
 
+    def test_contributor_documents_are_valid_payload_for_upgrade(self):
+        root = "yaru-glass-theme-2.3.0/"
+        self.archive_with([(root + name, tarfile.REGTYPE)
+                           for name in ("CONTRIBUTING.md", "SECURITY.md")])
+        legacy_payload = updates.PAYLOAD - {"CONTRIBUTING.md", "SECURITY.md"}
+        destination = self.directory / "payload"
+        with patch.object(updates, "PAYLOAD", legacy_payload):
+            with self.assertRaisesRegex(updates.UpdateError, "Unexpected release payload path"):
+                updates.extract(self.archive, destination, "2.3.0")
+        self.assertFalse(destination.exists())
+        updates.verify(self.archive, self.checksum, "2.3.0")
+        updates.extract(self.archive, destination, "2.3.0")
+        for name in ("CONTRIBUTING.md", "SECURITY.md"):
+            self.assertTrue((destination / name).is_file())
+
     def test_checksum_filename_digest_and_archive_must_agree(self):
         self.archive_with()
         with self.assertRaisesRegex(updates.UpdateError, "checksum mismatch"):
