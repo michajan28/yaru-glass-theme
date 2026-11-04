@@ -7,6 +7,15 @@ record them. Validation dates are not treated as publication dates.
 
 ## Unreleased
 
+### Repository
+
+- Add issue-linked feature/bugfix PR checks, pinned GitHub Actions CI and
+  tag-triggered draft release automation. Configure `main` for signed commits
+  and passing PRs (without review approvals while the owner is solo), and enable
+  repository security alerts and private reporting.
+- Supply Yaru and dconf dependencies for hosted tests, skip UI fixtures without
+  a usable display, and isolate installer profile fixtures from host extensions.
+
 ## 2.2.4
 
 Notification halo and Diagnostics discoverability fix. See
