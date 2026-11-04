@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yaru Glass — Ubuntu desktop demo</title>
+<meta name="description" content="Interactive simulation of an Ubuntu 24.04 GNOME desktop with the Yaru Glass theme applied.">
+<link rel="stylesheet" href="demo-assets/desktop/desktop.css">
+</head>
+<body>
+<main id="preview" class="desktop" data-theme="light" data-glass="frost" data-material="layered" aria-label="Simulated Ubuntu desktop with Yaru Glass">
+  <div class="wallpaper" id="wallpaper" aria-hidden="true"></div>
+
+  <button class="desktop-icon" type="button" id="desktop-home" data-open="files" data-path="Home">
+    <img src="demo-assets/desktop/places/user-home.png" alt="">
+    <span>Home</span>
+  </button>
+
+  <div id="windows"></div>
+
+  <header class="panel" id="panel">
+    <button class="panel-button logo-button" type="button" id="logo-button" aria-haspopup="menu" aria-expanded="false" aria-controls="logo-menu" aria-label="Ubuntu menu">
+      <span class="sym" data-icon="view-app-grid-ubuntu"></span>
+    </button>
+    <button class="panel-button" type="button" id="activities" aria-label="Activities" aria-pressed="false">
+      <span class="workspace-dots" aria-hidden="true"><i class="active"></i><i></i></span>
+    </button>
+    <span class="panel-spacer"></span>
+    <button class="panel-button status-icons" type="button" id="status-button" aria-haspopup="dialog" aria-expanded="false" aria-controls="quick-settings" aria-label="System menu">
+      <span class="sym" id="panel-network" data-icon="network-wireless-signal-excellent"></span>
+      <span class="sym" id="panel-bluetooth" data-icon="bluetooth-active" hidden></span>
+      <span class="sym" id="panel-volume" data-icon="audio-volume-high"></span>
+      <span class="sym" id="panel-battery" data-icon="battery-level-80-charging"></span>
+    </button>
+    <button class="panel-button clock" type="button" id="clock" aria-haspopup="dialog" aria-expanded="false" aria-controls="date-menu"><span id="clock-text">—</span></button>
+  </header>
+
+  <div class="glass-card popup-menu" id="logo-menu" role="menu" aria-label="Ubuntu menu" hidden>
+    <button class="popup-menu-item" type="button" role="menuitem" data-action="about">About My System</button>
+    <div class="popup-separator" role="separator"></div>
+    <button class="popup-menu-item" type="button" role="menuitem" data-open="settings">System Settings…</button>
+    <button class="popup-menu-item" type="button" role="menuitem" data-open="app-center">App Center</button>
+    <div class="popup-separator" role="separator"></div>
+    <button class="popup-menu-item" type="button" role="menuitem" data-action="activities">Activities</button>
+    <button class="popup-menu-item" type="button" role="menuitem" data-action="app-grid">App Grid</button>
+    <div class="popup-separator" role="separator"></div>
+    <button class="popup-menu-item" type="button" role="menuitem" data-action="force-quit">Force Quit App</button>
+    <div class="popup-separator" role="separator"></div>
+    <button class="popup-menu-item" type="button" role="menuitem" data-open="terminal">Terminal</button>
+  </div>
+
+  <section class="glass-card quick-settings" id="quick-settings" role="dialog" aria-label="Quick settings" hidden>
+    <div class="qs-system">
+      <span class="battery-pill"><span class="sym" data-icon="battery-level-80-charging"></span>80 %</span>
+      <span class="grow"></span>
+      <button class="icon-button" type="button" id="qs-screenshot" aria-label="Take Screenshot"><span class="sym" data-icon="applets-screenshooter"></span></button>
+      <button class="icon-button" type="button" id="qs-settings" aria-label="Settings" data-open="settings"><span class="sym" data-icon="emblem-system"></span></button>
+      <button class="icon-button" id="qs-lock" type="button" aria-label="Lock Screen"><span class="sym" data-icon="system-lock-screen"></span></button>
+      <button class="icon-button" type="button" id="qs-power" aria-label="Power Off / Log Out" aria-expanded="false" aria-controls="qs-power-menu"><span class="sym" data-icon="system-shutdown"></span></button>
+    </div>
+    <div class="qs-submenu" id="qs-power-menu" role="menu" aria-label="Power Off" hidden>
+      <h3><span class="header-icon"><span class="sym" data-icon="system-shutdown"></span></span>Power Off</h3>
+      <button class="popup-menu-item" type="button" role="menuitem" data-session="suspend">Suspend</button>
+      <button class="popup-menu-item" type="button" role="menuitem" data-session="restart">Restart…</button>
+      <button class="popup-menu-item" type="button" role="menuitem" data-session="poweroff">Power Off…</button>
+      <div class="popup-separator" role="separator"></div>
+      <button class="popup-menu-item" type="button" role="menuitem" data-session="logout">Log Out…</button>
+    </div>
+    <div class="qs-slider">
+      <button class="icon-button" type="button" id="mute" aria-label="Mute" aria-pressed="false" style="width:32px;height:32px;background:transparent"><span class="sym" id="qs-volume-icon" data-icon="audio-volume-high"></span></button>
+      <input class="shell-range" type="range" id="volume" min="0" max="100" value="70" aria-label="Volume">
+    </div>
+    <div class="qs-slider">
+      <span class="sym" data-icon="display-brightness" style="margin:0 8px"></span>
+      <input class="shell-range" type="range" id="brightness" min="10" max="100" value="100" aria-label="Brightness">
+    </div>
+    <div class="qs-grid">
+      <div class="quick-toggle"><button class="qt-main" type="button" id="qt-wifi" aria-pressed="true"><span class="sym" data-icon="network-wireless-signal-excellent"></span><span class="qt-text"><span class="qt-title">Wi-Fi</span><span class="qt-subtitle" id="wifi-subtitle">Home Network</span></span></button><button class="qt-arrow" type="button" aria-label="Wi-Fi networks" aria-expanded="false" aria-controls="sub-wifi"><span class="sym" data-icon="go-next"></span></button></div>
+      <div class="quick-toggle"><button class="qt-main" type="button" id="qt-bluetooth" aria-pressed="false"><span class="sym" data-icon="bluetooth-active"></span><span class="qt-text"><span class="qt-title">Bluetooth</span></span></button></div>
+      <div class="qs-submenu" id="sub-wifi" role="menu" aria-label="Wi-Fi networks" hidden>
+        <h3><span class="header-icon"><span class="sym" data-icon="network-wireless"></span></span>Wi-Fi</h3>
+        <button class="popup-menu-item" type="button" role="menuitemradio" data-network="Home Network" aria-checked="true"><span class="sym" data-icon="network-wireless-signal-excellent"></span>Home Network<span class="sym check" data-icon="object-select"></span></button>
+        <button class="popup-menu-item" type="button" role="menuitemradio" data-network="Café Guest" aria-checked="false"><span class="sym" data-icon="network-wireless"></span>Café Guest<span class="sym check" data-icon="object-select"></span></button>
+        <button class="popup-menu-item" type="button" role="menuitemradio" data-network="Library" aria-checked="false"><span class="sym" data-icon="network-wireless"></span>Library<span class="sym check" data-icon="object-select"></span></button>
+        <div class="popup-separator" role="separator"></div>
+        <button class="popup-menu-item" type="button" role="menuitem" data-open="settings" data-settings-page="wifi">All Networks</button>
+      </div>
+      <div class="quick-toggle"><button class="qt-main" type="button" id="qt-power" aria-pressed="false"><span class="sym" id="power-mode-icon" data-icon="power-profile-balanced"></span><span class="qt-text"><span class="qt-title">Power Mode</span><span class="qt-subtitle" id="power-subtitle">Balanced</span></span></button><button class="qt-arrow" type="button" aria-label="Power modes" aria-expanded="false" aria-controls="sub-power"><span class="sym" data-icon="go-next"></span></button></div>
+      <div class="quick-toggle"><button class="qt-main" type="button" id="qt-night" aria-pressed="false"><span class="sym" data-icon="night-light"></span><span class="qt-text"><span class="qt-title">Night Light</span></span></button></div>
+      <div class="qs-submenu" id="sub-power" role="menu" aria-label="Power modes" hidden>
+        <h3><span class="header-icon"><span class="sym" data-icon="power-profile-balanced"></span></span>Power Mode</h3>
+        <button class="popup-menu-item" type="button" role="menuitemradio" data-power="Performance" aria-checked="false"><span class="sym" data-icon="power-profile-performance"></span>Performance<span class="sym check" data-icon="object-select"></span></button>
+        <button class="popup-menu-item" type="button" role="menuitemradio" data-power="Balanced" aria-checked="true"><span class="sym" data-icon="power-profile-balanced"></span>Balanced<span class="sym check" data-icon="object-select"></span></button>
+        <button class="popup-menu-item" type="button" role="menuitemradio" data-power="Power Saver" aria-checked="false"><span class="sym" data-icon="power-profile-power-saver"></span>Power Saver<span class="sym check" data-icon="object-select"></span></button>
+      </div>
+      <div class="quick-toggle"><button class="qt-main" type="button" id="qt-dark" aria-pressed="false"><span class="sym" data-icon="weather-clear-night"></span><span class="qt-text"><span class="qt-title">Dark Style</span></span></button></div>
+      <div class="quick-toggle"><button class="qt-main" type="button" id="qt-airplane" aria-pressed="false"><span class="sym" data-icon="airplane-mode"></span><span class="qt-text"><span class="qt-title">Airplane Mode</span></span></button></div>
+    </div>
+  </section>
+
+  <section class="glass-card date-menu" id="date-menu" role="dialog" aria-label="Notifications and calendar" hidden>
+    <div class="message-list-column">
+      <div class="message-list" id="message-list" aria-live="polite"></div>
+      <div class="message-placeholder" id="message-placeholder"><span class="sym" data-icon="notifications-disabled"></span><span>No Notifications</span></div>
+      <div class="message-list-controls">
+        <label class="grow" for="dnd">Do Not Disturb</label>
+        <input class="switch" type="checkbox" role="switch" id="dnd" aria-label="Do Not Disturb">
+        <button class="shell-button" type="button" id="clear-notifications">Clear</button>
+      </div>
+    </div>
+    <div class="calendar-column">
+      <button class="date-heading" type="button" id="today-button"><span class="weekday" id="today-weekday"></span><span class="full" id="today-full"></span></button>
+      <div class="calendar">
+        <div class="calendar-header">
+          <button class="icon-button" type="button" id="cal-prev" aria-label="Previous month"><span class="sym" data-icon="go-previous"></span></button>
+          <span id="cal-title" aria-live="polite"></span>
+          <button class="icon-button" type="button" id="cal-next" aria-label="Next month"><span class="sym" data-icon="go-next"></span></button>
+        </div>
+        <div class="calendar-grid" id="calendar-grid" role="grid"></div>
+      </div>
+      <div class="events"><strong id="events-title">Today</strong><span>No Events</span></div>
+    </div>
+  </section>
+
+  <div class="glass-card notification-banner" id="banner" role="status" hidden></div>
+
+  <section class="overview" id="overview" aria-label="Activities overview" hidden>
+    <div class="overview-backdrop"></div>
+    <label class="overview-search"><span class="sym" data-icon="edit-find"></span><span class="sr-only">Search</span><input type="search" id="overview-search" placeholder="Type to search" autocomplete="off"></label>
+    <div class="workspace-preview" id="workspace-preview"></div>
+    <div class="app-grid" id="app-grid" hidden></div>
+  </section>
+
+  <div class="dock-hotzone" id="dock-hotzone"></div>
+  <nav class="dock" id="dock" aria-label="Dock">
+    <div class="dock-bg glass-dock" id="dock-items"></div>
+  </nav>
+  <div class="dock-label" id="dock-label" hidden></div>
+
+  <div class="night-light" id="night-light" hidden></div>
+  <div class="brightness-dim" id="brightness-dim"></div>
+  <div class="suspend-screen" id="suspend-screen" hidden tabindex="-1">Suspended — click or press a key to wake</div>
+
+  <!-- Yaru Glass Settings (mirrors bin/yaru-glass-settings) -->
+  <section class="window" id="win-glass" data-app="glass" aria-label="Yaru Glass Settings" hidden style="left:calc(50% - 270px);top:calc(var(--panel-h) + 14px);width:540px;height:min(650px, calc(100% - var(--panel-h) - 28px))">
+    <header class="headerbar">
+      <div class="start" style="width:84px"></div>
+      <div class="title stack-switcher" role="tablist" aria-label="Yaru Glass Settings pages">
+        <div class="linked">
+          <button class="gtk-button" type="button" role="tab" id="tab-shell" aria-controls="page-shell" aria-selected="true">Shell</button>
+          <button class="gtk-button" type="button" role="tab" id="tab-applications" aria-controls="page-applications" aria-selected="false" tabindex="-1">Applications</button>
+          <button class="gtk-button" type="button" role="tab" id="tab-wallpapers" aria-controls="page-wallpapers" aria-selected="false" tabindex="-1">Wallpapers</button>
+        </div>
+      </div>
+      <div class="end"></div>
+    </header>
+    <div class="window-body">
+      <section class="prefs-page" id="page-shell" role="tabpanel" aria-labelledby="tab-shell">
+        <p class="label" id="preset-status" aria-live="polite"></p>
+        <div class="prefs-group">
+          <h3>Coordinated appearance</h3>
+          <div class="boxed-list">
+            <label class="gtk-row" for="preset">
+              <span class="row-text"><span>Preset</span><small>Preview before applying; wallpapers stay unchanged</small></span>
+              <span class="combo"><select id="preset">
+                <option>Solid</option>
+                <option selected>Balanced Frost</option>
+                <option>Clear Crystal</option>
+              </select><span class="sym" data-icon="pan-down"></span></span>
+            </label>
+          </div>
+        </div>
+        <div class="button-row"><button class="gtk-button" type="button" id="preview-preset">Preview preset…</button></div>
+        <div class="boxed-list">
+          <label class="gtk-row" for="solid">
+            <span class="row-text"><span>Solid Shell backgrounds</span><small>Opaque main surfaces; preserves the slider value</small></span>
+            <input class="switch" type="checkbox" role="switch" id="solid" aria-label="Solid Shell backgrounds">
+          </label>
+          <label class="gtk-row" for="background-blur">
+            <span class="row-text"><span>Dynamic background blur</span><small>Blur windows behind Shell surfaces; Solid suppresses blur</small></span>
+            <input class="switch" type="checkbox" role="switch" id="background-blur" checked aria-label="Dynamic background blur">
+          </label>
+          <label class="gtk-row" for="boost">
+            <span class="row-text"><span>Readability boost</span><small>Stronger tint on supported surfaces; never dims text</small></span>
+            <input class="switch" type="checkbox" role="switch" id="boost" aria-label="Readability boost">
+          </label>
+        </div>
+        <div class="button-row"><button class="gtk-button" type="button" id="reset-boost">Reset readability boost…</button></div>
+        <h2 class="title-3">Glass appearance</h2>
+        <p class="dim-label">Shell panel, menus, dialogs, notifications and the dock follow these settings.</p>
+        <div class="boxed-list">
+          <label class="gtk-row" for="glass-style">
+            <span class="row-text"><span>Glass style</span><small>Layered Frost: softer light · Crystal: clearer reflections</small></span>
+            <span class="combo"><select id="glass-style">
+              <option value="frost" selected>Frost</option>
+              <option value="crystal">Crystal</option>
+            </select><span class="sym" data-icon="pan-down"></span></span>
+          </label>
+          <div class="gtk-row scale-row">
+            <div class="scale">
+              <input class="gtk-range" type="range" id="transparency" min="0" max="50" value="25" aria-label="Transparency level">
+              <div class="marks" aria-hidden="true"><span>0</span><span>25</span><span>50</span></div>
+            </div>
+            <output id="transparencyValue" for="transparency">25%</output>
+          </div>
+        </div>
+        <p class="dim-label">This browser simulates layered glass and Shell blur; it does not configure extensions or verify native compositor output. App backgrounds remain unblurred.</p>
+        <p class="dim-label">Higher values make surfaces clearer. Solid backgrounds override the level without losing it.</p>
+        <p class="dim-label" id="shell-status" role="status">Ready</p>
+        <div class="button-row"><button class="gtk-button" type="button" id="reset-shell">Reset Shell appearance…</button></div>
+      </section>
+
+      <section class="prefs-page" id="page-applications" role="tabpanel" aria-labelledby="tab-applications" hidden>
+        <div class="prefs-group">
+          <h3>Settings app transparency</h3>
+          <p class="description">Only this window. Files and other apps stay unchanged. Follows Frost/Crystal; controls stay solid. No blur.</p>
+          <div class="boxed-list">
+            <label class="gtk-row" for="app-enabled">
+              <span class="row-text"><span>Enable app transparency</span></span>
+              <input class="switch" type="checkbox" role="switch" id="app-enabled" checked aria-label="Enable app transparency">
+            </label>
+            <div class="gtk-row scale-row">
+              <div class="scale">
+                <input class="gtk-range" type="range" id="app-level" min="0" max="50" value="25" aria-label="Settings app transparency level">
+                <div class="marks" aria-hidden="true"><span>0</span><span>25</span><span>50</span></div>
+              </div>
+              <output id="app-value" for="app-level">25%</output>
+            </div>
+          </div>
+          <p class="dim-label" role="status">Saved appearance applies immediately to this app only.</p>
+          <div class="button-row"><button class="gtk-button" type="button" id="reset-app">Reset Settings app…</button></div>
+        </div>
+        <div class="prefs-group">
+          <h3>Files transparency (experimental)</h3>
+          <p class="description">Nautilus sidebar and headerbars. File content stays solid. Follows Frost/Crystal. Restart Files after changes; other apps stay unchanged.</p>
+          <div class="boxed-list">
+            <label class="gtk-row" for="files-enabled">
+              <span class="row-text"><span>Enable Files transparency</span></span>
+              <input class="switch" type="checkbox" role="switch" id="files-enabled" checked aria-label="Enable Files transparency">
+            </label>
+            <div class="gtk-row scale-row">
+              <div class="scale">
+                <input class="gtk-range" type="range" id="files-level" min="0" max="50" value="25" aria-label="Files transparency level">
+                <div class="marks" aria-hidden="true"><span>0</span><span>25</span><span>50</span></div>
+              </div>
+              <output id="files-value" for="files-level">25%</output>
+            </div>
+          </div>
+          <p class="dim-label" id="files-status" role="status">Saved configuration loaded. Restart Files if it has not loaded these settings.</p>
+          <p class="dim-label" id="files-opacity"></p>
+          <div class="button-row" aria-label="Files presets">
+            <button class="gtk-button" type="button" data-files-preset="0">Solid</button>
+            <button class="gtk-button" type="button" data-files-preset="10">Subtle</button>
+            <button class="gtk-button" type="button" data-files-preset="25">Balanced</button>
+            <button class="gtk-button" type="button" data-files-preset="50">Clear</button>
+          </div>
+          <div class="button-row">
+            <button class="gtk-button" type="button" id="restart-files">Restart Files…</button>
+            <button class="gtk-button" type="button" id="reset-files">Reset Files appearance</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="prefs-page" id="page-wallpapers" role="tabpanel" aria-labelledby="tab-wallpapers" hidden>
+        <h2 class="title-3">Light and dark wallpapers</h2>
+        <p class="dim-label">GNOME switches these automatically with Light/Dark Style. Images stay at their original location.</p>
+        <div class="prefs-group">
+          <h3>Light</h3>
+          <div class="boxed-list">
+            <div class="wallpaper-row"><span class="wallpaper-thumb" id="thumb-light"></span><code id="path-light"></code></div>
+          </div>
+          <div class="button-row"><button class="gtk-button" type="button" data-choose="light">Choose image…</button><button class="gtk-button" type="button" data-restore="light">Restore previous</button></div>
+        </div>
+        <div class="prefs-group">
+          <h3>Dark</h3>
+          <div class="boxed-list">
+            <div class="wallpaper-row"><span class="wallpaper-thumb" id="thumb-dark"></span><code id="path-dark"></code></div>
+          </div>
+          <div class="button-row"><button class="gtk-button" type="button" data-choose="dark">Choose image…</button><button class="gtk-button" type="button" data-restore="dark">Restore previous</button></div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <!-- Files (Nautilus 46) -->
+  <section class="window" id="win-files" data-app="files" aria-label="Files" hidden style="left:calc(50% - 400px);top:70px;width:800px;height:520px">
+    <div class="files-layout">
+      <aside class="files-sidebar">
+        <header class="headerbar"><span class="title">Files</span></header>
+        <nav aria-label="Places" id="files-places"></nav>
+      </aside>
+      <div class="files-main">
+        <header class="headerbar">
+          <div class="start">
+            <button class="gtk-button image flat sidebar-toggle" type="button" data-sidebar-toggle aria-label="Show sidebar" hidden><span class="sym" data-icon="view-list"></span></button>
+            <button class="gtk-button image flat" type="button" id="files-back" aria-label="Back"><span class="sym" data-icon="go-previous"></span></button>
+            <button class="gtk-button image flat" type="button" id="files-forward" aria-label="Forward"><span class="sym" data-icon="go-next"></span></button>
+          </div>
+          <nav class="pathbar" id="files-pathbar" aria-label="Current location"></nav>
+          <div class="end">
+            <button class="gtk-button image flat" type="button" id="files-search-toggle" aria-label="Search" aria-pressed="false"><span class="sym" data-icon="edit-find"></span></button>
+            <button class="gtk-button image flat" type="button" id="files-view-toggle" aria-label="View as list"><span class="sym" data-icon="view-list"></span></button>
+            <button class="gtk-button image flat" type="button" id="files-menu-button" aria-label="Main menu" aria-haspopup="menu" aria-expanded="false"><span class="sym" data-icon="open-menu"></span></button>
+          </div>
+        </header>
+        <div class="files-search" id="files-search-bar" hidden><input class="gtk-entry" type="search" id="files-search" placeholder="Search current folder" aria-label="Search current folder"></div>
+        <div class="files-content" id="files-content" data-view="grid" tabindex="0">
+          <div class="file-list" id="file-list" role="listbox" aria-label="Files"></div>
+          <div class="status-page" id="files-empty" hidden><span class="sym" id="files-empty-icon" data-icon="folder-documents"></span><h2 id="files-empty-title">Folder is Empty</h2><p id="files-empty-text"></p></div>
+          <div class="files-floating" id="files-floating" hidden></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Terminal -->
+  <section class="window" id="win-terminal" data-app="terminal" aria-label="Terminal" hidden style="left:calc(50% - 330px);top:110px;width:660px;height:420px">
+    <header class="headerbar">
+      <div class="start"><button class="gtk-button image flat" type="button" id="terminal-new-tab" aria-label="New tab"><span class="sym" data-icon="tab-new"></span></button></div>
+      <span class="title" id="terminal-title">user@ubuntu: ~</span>
+      <div class="end">
+        <button class="gtk-button image flat" type="button" id="terminal-menu-button" aria-label="Main menu" aria-haspopup="menu" aria-expanded="false"><span class="sym" data-icon="open-menu"></span></button>
+      </div>
+    </header>
+    <div class="terminal-body" id="terminal-body">
+      <pre id="terminal-output"></pre>
+      <div class="terminal-line"><span><span class="prompt-user">user@ubuntu</span>:<span class="prompt-path">~</span>$&nbsp;</span><input id="terminal-input" aria-label="Terminal input" autocomplete="off" spellcheck="false"></div>
+    </div>
+  </section>
+
+  <!-- Text Editor -->
+  <section class="window" id="win-editor" data-app="editor" aria-label="Text Editor" hidden style="left:calc(50% - 300px);top:90px;width:600px;height:440px">
+    <header class="headerbar">
+      <div class="start">
+        <button class="gtk-button" type="button" id="editor-open" aria-haspopup="menu" aria-expanded="false">Open<span class="sym" data-icon="pan-down"></span></button>
+        <button class="gtk-button image flat" type="button" id="editor-new" aria-label="New tab"><span class="sym" data-icon="tab-new"></span></button>
+      </div>
+      <span class="title"><span id="editor-title">Untitled Document 1</span><small id="editor-subtitle">Draft</small></span>
+      <div class="end">
+        <button class="gtk-button image flat" type="button" id="editor-menu-button" aria-label="Main menu" aria-haspopup="menu" aria-expanded="false"><span class="sym" data-icon="open-menu"></span></button>
+      </div>
+    </header>
+    <div class="editor-body"><textarea id="editor-text" aria-label="Document text" spellcheck="false"></textarea></div>
+    <div class="editor-status" id="editor-status">Ln 1, Col 1</div>
+  </section>
+
+  <!-- GNOME Settings -->
+  <section class="window" id="win-settings" data-app="settings" aria-label="Settings" hidden style="left:calc(50% - 420px);top:56px;width:840px;height:560px">
+    <div class="settings-layout">
+      <aside class="settings-sidebar">
+        <header class="headerbar">
+          <div class="start"><button class="gtk-button image flat" type="button" aria-label="Search settings" id="settings-search-button"><span class="sym" data-icon="edit-find"></span></button></div>
+          <span class="title">Settings</span>
+          <div class="end"><button class="gtk-button image flat" type="button" aria-label="Main menu"><span class="sym" data-icon="open-menu"></span></button></div>
+        </header>
+        <nav aria-label="Settings panels" id="settings-nav"></nav>
+      </aside>
+      <div class="settings-main">
+        <header class="headerbar">
+          <div class="start"><button class="gtk-button image flat sidebar-toggle" type="button" data-sidebar-toggle aria-label="Show sidebar" hidden><span class="sym" data-icon="view-list"></span></button></div>
+          <span class="title" id="settings-title">Appearance</span>
+          <div class="end"></div>
+        </header>
+        <div class="window-body" id="settings-body"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Generic app window -->
+  <section class="window" id="win-generic" data-app="" aria-label="Application" hidden style="left:calc(50% - 280px);top:120px;width:560px;height:380px">
+    <header class="headerbar"><div class="start"></div><span class="title" id="generic-title">Application</span><div class="end"></div></header>
+    <div class="placeholder-body"><img id="generic-icon" src="" alt=""><h2 id="generic-heading">Application</h2><p>This app is shown as part of the desktop simulation. Its full interface is not reproduced in the demo.</p></div>
+  </section>
+
+  <div class="gtk-popover" id="gtk-popover" role="menu" hidden></div>
+</main>
+
+<dialog id="preset-dialog" aria-labelledby="dialog-title">
+  <div class="message-dialog-body">
+    <h2 id="dialog-title">Apply preset?</h2>
+    <pre id="preset-preview"></pre>
+  </div>
+  <form method="dialog">
+    <button class="gtk-button" value="cancel" id="dialog-cancel">Cancel</button>
+    <button class="gtk-button suggested" value="apply" id="dialog-apply">Apply</button>
+  </form>
+</dialog>
+
+<dialog id="chooser-dialog" aria-labelledby="chooser-title">
+  <div class="message-dialog-body"><h2 id="chooser-title">Choose image</h2><p class="dim-label">Pictures</p></div>
+  <div class="chooser-grid" id="chooser-grid" role="radiogroup" aria-label="Images"></div>
+  <form method="dialog">
+    <button class="gtk-button" value="cancel">Cancel</button>
+    <button class="gtk-button suggested" value="select" id="chooser-select">Select</button>
+  </form>
+</dialog>
+
+<dialog class="shell-dialog" id="session-dialog" aria-labelledby="session-title">
+  <div class="message-dialog-body"><h2 id="session-title">Power Off</h2><p id="session-text"></p></div>
+  <form method="dialog">
+    <button class="gtk-button" value="cancel">Cancel</button>
+    <button class="gtk-button destructive" value="confirm" id="session-confirm">Power Off</button>
+  </form>
+</dialog>
+
+<script src="demo-assets/desktop/symbolic-icons.js"></script>
+<script src="demo-assets/desktop/desktop.js"></script>
+</body>
+</html>

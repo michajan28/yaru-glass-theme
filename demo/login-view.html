@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' file:; font-src 'self' file:; style-src 'sha256-Y/dg2wlx8lrtPRplCvdAb0krtOtBpR++xkWpkiTFyuc='; script-src 'sha256-3q3Ei/lDKhIqORWB3L/Hxy0mJPHabjvRXUpNWVTxjeQ='; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Yaru Glass | Lock Screen Demo</title>
+  <style>
+    @font-face { font-family: Inter; src: url('../assets/fonts/Inter/InterVariable.ttf') format('truetype'); font-weight: 100 900; font-display: swap; }
+    :root { font-family: Inter, sans-serif; color: white; background: #222825; font-synthesis: none; letter-spacing: 0; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; min-width: 280px; }
+    button, input, select { font: inherit; -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #ffc969; outline-offset: 4px; }
+    button { cursor: pointer; color: inherit; border: 1px solid var(--edge); }
+    .world { --surface: rgba(25, 30, 28, .94); --ink: #fff; --muted: #d3d9d4; --edge: rgba(255,255,255,.25); --control: rgba(255,255,255,.1); --icon-filter: invert(1); min-height: 100vh; min-height: 100dvh; position: relative; isolation: isolate; display: flex; flex-direction: column; }
+    .world[data-appearance="light"] { --surface: rgba(246,248,245,.96); --ink: #1c2721; --muted: #48534b; --edge: rgba(0,0,0,.2); --control: rgba(0,0,0,.055); --icon-filter: none; }
+    .wallpaper { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -3; background: #33463b; }
+    .world::before { content: ''; position: fixed; inset: 0; z-index: -2; background: linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.12) 40%,rgba(0,0,0,.56)); }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: max(20px, env(safe-area-inset-top)) 28px 12px; font-size: .75rem; font-weight: 600; }
+    .brand { display: flex; align-items: center; gap: 10px; text-shadow: 0 1px 5px #000; }
+    .brand img { width: 18px; height: 18px; filter: invert(1); }
+    .demo-badge { border: 1px solid #ffffff70; border-radius: 4px; padding: 3px 6px; font-size: .625rem; text-transform: uppercase; }
+    .icon-button { display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 11px; border-radius: 50%; background: rgba(25,30,28,.65); color: white; flex: 0 0 auto; }
+    .icon-button img { width: 20px; height: 20px; filter: invert(1); }
+    .icon-button:hover { background: #263d32; }
+    main { flex: 1; display: grid; padding: 12px 24px; }
+    .scene { min-width: 0; width: 100%; animation: appear .35s ease-out; }
+    #locked:where(:not([hidden])) { display: grid; grid-template-rows: auto 1fr auto; justify-items: center; gap: 30px; padding-top: 24px; }
+    .clock-block { text-align: center; text-shadow: 0 1px 4px #000b, 0 2px 24px #0007; }
+    #date { margin: 0 0 3px; font-size: 1.15rem; font-weight: 550; }
+    #clock { display: block; font-size: 8rem; font-weight: 650; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    #period { font-size: 1rem; vertical-align: middle; margin-left: 8px; font-weight: 600; }
+    .clock-block[data-weight="light"] #clock { font-weight: 300; }
+    .notification-area { width: min(360px,100%); align-self: end; color: var(--ink); }
+    .notification-heading { display: flex; align-items: center; justify-content: space-between; padding: 0 4px; margin-bottom: 10px; color: white; }
+    .notification-heading h2 { font-size: .75rem; font-weight: 550; margin: 0; text-shadow: 0 1px 4px #000; }
+    .text-button { padding: 7px 10px; border-radius: 6px; background: var(--surface); color: var(--ink); font-size: .7rem; }
+    #notifications { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .notification { display: grid; grid-template-columns: 36px minmax(0,1fr) 32px; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--edge); border-radius: 8px; background: var(--surface); box-shadow: 0 4px 20px #0001; }
+    .app-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; background: #e8f4eb; }
+    .app-icon img { width: 20px; height: 20px; }
+    .notification strong { display: block; font-size: .75rem; font-weight: 650; }
+    .notification p { color: var(--muted); font-size: .7rem; line-height: 1.5; margin: 3px 0 0; overflow-wrap: anywhere; }
+    .dismiss { width: 32px; height: 32px; padding: 8px; background: transparent; border: 0; border-radius: 50%; }
+    .dismiss img { width: 16px; height: 16px; filter: var(--icon-filter); }
+    .dismiss:hover { background: var(--control); }
+    #empty { text-align: center; color: white; font-size: .8rem; text-shadow: 0 1px 5px #000; }
+    .profile-button { display: flex; align-items: center; gap: 12px; max-width: min(360px,100%); background: transparent; border: 0; padding: 8px 12px; border-radius: 8px; text-shadow: 0 1px 8px #000; }
+    .avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px #ffffff80; flex-shrink: 0; }
+    .profile-button .name { font-size: .85rem; font-weight: 550; min-width: 0; overflow-wrap: anywhere; text-align: left; }
+    .profile-button .arrow { width: 20px; filter: invert(1); flex-shrink: 0; }
+    .avatar-slot { display: contents; }
+    .avatar.initials { display: inline-grid; place-items: center; color: #1c2721; font-size: 1.1rem; font-weight: 650; text-shadow: none; }
+    .avatar.initials[data-tone="sky"] { background: #a8d1ff; }
+    .avatar.initials[data-tone="sun"] { background: #f9d77e; }
+    #identity:not([hidden]), #desktop:not([hidden]), #accounts:not([hidden]) { display: grid; place-items: center; }
+    .identity-content { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; width: min(400px,100%); }
+    .identity-content .avatar { width: 96px; height: 96px; }
+    .identity-content .avatar.initials { font-size: 2rem; }
+    .identity-status { margin: -12px 0 0; font-size: .8rem; font-weight: 550; text-shadow: 0 1px 6px #000; }
+    .text-link { background: transparent; border: 0; padding: 8px 12px; border-radius: 6px; font-size: .8rem; font-weight: 550; text-decoration: underline; text-underline-offset: 3px; text-shadow: 0 1px 6px #000; }
+    .text-link:hover { background: rgba(20,30,24,.6); }
+    .accounts-content { display: flex; flex-direction: column; align-items: center; gap: 16px; width: min(380px,100%); }
+    .accounts-title { font-size: 1.5rem; font-weight: 600; margin: 0; text-shadow: 0 2px 16px #0009; }
+    .account-list { list-style: none; margin: 0; padding: 0; width: 100%; display: grid; gap: 8px; }
+    .account-button { width: 100%; display: grid; grid-template-columns: 44px minmax(0,1fr) 20px; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; background: var(--surface); color: var(--ink); text-align: left; }
+    .account-button:hover { box-shadow: inset 0 0 0 100px var(--control); }
+    .account-button .avatar { width: 44px; height: 44px; box-shadow: none; }
+    .account-button .avatar.initials { font-size: .9rem; }
+    .account-name { display: block; font-size: .85rem; font-weight: 600; overflow-wrap: anywhere; }
+    .account-status { display: block; margin-top: 2px; font-size: .7rem; color: var(--muted); }
+    .account-button .arrow { width: 18px; filter: var(--icon-filter); }
+    .display-name { font-size: 1.65rem; line-height: 1.3; margin: 0; max-width: 100%; overflow-wrap: anywhere; text-shadow: 0 2px 16px #0009; }
+    .command { display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 13px 20px; border-radius: 8px; background: #f5f7f4; color: #1b3024; font-weight: 600; font-size: .85rem; min-height: 46px; }
+    .command:hover { background: #dcebdd; }
+    .command img { width: 18px; height: 18px; }
+    .quiet { background: rgba(20,30,24,.75); color: white; }
+    .quiet img { filter: invert(1); }
+    .quiet:hover { background: #263d32; }
+    .desktop-heading { font-size: 2rem; margin: 0; font-weight: 550; text-shadow: 0 2px 16px #0008; }
+    .desktop-label { font-size: .75rem; text-transform: uppercase; margin: 0; }
+    footer { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 18px 28px max(22px, env(safe-area-inset-bottom)); font-size: .65rem; color: #fff; text-shadow: 0 1px 6px #000; }
+    #wallpaper-credit { text-align: right; }
+    dialog { position: fixed; inset: 12px 12px 12px auto; margin: 0; width: min(360px,calc(100% - 24px)); max-width: none; max-height: calc(100dvh - 24px); height: fit-content; overflow-y: auto; padding: 22px; background: var(--surface); color: var(--ink); border: 1px solid var(--edge); border-radius: 8px; box-shadow: 0 18px 70px #0005; }
+    dialog::backdrop { background: #0005; }
+    .sheet-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .sheet-heading h2 { font-size: 1.15rem; margin: 0; font-weight: 600; }
+    .sheet-heading .icon-button { background: var(--control); border-color: var(--edge); }
+    .sheet-heading .icon-button img { filter: var(--icon-filter); }
+    fieldset { border: 0; padding: 0; margin: 0 0 22px; min-width: 0; }
+    legend, .field-label { display: block; font-size: .75rem; font-weight: 600; margin-bottom: 10px; }
+    .wallpaper-options { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+    .choice { position: relative; cursor: pointer; display: block; }
+    .choice input { position: absolute; top: 8px; left: 8px; accent-color: #216743; }
+    .choice img { display: block; width: 100%; aspect-ratio: 1.25; object-fit: cover; border-radius: 6px; border: 2px solid transparent; }
+    .choice input:checked + img { border-color: #509d6b; }
+    .choice input:focus-visible + img { outline: 3px solid #bc7c13; outline-offset: 2px; }
+    .choice span { display: block; font-size: .65rem; margin-top: 7px; color: var(--muted); }
+    .segments { display: flex; gap: 6px; flex-wrap: wrap; }
+    .segments label { flex: 1; cursor: pointer; font-size: .75rem; display: flex; align-items: center; gap: 6px; padding: 10px 8px; border: 1px solid var(--edge); border-radius: 6px; background: var(--control); white-space: nowrap; }
+    .segments input { accent-color: #216743; margin: 0; }
+    select, #profile-name { width: 100%; padding: 11px; border: 1px solid var(--edge); border-radius: 6px; color: var(--ink); background: var(--surface); }
+    .avatar-options { display: flex; gap: 18px; }
+    .avatar-options .choice { width: 60px; }
+    .avatar-options img { border-radius: 50%; aspect-ratio: 1; }
+    .avatar-options input { top: auto; bottom: -5px; left: 24px; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: .75rem; margin-bottom: 14px; }
+    .toggle-row input { appearance: none; width: 40px; height: 24px; border-radius: 20px; background: #758078; border: 2px solid transparent; flex: 0 0 auto; cursor: pointer; }
+    .toggle-row input::after { content: ''; display: block; width: 20px; height: 20px; border-radius: 50%; background: white; transition: transform .18s; }
+    .toggle-row input:checked { background: #277247; }
+    .toggle-row input:checked::after { transform: translateX(16px); }
+    #reset-notifications { width: 100%; padding: 11px; background: var(--control); border-radius: 6px; font-size: .75rem; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+    @supports (backdrop-filter: blur(20px)) { .world { --surface: rgba(25,30,28,.80); } .world[data-appearance="light"] { --surface: rgba(246,248,245,.9); } .notification, .account-button, dialog { backdrop-filter: blur(20px); } }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @media (min-height: 800px) { #locked { padding-top: 55px; gap: 48px; } }
+    @media (max-width: 600px) { .topbar { padding-left: 18px; padding-right: 18px; } main { padding: 8px 18px; } #locked { padding-top: 28px; gap: 24px; } #clock { font-size: 5rem; } #date { font-size: .95rem; } footer { padding-left: 18px; padding-right: 18px; } dialog { inset: auto 8px 8px; width: calc(100% - 16px); max-height: calc(100dvh - 30px); } }
+    @media (max-height: 600px) { #locked { padding-top: 0; gap: 18px; } #clock { font-size: 4rem; } .topbar { padding-top: 10px; } footer { padding-top: 12px; padding-bottom: 12px; } }
+    @media (prefers-reduced-motion: reduce) { .scene { animation: none; } .toggle-row input::after { transition: none; } }
+  </style>
+</head>
+<body>
+  <div class="world" id="world" data-appearance="dark" data-state="locked">
+    <img class="wallpaper" id="wallpaper" src="demo-assets/lockscreen/alpine.jpg" alt="" fetchpriority="high">
+    <header class="topbar">
+      <div class="brand"><img src="demo-assets/lockscreen/icons/lock-keyhole.svg" alt=""><span>Yaru Glass</span><span class="demo-badge">Demo</span></div>
+      <button class="icon-button" id="customize" type="button" title="Customize lock screen" aria-label="Customize lock screen" aria-haspopup="dialog"><img src="demo-assets/lockscreen/icons/sliders-horizontal.svg" alt=""></button>
+    </header>
+    <main>
+      <section id="locked" class="scene" aria-label="Lock screen">
+        <div class="clock-block" id="clock-block" data-weight="bold">
+          <p id="date"></p><time id="clock" aria-label="Current time"><span id="digits"></span><span id="period"></span></time>
+        </div>
+        <section class="notification-area" aria-label="Mock notifications">
+          <div class="notification-heading"><h2>Notifications</h2><button class="text-button" id="clear-notifications" type="button">Clear all</button></div>
+          <ul id="notifications"></ul><p id="empty" hidden>No notifications</p>
+        </section>
+        <button class="profile-button" id="continue" type="button" aria-label="Continue to profile">
+          <span class="avatar-slot" id="locked-avatar"></span><span class="name" id="locked-name">Alex Morgan</span><img class="arrow" src="demo-assets/lockscreen/icons/chevron-right.svg" alt="">
+        </button>
+      </section>
+      <section id="identity" class="scene" aria-label="Profile" hidden>
+        <div class="identity-content">
+          <span class="avatar-slot" id="identity-avatar"></span>
+          <h1 class="display-name" id="identity-name">Alex Morgan</h1>
+          <p class="identity-status" id="identity-status">Session locked</p>
+          <button class="command" id="unlock" type="button"><img src="demo-assets/lockscreen/icons/arrow-right.svg" alt=""><span id="unlock-label">Simulate unlock</span></button>
+          <button class="command quiet" id="back" type="button">Back</button>
+          <button class="text-link" id="switch-user" type="button">Switch user</button>
+        </div>
+      </section>
+      <section id="accounts" class="scene" aria-labelledby="accounts-title" hidden>
+        <div class="accounts-content">
+          <p class="desktop-label">Login screen preview</p>
+          <h1 class="accounts-title" id="accounts-title">Choose an account</h1>
+          <ul class="account-list" id="account-list"></ul>
+          <button class="command quiet" id="accounts-back" type="button">Back to lock screen</button>
+        </div>
+      </section>
+      <section id="desktop" class="scene" aria-label="Simulated desktop" hidden>
+        <div class="identity-content"><p class="desktop-label">Yaru Glass</p><h1 class="desktop-heading">Good to see you.</h1><p class="display-name" id="desktop-name">Alex Morgan</p><button class="command" id="relock" type="button"><img src="demo-assets/lockscreen/icons/lock-keyhole.svg" alt="">Relock</button><button class="command quiet" id="logout" type="button">Log out</button></div>
+      </section>
+    </main>
+    <footer><span>Offline desktop and lock-screen simulation</span><span id="wallpaper-credit">Alpine</span></footer>
+    <output id="status" class="sr-only" aria-live="polite"></output>
+    <dialog id="settings" aria-labelledby="settings-title">
+      <div class="sheet-heading"><h2 id="settings-title">Lock Screen</h2><button class="icon-button" id="close-settings" type="button" title="Close customization" aria-label="Close customization" autofocus><img src="demo-assets/lockscreen/icons/x.svg" alt=""></button></div>
+      <fieldset><legend>Wallpaper</legend><div class="wallpaper-options">
+        <label class="choice"><input type="radio" name="wallpaper" value="alpine" checked><img src="demo-assets/lockscreen/alpine.jpg" alt="Alpine"><span>Alpine</span></label>
+        <label class="choice"><input type="radio" name="wallpaper" value="forest"><img src="demo-assets/lockscreen/forest.jpg" alt="Forest"><span>Forest</span></label>
+        <label class="choice"><input type="radio" name="wallpaper" value="coast"><img src="demo-assets/lockscreen/coast.jpg" alt="Coast"><span>Coast</span></label>
+      </div></fieldset>
+      <fieldset><legend>Clock format</legend><div class="segments"><label><input type="radio" name="format" value="24" checked>24-hour</label><label><input type="radio" name="format" value="12">12-hour</label></div></fieldset>
+      <fieldset><legend>Clock weight</legend><div class="segments"><label><input type="radio" name="weight" value="bold" checked>Bold</label><label><input type="radio" name="weight" value="light">Light</label></div></fieldset>
+      <fieldset><label class="field-label" for="appearance">Appearance</label><select id="appearance"><option value="auto">Automatic</option><option value="dark" selected>Dark</option><option value="light">Light</option></select></fieldset>
+      <fieldset><label class="field-label" for="profile-name">Your display name</label><input id="profile-name" type="text" value="Alex Morgan" maxlength="40" autocomplete="off" spellcheck="false"></fieldset>
+      <fieldset><legend>Your avatar</legend><div class="avatar-options">
+        <label class="choice"><input type="radio" name="avatar" value="fern" aria-label="Fern avatar" checked><img src="demo-assets/lockscreen/avatar-fern.jpg" alt=""></label>
+        <label class="choice"><input type="radio" name="avatar" value="sea" aria-label="Sea avatar"><img src="demo-assets/lockscreen/avatar-sea.jpg" alt=""></label>
+      </div></fieldset>
+      <fieldset><legend>Notifications</legend><label class="toggle-row" for="show-previews">Show previews<input type="checkbox" id="show-previews" role="switch" aria-checked="false"></label><button id="reset-notifications" type="button">Reset mock notifications</button></fieldset>
+    </dialog>
+  </div>
+  <script>
+    const world = document.querySelector('#world');
+    const settings = document.querySelector('#settings');
+    const scenes = ['locked', 'identity', 'accounts', 'desktop'];
+    const accounts = [
+      { id: 'alex', name: 'Alex Morgan', photo: 'fern' },
+      { id: 'robin', name: 'Robin Chen', initials: 'RC', tone: 'sky' },
+      { id: 'sam', name: 'Sam Patel', initials: 'SP', tone: 'sun' }
+    ];
+    const notificationFixtures = {
+      alex: [
+        { id: 'calendar', app: 'Calendar', icon: 'calendar-days', title: 'A little time outdoors', body: 'Afternoon walk at 16:00.' },
+        { id: 'messages', app: 'Messages', icon: 'message-circle', title: 'Jamie', body: 'See you at the garden this afternoon.' }
+      ],
+      robin: [{ id: 'review', app: 'Calendar', icon: 'calendar-days', title: 'Design review', body: 'Tomorrow at 10:00.' }],
+      sam: []
+    };
+    const params = new URLSearchParams(location.search);
+    const requestedAccount = params.get('account');
+    const initialAccount = accounts.some(entry => entry.id === requestedAccount) ? requestedAccount : 'alex';
+    const freshNotifications = () => Object.fromEntries(Object.entries(notificationFixtures).map(([id, list]) => [id, [...list]]));
+    let notificationsByAccount = freshNotifications();
+    // Mirrors GNOME: the lock screen belongs to one session; other sessions may keep running.
+    const lockedMode = params.get('mode') !== 'login';
+    const signedIn = new Set(lockedMode ? [initialAccount] : []);
+    let lockedAccount = lockedMode ? initialAccount : null;
+    let selectedAccount = initialAccount;
+    let currentAccount = null;
+    let clockTimer;
+    const colorScheme = matchMedia('(prefers-color-scheme: dark)');
+
+    const accountById = id => accounts.find(entry => entry.id === id);
+
+    function avatarFor(entry) {
+      if (entry.photo) {
+        const image = document.createElement('img');
+        image.className = 'avatar';
+        image.src = `demo-assets/lockscreen/avatar-${entry.photo}.jpg`;
+        image.alt = '';
+        return image;
+      }
+      const initials = document.createElement('span');
+      initials.className = 'avatar initials';
+      initials.dataset.tone = entry.tone;
+      initials.setAttribute('aria-hidden', 'true');
+      initials.textContent = entry.initials;
+      return initials;
+    }
+
+    function accountStatus(id) {
+      if (id === lockedAccount) return 'Session locked';
+      return signedIn.has(id) ? 'Signed in' : '';
+    }
+
+    function renderAccounts() {
+      if (lockedAccount) {
+        const locked = accountById(lockedAccount);
+        document.querySelector('#locked-avatar').replaceChildren(avatarFor(locked));
+        document.querySelector('#locked-name').textContent = locked.name;
+      }
+      const selected = accountById(selectedAccount);
+      document.querySelector('#identity-avatar').replaceChildren(avatarFor(selected));
+      document.querySelector('#identity-name').textContent = selected.name;
+      document.querySelector('#identity-status').textContent = accountStatus(selected.id) || 'Not signed in';
+      document.querySelector('#unlock-label').textContent = signedIn.has(selected.id) ? 'Simulate unlock' : 'Simulate log in';
+      document.querySelector('#switch-user').hidden = selected.id !== lockedAccount;
+      if (currentAccount) document.querySelector('#desktop-name').textContent = accountById(currentAccount).name;
+      document.querySelector('#accounts-back').hidden = !lockedAccount;
+      const list = document.querySelector('#account-list');
+      list.replaceChildren(...accounts.map(entry => {
+        const item = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'account-button';
+        button.dataset.account = entry.id;
+        const text = document.createElement('span');
+        const name = document.createElement('span');
+        name.className = 'account-name';
+        name.textContent = entry.name;
+        text.append(name);
+        const status = accountStatus(entry.id);
+        if (status) {
+          const detail = document.createElement('span');
+          detail.className = 'account-status';
+          detail.textContent = status;
+          text.append(detail);
+        }
+        const arrow = document.createElement('img');
+        arrow.className = 'arrow';
+        arrow.src = 'demo-assets/lockscreen/icons/chevron-right.svg';
+        arrow.alt = '';
+        button.setAttribute('aria-label', status ? `${entry.name}, ${status}` : entry.name);
+        button.append(avatarFor(entry), text, arrow);
+        button.addEventListener('click', () => { selectedAccount = entry.id; setScene('identity'); });
+        item.append(button);
+        return item;
+      }));
+    }
+
+    function setScene(next) {
+      const current = world.dataset.state;
+      const allowed = { locked: ['identity'], identity: ['locked', 'accounts', 'desktop'], accounts: ['identity', 'locked'], desktop: ['locked', 'accounts'] };
+      if (settings.open || !allowed[current].includes(next) || (next === 'locked' && !lockedAccount)) return;
+      world.dataset.state = next;
+      renderAccounts();
+      for (const scene of scenes) {
+        const element = document.getElementById(scene);
+        element.hidden = scene !== next;
+        element.inert = scene !== next;
+      }
+      const focusTarget = next === 'accounts'
+        ? document.querySelector(`.account-button[data-account="${selectedAccount}"]`) || document.querySelector('.account-button')
+        : document.getElementById({ locked: 'continue', identity: 'unlock', desktop: 'relock' }[next]);
+      focusTarget.focus();
+      document.querySelector('#status').textContent = { locked: 'Locked preview', identity: `${accountById(selectedAccount).name} profile`, accounts: 'Login screen preview', desktop: 'Simulated desktop' }[next];
+    }
+
+    function leaveIdentity() {
+      setScene(selectedAccount === lockedAccount ? 'locked' : 'accounts');
+    }
+
+    function clockParts(now, hour12) {
+      const parts = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12 }).formatToParts(now);
+      return {
+        digits: parts.filter(part => ['hour', 'literal', 'minute'].includes(part.type)).map(part => part.value).join('').trim(),
+        period: (parts.find(part => part.type === 'dayPeriod')?.value || '').toUpperCase()
+      };
+    }
+
+    function updateClock() {
+      clearTimeout(clockTimer);
+      const now = new Date();
+      const parts = clockParts(now, document.querySelector('input[name="format"]:checked').value === '12');
+      document.querySelector('#digits').textContent = parts.digits;
+      document.querySelector('#period').textContent = parts.period;
+      document.querySelector('#clock').dateTime = now.toISOString();
+      document.querySelector('#clock').setAttribute('aria-label', `${parts.digits} ${parts.period}`.trim());
+      document.querySelector('#date').textContent = new Intl.DateTimeFormat('en-GB', { weekday: 'long', month: 'long', day: 'numeric' }).format(now);
+      if (!document.hidden) clockTimer = setTimeout(updateClock, 60000 - now.getSeconds() * 1000 - now.getMilliseconds());
+    }
+
+    function lockedNotifications() {
+      return lockedAccount ? notificationsByAccount[lockedAccount] : [];
+    }
+
+    function renderNotifications() {
+      const list = document.querySelector('#notifications');
+      const previewControl = document.querySelector('#show-previews');
+      const previews = previewControl.checked;
+      const activeNotifications = lockedNotifications();
+      previewControl.setAttribute('aria-checked', String(previews));
+      list.replaceChildren();
+      for (const notification of activeNotifications) {
+        const item = document.createElement('li');
+        item.className = 'notification';
+        const app = document.createElement('span');
+        app.className = 'app-icon';
+        const icon = document.createElement('img');
+        icon.src = `demo-assets/lockscreen/icons/${notification.icon}.svg`;
+        icon.alt = '';
+        app.append(icon);
+        const content = document.createElement('div');
+        const heading = document.createElement('strong');
+        heading.textContent = previews ? notification.title : notification.app;
+        const body = document.createElement('p');
+        body.textContent = previews ? notification.body : 'Notification preview hidden';
+        content.append(heading, body);
+        const dismiss = document.createElement('button');
+        dismiss.type = 'button';
+        dismiss.className = 'dismiss';
+        dismiss.setAttribute('aria-label', `Dismiss ${notification.app} notification`);
+        dismiss.title = `Dismiss ${notification.app} notification`;
+        const closeIcon = document.createElement('img');
+        closeIcon.src = 'demo-assets/lockscreen/icons/x.svg';
+        closeIcon.alt = '';
+        dismiss.append(closeIcon);
+        dismiss.addEventListener('click', () => {
+          const index = activeNotifications.findIndex(entry => entry.id === notification.id);
+          notificationsByAccount[lockedAccount] = activeNotifications.filter(entry => entry.id !== notification.id);
+          renderNotifications();
+          const buttons = list.querySelectorAll('button');
+          (buttons[Math.min(index, buttons.length - 1)] || document.querySelector('#continue')).focus();
+          announceNotifications();
+        });
+        item.append(app, content, dismiss);
+        list.append(item);
+      }
+      document.querySelector('#empty').hidden = activeNotifications.length > 0;
+      document.querySelector('#clear-notifications').hidden = activeNotifications.length === 0;
+    }
+
+    function announceNotifications() {
+      document.querySelector('#status').textContent = `${lockedNotifications().length} mock notifications`;
+    }
+
+    function applyAppearance() {
+      const appearance = document.querySelector('#appearance').value;
+      const automaticAppearance = colorScheme.matches ? 'dark' : 'light';
+      world.dataset.appearance = appearance === 'auto' ? automaticAppearance : appearance;
+      settings.style.colorScheme = world.dataset.appearance;
+    }
+
+    function showLockedProfile() {
+      selectedAccount = lockedAccount;
+      setScene('identity');
+    }
+
+    document.querySelector('#continue').addEventListener('click', showLockedProfile);
+    document.querySelector('#locked').addEventListener('click', event => {
+      if (!event.target.closest('button, .notification-area')) showLockedProfile();
+    });
+    document.querySelector('#unlock').addEventListener('click', () => {
+      if (world.dataset.state !== 'identity' || settings.open) return;
+      signedIn.add(selectedAccount);
+      if (selectedAccount === lockedAccount) lockedAccount = null;
+      currentAccount = selectedAccount;
+      setScene('desktop');
+      window.parent.postMessage({ type: 'login-success', account: currentAccount }, '*');
+    });
+    document.querySelector('#back').addEventListener('click', leaveIdentity);
+    document.querySelector('#switch-user').addEventListener('click', () => setScene('accounts'));
+    document.querySelector('#accounts-back').addEventListener('click', () => setScene('locked'));
+    document.querySelector('#relock').addEventListener('click', () => {
+      if (world.dataset.state !== 'desktop' || settings.open) return;
+      lockedAccount = currentAccount;
+      currentAccount = null;
+      renderNotifications();
+      setScene('locked');
+    });
+    document.querySelector('#logout').addEventListener('click', () => {
+      if (world.dataset.state !== 'desktop' || settings.open) return;
+      signedIn.delete(currentAccount);
+      selectedAccount = currentAccount;
+      currentAccount = null;
+      lockedAccount = null;
+      setScene('accounts');
+      window.parent.postMessage({ type: 'logout' }, '*');
+    });
+    document.querySelector('#customize').addEventListener('click', () => settings.showModal());
+    document.querySelector('#close-settings').addEventListener('click', () => settings.close());
+    settings.addEventListener('close', () => document.querySelector('#customize').focus());
+    document.addEventListener('keydown', event => {
+      if (settings.open) {
+        if (event.key === 'Escape') { event.preventDefault(); settings.close(); }
+        return;
+      }
+      if (event.key === 'Escape' && world.dataset.state === 'identity') {
+        event.preventDefault(); leaveIdentity(); return;
+      }
+      if (event.key === 'Escape' && world.dataset.state === 'accounts' && lockedAccount) {
+        event.preventDefault(); setScene('locked'); return;
+      }
+      if (!(event.target instanceof Element) || event.target.closest('button, input, select, textarea, a, [contenteditable]') || event.repeat || event.altKey || event.ctrlKey || event.metaKey) return;
+      if (world.dataset.state === 'locked' && ['Enter', ' '].includes(event.key)) {
+        event.preventDefault(); showLockedProfile();
+      }
+    });
+    document.querySelector('#clear-notifications').addEventListener('click', () => {
+      notificationsByAccount[lockedAccount] = []; renderNotifications(); announceNotifications(); document.querySelector('#continue').focus();
+    });
+    document.querySelector('#reset-notifications').addEventListener('click', () => { notificationsByAccount = freshNotifications(); renderNotifications(); announceNotifications(); });
+    document.querySelector('#show-previews').addEventListener('change', renderNotifications);
+    document.querySelector('#appearance').addEventListener('change', applyAppearance);
+    colorScheme.addEventListener('change', applyAppearance);
+    settings.addEventListener('change', event => {
+      if (event.target.name === 'wallpaper') {
+        document.querySelector('#wallpaper').src = `demo-assets/lockscreen/${event.target.value}.jpg`;
+        document.querySelector('#wallpaper-credit').textContent = { alpine: 'Alpine', forest: 'Forest', coast: 'Coast' }[event.target.value];
+      }
+      if (event.target.name === 'format') updateClock();
+      if (event.target.name === 'weight') document.querySelector('#clock-block').dataset.weight = event.target.value;
+      if (event.target.name === 'avatar') {
+        accountById('alex').photo = event.target.value;
+        renderAccounts();
+      }
+    });
+    const nameInput = document.querySelector('#profile-name');
+    function updateName() {
+      accountById('alex').name = nameInput.value.trim().replace(/\s+/g, ' ').slice(0, 40) || 'Alex Morgan';
+      renderAccounts();
+    }
+    nameInput.addEventListener('input', updateName);
+    nameInput.addEventListener('blur', () => { updateName(); nameInput.value = accountById('alex').name; });
+    document.addEventListener('visibilitychange', updateClock);
+    const initialScene = lockedMode ? 'locked' : 'accounts';
+    world.dataset.state = initialScene;
+    for (const scene of scenes) {
+      const element = document.getElementById(scene);
+      element.hidden = scene !== initialScene;
+      element.inert = scene !== initialScene;
+    }
+    renderAccounts();
+    renderNotifications();
+    applyAppearance();
+    updateClock();
+    if (initialScene === 'accounts') {
+      document.querySelector('.account-button[data-account="alex"]').focus();
+      document.querySelector('#status').textContent = 'Login screen preview';
+    }
+  </script>
+</body>
+</html>

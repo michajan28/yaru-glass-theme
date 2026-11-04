@@ -1,0 +1,977 @@
+#!/usr/bin/python3
+"""Native transparency control for the installed Yaru Glass theme pair."""
+import sys
+import json
+from pathlib import Path
+
+import gi
+
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+gi.require_version("GdkPixbuf", "2.0")
+from gi.repository import Adw, Gdk, GdkPixbuf, Gio, GLib, Gtk
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "src/yaru_glass"))
+from theme_settings import (
+    DEFAULT_TRANSPARENCY, load_settings, load_app_appearance, validate_settings,
+    app_opacity, preset_values, preset_name, gtk_material,
+)
+import wallpapers
+import files_appearance
+import diagnostics
+
+
+SECTION_LABELS = {"shell": "Shell", "app": "Settings app", "files": "Files"}
+SETTING_LABELS = {
+    ("shell", "transparency"): "Transparency level",
+    ("shell", "glass_mode"): "Glass style",
+    ("shell", "solid"): "Solid backgrounds",
+    ("shell", "readability_boost"): "Readability boost",
+    ("shell", "background_blur"): "Dynamic background blur",
+    ("app", "enabled"): "Transparency",
+    ("app", "transparency"): "Transparency level",
+    ("files", "enabled"): "Transparency",
+    ("files", "transparency"): "Transparency level",
+}
+
+
+def format_confirmation_changes(snapshot, patch, invalid_sections=()):
+    lines = []
+    for section, fields in patch.items():
+        lines.append(SECTION_LABELS.get(section, section.replace("_", " ").title()))
+        current = snapshot.get(section, {})
+        for key, value in fields.items():
+            label = SETTING_LABELS.get((section, key), key.replace("_", " ").title())
+            before = "Invalid or unavailable" if section in invalid_sections else current.get(key, "Not set")
+            if key == "transparency":
+                before = f"{before}%" if type(before) is int else str(before)
+                after = f"{value}%"
+            elif key == "glass_mode":
+                before, after = str(before).title(), str(value).title()
+            elif key == "enabled":
+                if type(before) is bool:
+                    before = "Enabled" if before else "Disabled"
+                after = "Enabled" if value else "Disabled"
+            elif isinstance(value, bool):
+                if type(before) is bool:
+                    before = "On" if before else "Off"
+                after = "On" if value else "Off"
+            else:
+                before, after = str(before), str(value)
+            lines.append(f"  {label}: {before} → {after}")
+    return "\n".join(lines)
+
+
+class SettingsWindow(Adw.ApplicationWindow):
+    def __init__(self, application):
+        super().__init__(application=application, title="Yaru Glass Settings")
+        self.set_default_size(540, 650)
+        self.add_css_class("yaru-settings-window")
+        self.timeout_id = 0
+        self.process = None
+        self.requested = None
+        self.closing = False
+        self.syncing = False
+        self.failed_patch = None
+        self.files_live_confirmed = False
+        self.files_restart_process = None
+        self.files_restart_watch = 0
+        self.files_restart_timeout = 0
+        error = None
+        try:
+            settings = load_settings()
+        except (OSError, ValueError) as exc:
+            settings = {"transparency": DEFAULT_TRANSPARENCY, "glass_mode": "frost"}
+            error = str(exc)
+        value = settings["transparency"]
+        self.invalid_shell = error is not None
+        self.shell_settings = validate_settings(settings)
+        self.applied_glass_mode = settings["glass_mode"]
+        app_error = None
+        try:
+            app_appearance = load_app_appearance()
+        except (OSError, ValueError) as exc:
+            app_appearance = {"enabled": False, "transparency": DEFAULT_TRANSPARENCY}
+            app_error = str(exc)
+        self.app_appearance = app_appearance
+        self.invalid_sections = {name for name, failure in (("shell", error), ("app", app_error)) if failure}
+        self.app_css = Gtk.CssProvider()
+        Gtk.StyleContext.add_provider_for_display(
+            self.get_display(), self.app_css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 1)
+        self.style_manager = Adw.StyleManager.get_default()
+        self.dark_changed_id = self.style_manager.connect("notify::dark", self.update_app_style)
+
+        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        header = Adw.HeaderBar()
+        self.diagnostics_button = Gtk.Button(
+            child=Adw.ButtonContent(icon_name="dialog-information-symbolic", label="Diagnostics"),
+            tooltip_text="View Yaru Glass logs and export a diagnostic report")
+        self.diagnostics_button.update_property([Gtk.AccessibleProperty.LABEL], ["Open diagnostics"])
+        self.diagnostics_button.connect("clicked", self.open_diagnostics)
+        header.pack_start(self.diagnostics_button)
+        content.append(header)
+        self.pages = Gtk.Stack(vexpand=True)
+        self.page_bodies = {}
+        for name, title in (("shell", "Shell"), ("applications", "Applications"),
+                            ("wallpapers", "Wallpapers")):
+            page_body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16,
+                                margin_top=20, margin_bottom=24, margin_start=24, margin_end=24)
+            scroll = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER, vexpand=True)
+            scroll.set_min_content_width(0)
+            scroll.set_child(page_body)
+            self.pages.add_titled(scroll, name, title)
+            self.page_bodies[name] = page_body
+        self.navigation = Gtk.StackSwitcher(stack=self.pages, halign=Gtk.Align.CENTER,
+                                            margin_top=6, margin_bottom=6)
+        self.navigation.update_property([Gtk.AccessibleProperty.LABEL], ["Settings pages"])
+        self.compact_navigation = Gtk.DropDown(
+            model=Gtk.StringList.new(["Shell", "Applications", "Wallpapers"]),
+            halign=Gtk.Align.CENTER, margin_top=6, margin_bottom=6)
+        self.compact_navigation.update_property([Gtk.AccessibleProperty.LABEL], ["Settings pages"])
+        self.compact_navigation.set_visible(False)
+        self.compact_navigation.connect("notify::selected", self.on_compact_navigation_selected)
+        self.pages.connect("notify::visible-child-name", self.sync_compact_navigation)
+        content.append(self.navigation)
+        content.append(self.compact_navigation)
+        content.append(self.pages)
+        self.connect("notify::width", self.update_page_navigation)
+        self.connect("notify::default-width", self.update_page_navigation)
+        body = self.page_bodies["shell"]
+        self.overview = Gtk.Label(xalign=0, wrap=True, selectable=True)
+        body.append(self.overview)
+        self.interface = Gio.Settings.new("org.gnome.desktop.interface")
+        self.theme_changed_id = self.interface.connect("changed::gtk-theme", self.on_theme_changed)
+        preset_group = Adw.PreferencesGroup(title="Coordinated appearance")
+        self.preset = Adw.ComboRow(title="Preset", subtitle="Preview before applying; wallpapers stay unchanged")
+        self.preset.set_model(Gtk.StringList.new(["Solid", "Balanced Frost", "Clear Crystal"]))
+        preset_group.add(self.preset)
+        body.append(preset_group)
+        preset_apply = Gtk.Button(label="Preview preset…", halign=Gtk.Align.START)
+        preset_apply.connect("clicked", self.confirm_preset)
+        body.append(preset_apply)
+        options = Adw.PreferencesGroup()
+        self.solid_switch = Adw.SwitchRow(title="Solid Shell backgrounds",
+                                          subtitle="Opaque main surfaces; preserves the slider value")
+        self.solid_switch.set_active(self.shell_settings["solid"])
+        options.add(self.solid_switch)
+        self.blur_switch = Adw.SwitchRow(title="Dynamic background blur",
+                                         subtitle="Blur windows behind Shell surfaces; Solid suppresses blur")
+        self.blur_switch.set_active(self.shell_settings["background_blur"])
+        options.add(self.blur_switch)
+        self.boost_switch = Adw.SwitchRow(title="Readability boost",
+                                          subtitle="Stronger tint on supported surfaces; never dims text")
+        self.boost_switch.set_active(self.shell_settings["readability_boost"])
+        options.add(self.boost_switch)
+        body.append(options)
+        boost_reset = Gtk.Button(label="Reset readability boost…", halign=Gtk.Align.START)
+        boost_reset.connect("clicked", lambda *_: self.confirm_reset("Readability boost", {
+            "shell": {"readability_boost": False}}))
+        body.append(boost_reset)
+        heading = Gtk.Label(label="Glass appearance", xalign=0)
+        heading.add_css_class("title-2")
+        body.append(heading)
+        body.append(Gtk.Label(
+            label="Adjust the glass surfaces of the panel, menus, calendar, and dock. "
+                  "Applies to both light and dark themes; app windows are unchanged.",
+            wrap=True, xalign=0))
+        self.mode = Adw.ComboRow(title="Glass style", subtitle="Layered Frost: softer light · Crystal: clearer reflections")
+        self.mode.set_model(Gtk.StringList.new(["Frost", "Crystal"]))
+        self.mode.set_selected(0 if settings["glass_mode"] == "frost" else 1)
+        modes = Adw.PreferencesGroup()
+        modes.add(self.mode)
+        body.append(modes)
+
+        row = Gtk.Box(spacing=12)
+        self.scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 50, 1)
+        self.scale.set_hexpand(True)
+        self.scale.set_draw_value(False)
+        self.scale.set_round_digits(0)
+        self.scale.set_value(value)
+        self.scale.update_property([Gtk.AccessibleProperty.LABEL], ["More transparent"])
+        for mark in (0, 25, 50):
+            self.scale.add_mark(mark, Gtk.PositionType.BOTTOM, f"{mark}%")
+        self.percent = Gtk.Label(label=f"{value}%", width_chars=4)
+        row.append(self.scale)
+        row.append(self.percent)
+        body.append(row)
+        explanation = Gtk.Label(
+            label="25% = default. Text-bearing surfaces keep a minimum tint for readability.\n"
+                  "Styles need Blur my Shell. Changes apply automatically and are remembered.",
+            wrap=True, xalign=0)
+        explanation.add_css_class("dim-label")
+        body.append(explanation)
+        self.status = Gtk.Label(label="Ready", wrap=True, selectable=True, xalign=0)
+        body.append(self.status)
+        actions = Gtk.Box(spacing=12)
+        self.reset = Gtk.Button(label="Reset Shell appearance…")
+        self.reset.connect("clicked", self.on_reset)
+        actions.append(self.reset)
+        self.retry = Gtk.Button(label="Retry")
+        self.retry.set_visible(False)
+        self.retry.connect("clicked", self.retry_failed)
+        actions.append(self.retry)
+        body.append(actions)
+        self.repair = Gtk.Button(label="Repair invalid preferences…", halign=Gtk.Align.START)
+        self.repair.connect("clicked", self.confirm_repair)
+        body.append(self.repair)
+        body = self.page_bodies["applications"]
+        app_group = Adw.PreferencesGroup(title="Settings app transparency",
+                                        description="Only this window. Files and other apps stay unchanged. "
+                                                    "Follows Frost/Crystal; controls stay solid. No blur.")
+        self.app_switch = Adw.SwitchRow(title="Enable app transparency")
+        self.app_switch.set_active(app_appearance["enabled"])
+        app_group.add(self.app_switch)
+        app_row = Gtk.Box(spacing=12, margin_top=8)
+        self.app_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 50, 1)
+        self.app_scale.set_hexpand(True)
+        self.app_scale.set_draw_value(False)
+        self.app_scale.set_round_digits(0)
+        self.app_scale.set_value(app_appearance["transparency"])
+        self.app_scale.update_property([Gtk.AccessibleProperty.LABEL], ["Settings app transparency"])
+        for mark in (0, 25, 50):
+            self.app_scale.add_mark(mark, Gtk.PositionType.BOTTOM, f"{mark}%")
+        self.app_percent = Gtk.Label(label=f"{app_appearance['transparency']}%", width_chars=4)
+        app_row.append(self.app_scale)
+        app_row.append(self.app_percent)
+        app_group.add(app_row)
+        body.append(app_group)
+        self.app_status = Gtk.Label(label="Saved appearance applies immediately to this app only.",
+                                    xalign=0, wrap=True)
+        body.append(self.app_status)
+        self.app_retry = Gtk.Button(label="Retry app appearance", halign=Gtk.Align.START)
+        self.app_retry.set_visible(False)
+        self.app_retry.connect("clicked", lambda *_: self.retry_failed() if self.failed_patch
+                               else self.on_app_appearance_changed())
+        body.append(self.app_retry)
+        app_reset = Gtk.Button(label="Reset Settings app…", halign=Gtk.Align.START)
+        app_reset.connect("clicked", lambda *_: self.confirm_reset("Settings app", {
+            "app": {"enabled": False, "transparency": 25}}))
+        body.append(app_reset)
+        files_error = None
+        try:
+            files_value = files_appearance.load()
+        except (OSError, ValueError) as exc:
+            files_value = {"enabled": False, "transparency": DEFAULT_TRANSPARENCY}
+            files_error = str(exc)
+            self.invalid_sections.add("files")
+        files_group = Adw.PreferencesGroup(
+            title="Files transparency (experimental)",
+            description="Nautilus sidebar and headerbars. File content stays solid. "
+                        "Follows Frost/Crystal. Restart Files after changes; other apps stay unchanged.")
+        self.files_switch = Adw.SwitchRow(title="Enable Files transparency")
+        self.files_switch.set_active(files_value["enabled"])
+        files_group.add(self.files_switch)
+        files_row = Gtk.Box(spacing=12, margin_top=8)
+        self.files_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 50, 1)
+        self.files_scale.set_hexpand(True)
+        self.files_scale.set_draw_value(False)
+        self.files_scale.set_round_digits(0)
+        self.files_scale.set_value(files_value["transparency"])
+        self.files_scale.set_sensitive(files_value["enabled"])
+        self.files_scale.update_property([Gtk.AccessibleProperty.LABEL], ["Files transparency"])
+        for mark in (0, 25, 50):
+            self.files_scale.add_mark(mark, Gtk.PositionType.BOTTOM, f"{mark}%")
+        self.files_percent = Gtk.Label(label=f"{files_value['transparency']}%", width_chars=4)
+        files_row.append(self.files_scale)
+        files_row.append(self.files_percent)
+        files_group.add(files_row)
+        body.append(files_group)
+        self.files_status = Gtk.Label(
+            label="Saved configuration loaded. Restart Files if it has not loaded these settings.",
+            xalign=0, wrap=True)
+        body.append(self.files_status)
+        self.files_retry = Gtk.Button(label="Retry Files appearance", halign=Gtk.Align.START)
+        self.files_retry.set_visible(False)
+        self.files_retry.connect("clicked", lambda *_: self.retry_failed() if self.failed_patch
+                                 else self.on_files_appearance_changed())
+        body.append(self.files_retry)
+        self.files_opacity = Gtk.Label(xalign=0, wrap=True)
+        body.append(self.files_opacity)
+        presets = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, column_spacing=6,
+                              row_spacing=6, max_children_per_line=4)
+        for title, enabled, level in (("Solid", False, 0), ("Subtle", True, 10),
+                                      ("Balanced", True, 25), ("Clear", True, 50)):
+            button = Gtk.Button(label=title)
+            button.connect("clicked", self.set_files_preset, enabled, level)
+            presets.append(button)
+        body.append(presets)
+        files_actions = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, column_spacing=8,
+                                    row_spacing=8, max_children_per_line=2)
+        self.files_restart = Gtk.Button(label="Restart Files…")
+        self.files_restart.connect("clicked", self.confirm_files_restart)
+        files_actions.append(self.files_restart)
+        reset_files = Gtk.Button(label="Reset Files appearance")
+        reset_files.connect("clicked", lambda *_: self.confirm_reset("Files", {
+            "files": {"enabled": False, "transparency": 25}}))
+        files_actions.append(reset_files)
+        body.append(files_actions)
+        self.files_saved = files_value.copy()
+        self.files_switch_handler = self.files_switch.connect("notify::active", self.on_files_appearance_changed)
+        self.files_scale_handler = self.files_scale.connect("value-changed", self.on_files_appearance_changed)
+        self.update_files_opacity()
+        if files_error:
+            self.show_files_error(f"Cannot read saved Files appearance: {files_error}. "
+                                  "Use Repair invalid preferences on the Shell page.")
+        body = self.page_bodies["wallpapers"]
+        self.background = wallpapers.background()
+        self.wallpaper_labels = {}
+        self.wallpaper_restore = {}
+        self.wallpaper_previews = {}
+        self.wallpaper_preview_errors = {}
+        wallpaper_heading = Gtk.Label(label="Light and dark wallpapers", xalign=0)
+        wallpaper_heading.add_css_class("title-3")
+        body.append(wallpaper_heading)
+        body.append(Gtk.Label(label="GNOME switches these automatically with Light/Dark Style. "
+                                   "Images stay at their original location.", wrap=True, xalign=0))
+        for key, title in zip(wallpapers.KEYS, ("Light wallpaper", "Dark wallpaper")):
+            group = Adw.PreferencesGroup(title=title)
+            row = Gtk.Box(spacing=12)
+            preview = Gtk.Picture(valign=Gtk.Align.START, content_fit=Gtk.ContentFit.CONTAIN,
+                                  can_shrink=True)
+            preview.set_size_request(128, 80)
+            preview.update_property([Gtk.AccessibleProperty.LABEL], [f"{title} preview"])
+            self.wallpaper_previews[key] = preview
+            row.append(preview)
+            details = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4, hexpand=True)
+            label = Gtk.Label(xalign=0, wrap=True, selectable=True, max_width_chars=34)
+            self.wallpaper_labels[key] = label
+            details.append(label)
+            preview_error = Gtk.Label(xalign=0, wrap=True, max_width_chars=34)
+            preview_error.add_css_class("error")
+            self.wallpaper_preview_errors[key] = preview_error
+            details.append(preview_error)
+            row.append(details)
+            group.add(row)
+            buttons = Gtk.Box(spacing=8, margin_top=8, margin_bottom=8)
+            choose = Gtk.Button(label="Choose image…")
+            choose.connect("clicked", self.choose_wallpaper, key)
+            restore = Gtk.Button(label="Restore previous")
+            restore.connect("clicked", self.confirm_wallpaper_restore, key)
+            self.wallpaper_restore[key] = restore
+            buttons.append(choose)
+            buttons.append(restore)
+            group.add(buttons)
+            body.append(group)
+        self.wallpaper_status = Gtk.Label(xalign=0, wrap=True)
+        body.append(self.wallpaper_status)
+        self.background.connect("changed", self.refresh_wallpapers)
+        self.refresh_wallpapers()
+        self.set_content(content)
+        self.app_switch.connect("notify::active", self.on_app_appearance_changed)
+        self.app_scale.connect("value-changed", self.on_app_appearance_changed)
+        self.update_app_style()
+        if app_error:
+            self.show_app_error(f"Cannot read saved app appearance: {app_error}. "
+                                "Transparency is off. Use Repair invalid preferences on the Shell page.")
+        self.scale.connect("value-changed", self.on_changed)
+        self.mode.connect("notify::selected", lambda *_args: self.queue_patch({
+            "shell": {"glass_mode": "frost" if self.mode.get_selected() == 0 else "crystal"}}))
+        self.solid_switch.connect("notify::active", lambda *_: self.queue_patch({
+            "shell": {"solid": self.solid_switch.get_active()}}))
+        self.boost_switch.connect("notify::active", lambda *_: self.queue_patch({
+            "shell": {"readability_boost": self.boost_switch.get_active()}}))
+        self.blur_switch.connect("notify::active", lambda *_: self.queue_patch({
+            "shell": {"background_blur": self.blur_switch.get_active()}}))
+        self.scale.set_sensitive(not self.shell_settings["solid"])
+        self.refresh_overview()
+        self.repair.set_visible(bool(self.invalid_sections))
+        self.connect("close-request", self.on_close)
+        if error:
+            self.show_error(f"Cannot read your saved setting: {error}\n"
+                            "Controls show defaults, not saved values. Choose a style/level "
+                            "or Reset to replace the invalid setting.")
+
+    def open_diagnostics(self, *_args):
+        from diagnostics_ui import DiagnosticsWindow
+        self.diagnostics_window = DiagnosticsWindow(self)
+        self.diagnostics_window.present()
+
+    def update_page_navigation(self, *_args):
+        width = self.get_width() or self.get_default_size()[0]
+        compact = width < 420
+        self.navigation.set_visible(not compact)
+        self.compact_navigation.set_visible(compact)
+
+    def on_compact_navigation_selected(self, *_args):
+        pages = ("shell", "applications", "wallpapers")
+        selected = self.compact_navigation.get_selected()
+        if selected < len(pages):
+            self.pages.set_visible_child_name(pages[selected])
+
+    def sync_compact_navigation(self, *_args):
+        pages = ("shell", "applications", "wallpapers")
+        name = self.pages.get_visible_child_name()
+        selected = pages.index(name) if name in pages else 0
+        if self.compact_navigation.get_selected() != selected:
+            self.compact_navigation.set_selected(selected)
+
+    def update_app_style(self, *_args):
+        enabled = self.app_appearance["enabled"]
+        self.app_scale.set_sensitive(self.app_switch.get_active())
+        if not enabled:
+            self.remove_css_class("yaru-settings-glass")
+        alpha = app_opacity(self.app_appearance, self.applied_glass_mode,
+                            self.style_manager.get_dark(), self.shell_settings["readability_boost"])
+        self.app_css.load_from_data(f"""
+window.yaru-settings-glass {{
+  background-color: alpha(@window_bg_color, {alpha:.6f});
+  {gtk_material(self.applied_glass_mode, self.style_manager.get_dark())}
+}}
+window.yaru-settings-glass headerbar {{
+  background: transparent;
+  box-shadow: none;
+}}
+window.yaru-settings-glass .boxed-list {{
+  background-color: @view_bg_color;
+}}
+window.yaru-settings-window label.dim-label,
+window.yaru-settings-window .subtitle,
+window.yaru-settings-window headerbar label {{
+  color: @window_fg_color;
+  opacity: 1;
+}}
+""".encode())
+        if enabled:
+            self.add_css_class("yaru-settings-glass")
+
+    def show_app_error(self, message):
+        diagnostics.event("settings", "apply", "failure", level="ERROR", section="app")
+        self.pages.set_visible_child_name("applications")
+        self.app_status.add_css_class("error")
+        self.app_status.set_label(message)
+        self.app_retry.set_visible(True)
+        print(f"yaru-glass-settings: {message}", file=sys.stderr, flush=True)
+
+    def on_app_appearance_changed(self, *_args):
+        value = {"enabled": self.app_switch.get_active(),
+                 "transparency": int(self.app_scale.get_value())}
+        self.app_percent.set_label(f"{value['transparency']}%")
+        self.app_scale.set_sensitive(value["enabled"])
+        self.queue_patch({"app": value})
+
+    def do_unrealize(self):
+        self.style_manager.disconnect(self.dark_changed_id)
+        self.dark_changed_id = None
+        self.interface.disconnect(self.theme_changed_id)
+        self.theme_changed_id = None
+        Gtk.StyleContext.remove_provider_for_display(self.get_display(), self.app_css)
+        Adw.ApplicationWindow.do_unrealize(self)
+
+    def do_realize(self):
+        if self.dark_changed_id is None:
+            Gtk.StyleContext.add_provider_for_display(
+                self.get_display(), self.app_css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 1)
+            self.dark_changed_id = self.style_manager.connect("notify::dark", self.update_app_style)
+            self.update_app_style()
+        if self.theme_changed_id is None:
+            self.theme_changed_id = self.interface.connect("changed::gtk-theme", self.on_theme_changed)
+        Adw.ApplicationWindow.do_realize(self)
+
+    def refresh_wallpapers(self, *_args):
+        try:
+            records = wallpapers.read_backup()
+            for key in wallpapers.KEYS:
+                uri = self.background.get_string(key)
+                file = Gio.File.new_for_uri(uri) if uri else None
+                self.wallpaper_labels[key].set_label(file.get_parse_name() if file else "No image selected")
+                self.wallpaper_restore[key].set_sensitive(key in records)
+                self.refresh_wallpaper_preview(key, file)
+        except (OSError, ValueError) as exc:
+            self.wallpaper_status.set_label(f"Wallpaper backup error: {exc}")
+            self.wallpaper_status.add_css_class("error")
+
+    def show_files_error(self, message):
+        diagnostics.event("settings", "apply", "failure", level="ERROR", section="files")
+        self.pages.set_visible_child_name("applications")
+        self.files_status.add_css_class("error")
+        self.files_status.set_label(message)
+        self.files_retry.set_visible(True)
+        print(f"yaru-glass-settings: {message}", file=sys.stderr, flush=True)
+
+    def update_files_opacity(self):
+        percent = round(files_appearance.opacity(self.files_saved, self.applied_glass_mode,
+                                                self.shell_settings["readability_boost"]) * 100)
+        self.files_opacity.set_label(
+            f"Saved background: {percent}% opaque ({100 - percent}% see-through). "
+            "File content stays 100% opaque. Slider is a relative level, not literal transparency.")
+
+    def set_files_preset(self, _button, enabled, level):
+        self.files_switch.handler_block(self.files_switch_handler)
+        self.files_scale.handler_block(self.files_scale_handler)
+        try:
+            self.files_switch.set_active(enabled)
+            self.files_scale.set_value(level)
+        finally:
+            self.files_switch.handler_unblock(self.files_switch_handler)
+            self.files_scale.handler_unblock(self.files_scale_handler)
+        self.on_files_appearance_changed()
+
+    def confirm_files_restart(self, _button):
+        if self.process is not None or self.requested is not None:
+            self.files_status.set_label("Wait for appearance changes to finish before restarting Files.")
+            return
+        dialog = Adw.MessageDialog(
+            transient_for=self, heading="Restart Files?",
+            body="This closes all Files windows and reopens your Home folder. "
+                 "Finish all copies, moves and other file operations first. "
+                 "Only continue when no transfers are running.")
+        dialog.add_response("cancel", "Cancel")
+        dialog.add_response("restart", "Transfers finished — Restart")
+        dialog.set_response_appearance("restart", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.set_default_response("cancel")
+        dialog.set_close_response("cancel")
+        dialog.connect("response", self.on_files_restart_confirmed)
+        dialog.present()
+
+    def on_files_restart_confirmed(self, _dialog, response):
+        if response != "restart" or self.files_restart_process is not None or self.files_restart_watch:
+            return
+        self.files_restart_operation = diagnostics.new_operation()
+        diagnostics.event("settings", "restart", "requested", section="files",
+                          operation=self.files_restart_operation)
+        self.files_restart.set_sensitive(False)
+        self.pages.set_sensitive(False)
+        self.files_status.set_label("Stopping Files…")
+        try:
+            self.files_restart_process = Gio.Subprocess.new(
+                ["nautilus", "--quit"], Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE)
+            self.files_restart_process.communicate_utf8_async(None, None, self.on_files_quit, None)
+        except GLib.Error as exc:
+            self.finish_files_restart(str(exc))
+
+    def on_files_quit(self, process, result, _data=None):
+        try:
+            _ok, stdout, stderr = process.communicate_utf8_finish(result)
+            if not process.get_successful():
+                diagnostic = stderr.strip() or stdout.strip() or "Files refused to quit."
+                connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+                connection.call(
+                    "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus",
+                    "NameHasOwner", GLib.Variant("(s)", ("org.gnome.Nautilus",)),
+                    GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, 10000, None,
+                    self.on_files_quit_checked, diagnostic)
+                return
+            self.files_restart_process = None
+            self.files_restart_timeout = GLib.timeout_add_seconds(
+                10, self.files_restart_expired)
+            self.files_restart_watch = Gio.bus_watch_name(
+                Gio.BusType.SESSION, "org.gnome.Nautilus", Gio.BusNameWatcherFlags.NONE,
+                None, self.on_files_vanished)
+        except (GLib.Error, ValueError) as exc:
+            self.finish_files_restart(str(exc))
+
+    def on_files_quit_checked(self, connection, result, diagnostic):
+        try:
+            if connection.call_finish(result).unpack()[0]:
+                self.finish_files_restart(diagnostic)
+                return
+        except GLib.Error as exc:
+            self.finish_files_restart(f"{diagnostic}\nCould not verify Files exit: {exc}")
+            return
+        print(f"yaru-glass-settings: Files quit reported: {diagnostic}; "
+              "session D-Bus confirmed exit.", file=sys.stderr, flush=True)
+        self.files_restart_process = None
+        self.on_files_vanished(connection, "org.gnome.Nautilus")
+
+    def on_files_vanished(self, connection, _name):
+        if self.files_restart_watch:
+            Gio.bus_unwatch_name(self.files_restart_watch)
+            self.files_restart_watch = 0
+        if self.files_restart_timeout:
+            GLib.source_remove(self.files_restart_timeout)
+            self.files_restart_timeout = 0
+        if connection is None:
+            self.finish_files_restart("Session D-Bus is unavailable.")
+            return
+        self.files_status.set_label("Opening Files with the saved appearance…")
+        connection.call(
+            "org.gnome.Nautilus", "/org/gnome/Nautilus", "org.freedesktop.Application", "Open",
+            GLib.Variant("(asa{sv})", ([Path.home().as_uri()], {})), None,
+            Gio.DBusCallFlags.NONE, 10000, None, self.on_files_opened)
+
+    def on_files_opened(self, connection, result):
+        try:
+            connection.call_finish(result)
+        except GLib.Error as exc:
+            self.finish_files_restart(str(exc))
+            return
+        self.finish_files_restart()
+
+    def files_restart_expired(self):
+        self.files_restart_timeout = 0
+        self.finish_files_restart("Files did not exit within 10 seconds. It was not force-killed.")
+        return GLib.SOURCE_REMOVE
+
+    def finish_files_restart(self, error=None):
+        diagnostics.event("settings", "restart", "failure" if error else "confirmed",
+                          level="ERROR" if error else "INFO", section="files",
+                          operation=getattr(self, "files_restart_operation", None))
+        self.files_restart_process = None
+        if self.files_restart_watch:
+            Gio.bus_unwatch_name(self.files_restart_watch)
+            self.files_restart_watch = 0
+        if self.files_restart_timeout:
+            GLib.source_remove(self.files_restart_timeout)
+            self.files_restart_timeout = 0
+        self.files_restart.set_sensitive(True)
+        self.pages.set_sensitive(True)
+        if error:
+            self.show_files_error(f"Could not restart Files: {error}")
+        else:
+            self.files_live_confirmed = True
+            self.files_status.remove_css_class("error")
+            self.files_status.set_label(
+                "Files restarted with the saved appearance." if all(self.integration_state()) else
+                "Files restarted, but the project GTK theme or GTK4 link is inactive; saved CSS may not be loaded.")
+            self.files_retry.set_visible(False)
+            self.refresh_overview()
+
+    def on_files_appearance_changed(self, *_args):
+        value = {"enabled": self.files_switch.get_active(),
+                 "transparency": int(self.files_scale.get_value())}
+        self.files_percent.set_label(f"{value['transparency']}%")
+        self.files_scale.set_sensitive(value["enabled"])
+        self.queue_patch({"files": value})
+
+    def refresh_wallpaper_preview(self, key, file):
+        preview = self.wallpaper_previews[key]
+        error = self.wallpaper_preview_errors[key]
+        preview.set_paintable(None)
+        error.set_label("")
+        error.set_visible(False)
+        if file is None:
+            return
+        try:
+            path = file.get_path()
+            if path is None:
+                raise ValueError("Only local image previews are supported.")
+            image = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, 128, 80, True)
+            preview.set_paintable(Gdk.Texture.new_for_pixbuf(image))
+        except (OSError, ValueError, GLib.Error) as exc:
+            error.set_label(f"Preview unavailable: {exc}")
+            error.set_visible(True)
+            print(f"yaru-glass-settings: wallpaper preview: {exc}", file=sys.stderr, flush=True)
+
+    def choose_wallpaper(self, _button, key):
+        chooser = Gtk.FileChooserNative.new(
+            "Choose wallpaper", self, Gtk.FileChooserAction.OPEN, "Select", "Cancel")
+        images = Gtk.FileFilter()
+        images.set_name("Images")
+        images.add_pixbuf_formats()
+        chooser.add_filter(images)
+        chooser.connect("response", self.on_wallpaper_chosen, key)
+        self.chooser = chooser
+        chooser.show()
+
+    def on_wallpaper_chosen(self, chooser, response, key):
+        try:
+            if response == Gtk.ResponseType.ACCEPT:
+                file = chooser.get_file()
+                if file is None or file.get_path() is None:
+                    raise ValueError("Choose an image on this computer.")
+                wallpapers.set_wallpaper(key, file.get_path())
+                self.wallpaper_status.remove_css_class("error")
+                self.wallpaper_status.set_label("Wallpaper saved by GNOME.")
+                self.refresh_wallpapers()
+        except (OSError, ValueError, GLib.Error) as exc:
+            self.wallpaper_status.add_css_class("error")
+            self.wallpaper_status.set_label(f"Could not set wallpaper: {exc}")
+            print(f"yaru-glass-settings: {exc}", file=sys.stderr, flush=True)
+        finally:
+            chooser.destroy()
+            self.chooser = None
+
+    def restore_wallpaper(self, _button, key):
+        try:
+            wallpapers.restore_slot(key)
+            self.refresh_wallpapers()
+            self.wallpaper_status.remove_css_class("error")
+            self.wallpaper_status.set_label("Restored the previous wallpaper, or kept your newer external choice.")
+        except (OSError, ValueError, GLib.Error) as exc:
+            self.wallpaper_status.add_css_class("error")
+            self.wallpaper_status.set_label(f"Could not restore wallpaper: {exc}")
+            print(f"yaru-glass-settings: {exc}", file=sys.stderr, flush=True)
+
+    def confirm_wallpaper_restore(self, _button, key):
+        self.confirm_action("Restore previous wallpaper?",
+                            "Restores this slot's backed-up image only if your newer external choice "
+                            "would not be overwritten.", lambda: self.restore_wallpaper(None, key))
+
+    def snapshot(self):
+        return {"shell": self.shell_settings, "app": self.app_appearance, "files": self.files_saved}
+
+    def integration_state(self):
+        active = self.interface.get_string("gtk-theme") in ("Yaru-Glass", "Yaru-Glass-dark")
+        gtk_css = Path.home() / ".config/gtk-4.0/gtk.css"
+        target = Path.home() / ".local/share/themes/Yaru-Glass/gtk-4.0/libadwaita.css"
+        linked = gtk_css.is_symlink() and gtk_css.resolve() == target
+        return active, linked
+
+    def refresh_overview(self, *_args):
+        active, linked = self.integration_state()
+        self.overview.set_label(
+            ("Invalid preferences: displayed defaults are not saved.\n" if self.invalid_sections else "") +
+            f"Saved preset: {'Unknown' if self.invalid_sections else preset_name(self.snapshot())} · "
+            f"Readability boost: {'On' if self.shell_settings['readability_boost'] else 'Off'}\n"
+            f"Shell: {self.shell_settings['glass_mode'].title()} / {self.shell_settings['transparency']} · "
+            f"Solid: {'On' if self.shell_settings['solid'] else 'Off'}\n"
+            f"Dynamic blur: {'suppressed by Solid' if self.shell_settings['solid'] else 'On' if self.shell_settings['background_blur'] else 'Off'} "
+            "(saved preference; live pixels not inspected)\n"
+            f"Project GTK theme: {'active' if active else 'inactive'} · "
+            f"GTK4 link: {'configured' if linked else 'not configured'}\n"
+            f"Files: {'restart confirmed in this session' if self.files_live_confirmed else 'live CSS unknown; restart if needed'}. "
+            "Shell pixels are not inspected.")
+
+    def on_theme_changed(self, *_args):
+        self.files_live_confirmed = False
+        self.files_status.set_label("GTK theme changed; live Files CSS is unknown. "
+                                    "Restart Files if needed, after finishing transfers.")
+        self.refresh_overview()
+
+    def confirm_action(self, heading, body, action):
+        if self.process is not None or self.requested is not None or not self.files_restart.get_sensitive():
+            self.status.set_label("Finish the current operation before confirming another change.")
+            return
+        dialog = Adw.MessageDialog(transient_for=self, heading=heading, body=body)
+        dialog.add_response("cancel", "Cancel")
+        dialog.add_response("apply", "Apply")
+        dialog.set_default_response("cancel")
+        dialog.set_close_response("cancel")
+        dialog.connect("response", lambda _dialog, response: action() if response == "apply" else None)
+        dialog.present()
+
+    def confirm_preset(self, _button):
+        name = self.preset.get_selected_item().get_string()
+        patch = preset_values(name)
+        body = format_confirmation_changes(self.snapshot(), patch, self.invalid_sections)
+        self.confirm_action(f"Apply {name}?", body +
+                            "\n\nReadability boost, the blur preference and wallpapers stay unchanged. "
+                            "Files requires a separate confirmed restart; it will not restart automatically.",
+                            lambda: self.queue_patch(patch))
+
+    def confirm_reset(self, section, patch):
+        repair = section == "invalid preferences"
+        heading = "Repair invalid preferences?" if repair else f"Reset {section}?"
+        body = format_confirmation_changes(self.snapshot(), patch, self.invalid_sections)
+        consequence = ("\n\nOnly invalid settings in the listed sections will be replaced with defaults."
+                       if repair else "\n\nOnly the listed settings will be reset.")
+        consequence += " Other sections and wallpapers stay unchanged."
+        if "files" in patch:
+            consequence += " Files may require a separate confirmed restart; Files will not restart automatically."
+        self.confirm_action(heading, body + consequence,
+                            lambda: self.queue_patch(patch))
+
+    def confirm_repair(self, _button):
+        defaults = {"shell": validate_settings({"transparency": 25}),
+                    "app": {"enabled": False, "transparency": 25},
+                    "files": {"enabled": False, "transparency": 25}}
+        patch = {name: defaults[name] for name in sorted(self.invalid_sections)}
+        if patch:
+            self.confirm_reset("invalid preferences", patch)
+
+    def on_changed(self, _scale):
+        self.percent.set_label(f"{int(self.scale.get_value())}%")
+        self.queue_patch({"shell": {"transparency": int(self.scale.get_value())}})
+
+    def on_reset(self, _button):
+        patch = {"transparency": 25, "glass_mode": "frost", "solid": False, "background_blur": True}
+        if self.invalid_shell:
+            patch["readability_boost"] = False
+        self.confirm_reset("Shell (invalid configuration will be replaced, including boost)"
+                           if self.invalid_shell else "Shell", {"shell": patch})
+
+    def queue_apply(self):
+        self.queue_patch({"shell": {
+            "transparency": int(self.scale.get_value()),
+            "glass_mode": "frost" if self.mode.get_selected() == 0 else "crystal",
+        }})
+
+    def retry_failed(self, *_args):
+        diagnostics.event("settings", "retry", "requested")
+        if self.failed_patch:
+            self.queue_patch(self.failed_patch)
+
+    def queue_patch(self, patch):
+        if self.syncing:
+            return
+        if not self.files_restart.get_sensitive():
+            self.files_status.set_label("Wait for the Files restart to finish before changing appearance.")
+            return
+        if self.requested is None:
+            self.requested = {}
+        for section, fields in patch.items():
+            self.requested.setdefault(section, {}).update(fields)
+        if self.timeout_id:
+            GLib.source_remove(self.timeout_id)
+        self.status.remove_css_class("error")
+        self.status.set_label("Waiting to apply…")
+        if "app" in patch:
+            self.app_status.set_label("Waiting to apply; previous app appearance remains active.")
+        if "files" in patch:
+            self.files_status.set_label("Waiting to save; Files has not been restarted.")
+        self.retry.set_visible(False)
+        self.timeout_id = GLib.timeout_add(400, self.apply_pending)
+
+    def apply_pending(self):
+        self.timeout_id = 0
+        if self.process is not None or self.requested is None:
+            return GLib.SOURCE_REMOVE
+        target = self.requested
+        self.requested = None
+        self.pages.set_sensitive(False)
+        self.status.set_label("Applying appearance…")
+        self.worker_operation = diagnostics.new_operation()
+        diagnostics.event("settings", "apply", "requested", operation=self.worker_operation)
+        try:
+            self.process = Gio.Subprocess.new(
+                ["/usr/bin/env", f"YARU_GLASS_OPERATION_ID={self.worker_operation}",
+                 "/usr/bin/python3", str(ROOT / "scripts/build.py"), "--shell-only",
+                 "--appearance-patch", json.dumps(target)],
+                Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE)
+            self.process.communicate_utf8_async(None, None, self.on_applied, target)
+        except GLib.Error as exc:
+            diagnostics.event("settings", "worker", "failure", level="ERROR", error=exc,
+                              operation=self.worker_operation)
+            self.process = None
+            self.failed_patch = target
+            self.show_error(str(exc))
+        return GLib.SOURCE_REMOVE
+
+    def on_applied(self, process, result, target):
+        self.process = None
+        self.pages.set_sensitive(True)
+        self.failed_patch = target
+        try:
+            _ok, stdout, stderr = process.communicate_utf8_finish(result)
+        except GLib.Error as exc:
+            diagnostics.event("settings", "worker", "failure", level="ERROR", error=exc,
+                              operation=getattr(self, "worker_operation", None))
+            self.show_error(str(exc))
+            return
+        if not process.get_successful():
+            diagnostics.event("settings", "worker", "failure", level="ERROR",
+                              operation=getattr(self, "worker_operation", None))
+            self.show_error(stderr.strip() or stdout.strip() or "Theme build failed.")
+            return
+        try:
+            snapshot = json.loads(stdout)
+            shell = validate_settings(snapshot["shell"])
+            from theme_settings import validate_app_appearance
+            app = validate_app_appearance(snapshot["app"])
+            files = validate_app_appearance(snapshot["files"])
+        except (ValueError, KeyError, TypeError) as exc:
+            diagnostics.event("settings", "protocol", "failure", level="ERROR", error=exc,
+                              operation=getattr(self, "worker_operation", None))
+            self.show_error(f"Worker result unavailable; saved/live state is uncertain. Reopen Settings. {exc}")
+            return
+        diagnostics.event("settings", "apply", "success",
+                          operation=getattr(self, "worker_operation", None))
+        previous = self.snapshot()
+        self.shell_settings, self.app_appearance, self.files_saved = shell, app, files
+        self.invalid_shell = False
+        self.invalid_sections.clear()
+        self.repair.set_visible(False)
+        self.applied_glass_mode = shell["glass_mode"]
+        self.syncing = True
+        try:
+            self.mode.set_selected(0 if shell["glass_mode"] == "frost" else 1)
+            self.scale.set_value(shell["transparency"])
+            self.solid_switch.set_active(shell["solid"])
+            self.boost_switch.set_active(shell["readability_boost"])
+            self.blur_switch.set_active(shell["background_blur"])
+            self.app_switch.set_active(app["enabled"])
+            self.app_scale.set_value(app["transparency"])
+            self.files_switch.set_active(files["enabled"])
+            self.files_scale.set_value(files["transparency"])
+            self.scale.set_sensitive(not shell["solid"])
+        finally:
+            self.syncing = False
+        self.update_app_style()
+        self.update_files_opacity()
+        self.refresh_overview()
+        self.app_status.remove_css_class("error")
+        self.app_status.set_label("Applied and saved for this app only.")
+        self.app_retry.set_visible(False)
+        self.files_retry.set_visible(False)
+        if previous["files"] != files or any(previous["shell"][key] != shell[key]
+                                             for key in ("glass_mode", "readability_boost")):
+            self.files_live_confirmed = False
+            self.files_status.remove_css_class("error")
+            self.files_status.set_label(
+                "Saved — restart required. Fully quit and reopen Files, or use Restart Files… "
+                "after finishing transfers. Applies while the project theme is active.")
+        self.refresh_overview()
+        self.failed_patch = None
+        if self.requested is not None:
+            if not self.timeout_id:
+                self.apply_pending()
+            return
+        if "shell" not in target:
+            self.status.set_label("Saved Files CSS — restart required. Shell unchanged." if "files" in target
+                                  else "Applied and saved Settings-app appearance. Shell unchanged.")
+        else:
+            reloaded = snapshot.get("shell_reload_requested")
+            self.status.set_label("Saved; " + (
+                "Shell reload requested." if reloaded is True else
+                "project Shell theme not selected — not activated automatically." if reloaded is False else
+                "Shell reload state unknown; reopen Settings if needed."))
+        if self.closing:
+            self.close()
+
+    def show_error(self, message):
+        diagnostics.event("settings", "apply", "failure", level="ERROR",
+                          operation=getattr(self, "worker_operation", None))
+        self.pages.set_sensitive(True)
+        self.pages.set_visible_child_name(
+            "shell" if not self.failed_patch or "shell" in self.failed_patch else "applications")
+        print(f"yaru-glass-settings: {message}", file=sys.stderr, flush=True)
+        if self.timeout_id:
+            GLib.source_remove(self.timeout_id)
+            self.timeout_id = 0
+        self.requested = None
+        self.closing = False
+        self.scale.set_sensitive(not self.solid_switch.get_active())
+        self.mode.set_sensitive(True)
+        self.reset.set_sensitive(True)
+        self.status.add_css_class("error")
+        self.status.set_label(f"Could not apply or save the setting.\n{message}")
+        self.retry.set_visible(True)
+        if self.failed_patch and "app" in self.failed_patch:
+            self.show_app_error(message)
+        if self.failed_patch and "files" in self.failed_patch:
+            self.show_files_error(message)
+        if self.failed_patch and "shell" in self.failed_patch:
+            self.pages.set_visible_child_name("shell")
+
+    def on_close(self, _window):
+        if not self.files_restart.get_sensitive():
+            self.files_status.set_label("Please wait for the Files restart to finish.")
+            return True
+        if self.process is None and self.requested is None:
+            return False
+        self.closing = True
+        self.scale.set_sensitive(False)
+        self.mode.set_sensitive(False)
+        self.reset.set_sensitive(False)
+        if self.timeout_id:
+            GLib.source_remove(self.timeout_id)
+            self.timeout_id = 0
+        self.apply_pending()
+        return True
+
+
+class SettingsApplication(Adw.Application):
+    def __init__(self):
+        super().__init__(application_id="org.yaru.glass.Settings")
+
+    def do_activate(self):
+        window = self.get_active_window()
+        if window is None:
+            diagnostics.event("settings", "startup", "start")
+            window = SettingsWindow(self)
+        window.present()
+
+
+if __name__ == "__main__":
+    sys.exit(SettingsApplication().run(sys.argv))

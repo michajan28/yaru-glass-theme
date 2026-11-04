@@ -1,0 +1,668 @@
+/* ==========================================================================
+ * Yaru Glass — GNOME Shell overrides for translucent light/dark surfaces
+ * Appended to the Yaru-blue${variant_suffix} stylesheet by build.py.
+ * Layered tints pair with managed, rounded dynamic Blur my Shell backgrounds.
+ * ========================================================================== */
+
+/* ---------- Menu bar (top panel) ---------- */
+#panel {
+  background-color: ${panel_bg} !important;
+  box-shadow: inset 0 -1px 0 0 ${panel_border} !important;
+  font-weight: normal;
+  height: 30px;
+}
+#panel:overview,
+#panel.unlock-screen,
+#panel.login-screen {
+  background-color: transparent !important;
+  background-gradient-direction: none;
+  box-shadow: none !important;
+}
+#panel .panel-button,
+#panel .panel-button.clock-display {
+  color: ${panel_fg};
+  font-weight: normal;
+  border-width: 2px;
+  border-radius: 999px;
+  -natural-hpadding: 10px;
+  -minimum-hpadding: 6px;
+}
+#panel:overview .panel-button,
+#panel.unlock-screen .panel-button,
+#panel.login-screen .panel-button,
+#panel:overview .panel-button.clock-display,
+#panel.unlock-screen .panel-button.clock-display,
+#panel.login-screen .panel-button.clock-display {
+  color: #ffffff;
+}
+#panel .panel-button:hover,
+#panel .panel-button:focus,
+#panel .panel-button.clock-display:hover .clock,
+#panel .panel-button.clock-display:focus .clock {
+  box-shadow: inset 0 0 0 100px ${panel_hover};
+}
+#panel .panel-button:active,
+#panel .panel-button:checked,
+#panel .panel-button:active:hover,
+#panel .panel-button:checked:hover,
+#panel .panel-button.clock-display:active .clock,
+#panel .panel-button.clock-display:checked .clock {
+  box-shadow: inset 0 0 0 100px ${panel_active};
+}
+#panel .panel-button.clock-display:hover,
+#panel .panel-button.clock-display:focus,
+#panel .panel-button.clock-display:active,
+#panel .panel-button.clock-display:checked {
+  box-shadow: none;
+}
+#panel .panel-button.clock-display .clock {
+  font-weight: 500;
+}
+#panel .panel-button#panelActivities .workspace-dot {
+  background-color: ${panel_fg} !important;
+}
+#panel:overview .panel-button#panelActivities .workspace-dot,
+#panel.unlock-screen .panel-button#panelActivities .workspace-dot,
+#panel.login-screen .panel-button#panelActivities .workspace-dot {
+  background-color: #ffffff !important;
+}
+#panel .panel-button .system-status-icon {
+  color: inherit !important;
+  icon-size: 16px;
+  padding: 0 4px;
+  margin: 0 2px;
+}
+
+/* ---------- Popup menus ---------- */
+.popup-menu {
+  color: ${fg};
+  min-width: 14em;
+}
+.popup-menu-content,
+.candidate-popup-content {
+  background-color: ${menu_bg};
+  border: none;
+  border-radius: 16px;
+  padding: 5px;
+  box-shadow: 0 3px 10px 0 ${glass_shadow};
+}
+.popup-menu-boxpointer,
+.candidate-popup-boxpointer {
+  -arrow-background-color: transparent;
+  -arrow-border-color: transparent;
+  -arrow-border-width: 0;
+  -arrow-rise: 0;
+}
+.datemenu-popover {
+  border-radius: 28px;
+}
+.popup-menu-item,
+.popup-sub-menu .popup-menu-item {
+  color: ${fg};
+  border-radius: 9px;
+  padding: 5px 10px;
+  spacing: 8px;
+  min-height: 1.5em;
+}
+.popup-menu-item:hover,
+.popup-menu-item:focus,
+.popup-sub-menu .popup-menu-item:hover,
+.popup-sub-menu .popup-menu-item:focus {
+  color: #ffffff;
+  background-color: ${accent};
+}
+.popup-menu-item:active,
+.popup-menu-item:active:hover,
+.popup-menu-item:active:focus,
+.popup-sub-menu .popup-menu-item:active,
+.popup-sub-menu .popup-menu-item:active:hover {
+  color: #ffffff;
+  background-color: ${accent_active};
+}
+.popup-menu-item:checked,
+.popup-menu-item:checked:hover {
+  color: ${fg};
+  background-color: ${hover_bg};
+  border-radius: 9px 9px 0 0 !important;
+}
+.popup-menu-item:insensitive,
+.popup-sub-menu .popup-menu-item:insensitive {
+  color: ${fg_dim};
+  background-color: transparent !important;
+}
+.popup-sub-menu {
+  background-color: ${submenu_bg};
+  border-radius: 0 0 9px 9px;
+  box-shadow: none;
+}
+.popup-sub-menu .popup-menu-item:last-child,
+.popup-sub-menu .popup-menu-section:last-child .popup-menu-item:last-child {
+  border-radius: 0 0 9px 9px;
+}
+.popup-separator-menu-item .popup-separator-menu-item-separator,
+.popup-sub-menu .popup-separator-menu-item .popup-separator-menu-item-separator {
+  background-color: ${separator};
+  height: 1px;
+}
+.popup-separator-menu-item {
+  padding: 4px 10px;
+}
+.popup-inactive-menu-item {
+  color: ${fg};
+}
+.popup-inactive-menu-item:insensitive {
+  color: ${fg_dim};
+}
+
+/* ---------- Quick Settings (Control Center) ---------- */
+.popup-menu-content.quick-settings,
+.quick-settings {
+  background-color: ${menu_bg};
+  border: none;
+  border-radius: 28px;
+  padding: 14px;
+}
+.quick-settings-grid {
+  spacing-rows: 10px;
+  spacing-columns: 10px;
+}
+.quick-settings .quick-toggle,
+.quick-settings .quick-menu-toggle .quick-toggle-arrow {
+  color: ${fg};
+  background-color: ${tile_bg};
+  box-shadow: none !important;
+  border: none;
+}
+.quick-settings .quick-toggle:hover,
+.quick-settings .quick-toggle:focus,
+.quick-settings .quick-menu-toggle .quick-toggle-arrow:hover,
+.quick-settings .quick-menu-toggle .quick-toggle-arrow:focus {
+  background-color: ${tile_hover};
+}
+.quick-settings .quick-toggle:active,
+.quick-settings .quick-menu-toggle .quick-toggle-arrow:active {
+  background-color: ${tile_active};
+}
+.quick-settings .quick-toggle:checked,
+.quick-settings .quick-toggle:checked:focus,
+.quick-settings .quick-menu-toggle .quick-toggle-arrow:checked,
+.quick-settings .quick-menu-toggle .quick-toggle-arrow:checked:focus {
+  color: #ffffff;
+  background-color: ${accent};
+}
+.quick-settings .quick-toggle:checked:hover,
+.quick-settings .quick-menu-toggle .quick-toggle-arrow:checked:hover {
+  color: #ffffff;
+  background-color: ${accent_hover};
+}
+.quick-settings .quick-toggle:checked:active,
+.quick-settings .quick-menu-toggle .quick-toggle-arrow:checked:active {
+  color: #ffffff;
+  background-color: ${accent_active};
+}
+.quick-menu-toggle .quick-toggle-arrow,
+.quick-menu-toggle .quick-toggle-arrow:checked {
+  border-color: ${separator};
+}
+.quick-settings .quick-toggle .quick-toggle-title {
+  font-weight: 600;
+}
+.quick-toggle-menu {
+  background-color: ${menu_bg};
+  color: ${fg};
+  border-radius: 28px;
+  padding: 10px;
+}
+.quick-toggle-menu .header .icon {
+  background-color: ${tile_bg};
+}
+.quick-toggle-menu .header .icon.active {
+  background-color: ${accent};
+  color: #ffffff;
+}
+.quick-settings-system-item .icon-button,
+.quick-settings .icon-button {
+  color: ${fg};
+  background-color: ${tile_bg};
+  border-radius: 999px;
+}
+.quick-settings .quick-toggle,
+.quick-settings .quick-toggle:hover,
+.quick-settings .quick-toggle:checked,
+.quick-settings .quick-toggle:active,
+.quick-settings .quick-toggle-arrow,
+.quick-settings .quick-toggle-arrow:ltr,
+.quick-settings .quick-toggle-arrow:rtl,
+.quick-settings .icon-button,
+.quick-settings .quick-settings-system-item .button,
+.quick-settings .quick-slider .slider-bin {
+  box-shadow: none !important;
+  border-width: 0;
+  background-image: none;
+}
+.quick-settings .quick-toggle:focus,
+.quick-settings .quick-toggle-arrow:focus,
+.quick-settings .icon-button:focus,
+.quick-settings .quick-slider .slider-bin:focus,
+.quick-settings .quick-settings-system-item .button:focus {
+  box-shadow: inset 0 0 0 2px ${accent} !important;
+}
+.quick-settings .quick-toggle:checked:focus,
+.quick-settings .quick-toggle-arrow:checked:focus {
+  box-shadow: inset 0 0 0 2px #ffffff !important;
+}
+.quick-settings-system-item .icon-button:hover,
+.quick-settings .icon-button:hover,
+.quick-settings .icon-button:focus {
+  background-color: ${tile_hover};
+}
+.quick-settings-system-item .icon-button:active,
+.quick-settings .icon-button:active {
+  background-color: ${tile_active};
+}
+
+/* Sliders (volume, brightness) */
+.slider {
+  -barlevel-height: 6px;
+  -barlevel-background-color: ${slider_trough};
+  -barlevel-active-background-color: ${accent};
+  -barlevel-overdrive-color: #ff3b30;
+  -barlevel-border-width: 0;
+  -slider-handle-radius: 9px;
+  -slider-handle-border-width: 0;
+  color: #ffffff;
+}
+.quick-slider .slider-bin {
+  border-radius: 999px;
+}
+
+/* ---------- Date menu, calendar & notifications ---------- */
+#calendarArea,
+#calendarArea .message-list .message-list-placeholder,
+#calendarArea .datemenu-today-button .day-label,
+#calendarArea .datemenu-today-button .date-label,
+#calendarArea .datemenu-today-button:insensitive .day-label,
+#calendarArea .datemenu-today-button:insensitive .date-label,
+#calendarArea .events-button,
+#calendarArea .world-clocks-button,
+#calendarArea .weather-button,
+#calendarArea .world-clocks-button .world-clocks-header,
+#calendarArea .world-clocks-button .world-clocks-grid .world-clocks-timezone,
+#calendarArea .weather-button .weather-box .weather-header-box .weather-header,
+#calendarArea .calendar .calendar-month-header .calendar-month-label {
+  color: ${fg} !important;
+  text-shadow: none;
+}
+#calendarArea .message-list {
+  border-color: ${separator};
+}
+#calendarArea .calendar .calendar-day,
+#calendarArea .calendar .calendar-day.calendar-weekend,
+#calendarArea .calendar .calendar-day.calendar-other-month,
+#calendarArea .calendar .calendar-day.calendar-other-month.calendar-weekend,
+#calendarArea .calendar .calendar-day-heading,
+#calendarArea .calendar .calendar-week-number,
+#calendarArea .calendar .calendar-month-header .pager-button,
+#calendarArea .events-button .events-box .events-title,
+#calendarArea .events-button .events-box .events-list .event-placeholder,
+#calendarArea .events-button .events-box .events-list .event-box .event-time {
+  color: ${fg} !important;
+  text-shadow: none;
+}
+#calendarArea .calendar .calendar-day.calendar-other-month {
+  font-weight: normal;
+  font-style: italic;
+}
+#calendarArea .calendar,
+#calendarArea .datemenu-today-button,
+#calendarArea .events-button,
+#calendarArea .world-clocks-button,
+#calendarArea .weather-button,
+#calendarArea .message-list .message {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none;
+}
+#calendarArea .calendar .calendar-day,
+#calendarArea .calendar .calendar-day-heading,
+#calendarArea .calendar .calendar-week-number,
+#calendarArea .calendar .calendar-month-header .calendar-month-label,
+#calendarArea .calendar .calendar-month-header .pager-button {
+  background-color: transparent !important;
+}
+#calendarArea .calendar .calendar-day {
+  border-radius: 999px;
+  font-weight: normal;
+}
+#calendarArea .calendar .calendar-day.calendar-today {
+  background-color: ${accent} !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+#calendarArea .calendar .calendar-day:focus,
+#calendarArea .calendar .calendar-day:checked,
+#calendarArea .calendar .calendar-month-header .pager-button:focus,
+#calendarArea .datemenu-today-button:focus,
+#calendarArea .events-button:focus,
+#calendarArea .world-clocks-button:focus,
+#calendarArea .weather-button:focus,
+#calendarArea .message-list .message:focus {
+  box-shadow: inset 0 0 0 2px ${accent} !important;
+}
+.message .message-header .message-header-content .message-source-title {
+  font-weight: 600;
+}
+#calendarArea .message .message-header,
+#calendarArea .message .message-header .message-source-icon,
+#calendarArea .message .message-header .message-header-content .message-source-title,
+#calendarArea .message .message-header .message-header-content .event-time,
+.notification-banner .message-header,
+.notification-banner .message-header .message-source-icon,
+.notification-banner .message-header .message-header-content .message-source-title,
+.notification-banner .message-header .message-header-content .event-time {
+  color: ${fg} !important;
+  text-shadow: none;
+  icon-shadow: none;
+}
+.notification-banner,
+.notification-banner:ltr,
+.notification-banner:rtl,
+.notification-banner:hover,
+.notification-banner:focus,
+.notification-banner:active {
+  background-color: ${notification_bg};
+  color: ${fg};
+  border: none;
+  border-radius: 20px;
+  margin: 6px;
+  /* Yaru's negative directional padding overflows St sizing without a border. */
+  padding: 0;
+  box-shadow: 0 1px 3px 0 ${glass_shadow};
+}
+.notification-banner .message {
+  background-color: transparent;
+}
+.notification-button,
+.modal-dialog .modal-dialog-linked-button {
+  border-radius: 999px !important;
+}
+.notification-buttons-bin {
+  spacing: 8px;
+  padding: 4px 12px 12px;
+}
+.notification-button,
+.notification-button:ltr,
+.notification-button:rtl {
+  margin: 0 !important;
+  padding: 8px 14px;
+  border: none;
+  background-color: ${tile_bg};
+  color: ${fg};
+}
+.notification-button:hover,
+.notification-button:focus {
+  background-color: ${tile_hover};
+}
+
+/* ---------- Ubuntu Dock (glass Dock) ---------- */
+#dashtodockContainer #dash .dash-background,
+#dashtodockContainer.bottom #dash .dash-background,
+#dashtodockContainer.bottom.shrink #dash .dash-background,
+#dashtodockContainer.bottom.fixed #dash .dash-background,
+#dashtodockContainer.bottom.shrink.fixed #dash .dash-background {
+  background-color: ${dock_bg} !important;
+  border: none !important;
+  border-radius: 24px !important;
+  box-shadow: none !important;
+}
+#dashtodockContainer #dash .dash-separator {
+  background-color: ${separator};
+}
+#dashtodockContainer #dash .dash-item-container .app-well-app .overview-icon,
+#dashtodockContainer #dash .dash-item-container .show-apps .overview-icon {
+  border-radius: 14px;
+  background-color: transparent;
+  color: ${fg};
+}
+#dashtodockContainer #dash .dash-item-container .app-well-app:hover .overview-icon,
+#dashtodockContainer #dash .dash-item-container .show-apps:hover .overview-icon,
+#dashtodockContainer #dash .dash-item-container .app-well-app:focus .overview-icon {
+  background-color: ${hover_bg};
+}
+#dashtodockContainer #dash .dash-item-container .app-well-app.focused .overview-icon,
+#dashtodockContainer.bottom #dash .dash-item-container .app-well-app.focused .overview-icon {
+  background-color: transparent;
+}
+#dashtodockContainer #dash .dash-item-container .app-well-app:active .overview-icon {
+  background-color: ${tile_active};
+}
+#dashtodockContainer.bottom #dash .dash-item-container .app-well-app,
+#dashtodockContainer.bottom #dash .dash-item-container .show-apps,
+#dashtodockContainer.bottom.shrink #dash .dash-item-container .app-well-app,
+#dashtodockContainer.bottom.shrink #dash .dash-item-container .show-apps {
+  padding-top: 6px;
+  padding-bottom: 14px;
+}
+.dash-label,
+.dash-label.bottom {
+  background-color: ${menu_bg};
+  color: ${fg};
+  border: 1px solid ${glass_border};
+  border-radius: 9px;
+  padding: 4px 10px;
+  font-weight: normal;
+  box-shadow: 0 4px 14px 0 ${glass_shadow};
+}
+
+/* ---------- Overview, app grid & search ---------- */
+.search-entry {
+  border-radius: 999px;
+  background-color: ${entry_bg};
+  color: ${fg};
+  border: 1px solid ${glass_border};
+  box-shadow: none;
+  padding: 8px 14px;
+}
+.search-entry:hover {
+  background-color: ${entry_hover};
+}
+.search-entry:focus {
+  background-color: ${entry_focus};
+  border: 1px solid ${accent};
+  box-shadow: 0 0 0 3px ${accent_glow};
+  padding: 8px 14px;
+}
+.search-entry .search-entry-icon {
+  color: ${fg_dim};
+}
+.overview-tile,
+.grid-search-result,
+.app-folder {
+  border-radius: 22px;
+}
+.app-folder-dialog {
+  background-color: ${menu_bg};
+  border: 1px solid ${glass_border};
+  border-radius: 32px;
+}
+.search-section-content {
+  background-color: ${card_bg};
+  border-radius: 20px;
+}
+.list-search-result,
+.search-provider-icon {
+  border-radius: 12px;
+}
+
+/* ---------- App / window switcher (Cmd+Tab) ---------- */
+.switcher-list,
+.workspace-switcher {
+  background-color: ${menu_bg};
+  color: ${fg};
+  border: none;
+  border-radius: 28px;
+  padding: 14px;
+  box-shadow: 0 3px 10px 0 ${glass_shadow};
+}
+.switcher-list .item-box {
+  border-radius: 18px;
+  background-color: transparent;
+}
+.switcher-list .item-box:hover {
+  background-color: ${hover_bg};
+}
+.switcher-list .item-box:highlighted,
+.switcher-list .item-box:selected,
+.switcher-list .item-box:checked,
+.switcher-list .item-box:selected:hover {
+  background-color: ${tile_active};
+  color: ${fg};
+}
+.switcher-list .item-box:outlined {
+  border: 2px solid ${accent};
+}
+.switcher-arrow {
+  color: ${fg_dim};
+}
+
+/* ---------- OSD (volume / brightness) ---------- */
+.osd-window {
+  background-color: ${menu_bg};
+  color: ${fg};
+  border: none;
+  border-radius: 22px;
+  box-shadow: 0 3px 10px 0 ${glass_shadow};
+}
+.osd-window .level {
+  -barlevel-height: 6px;
+  -barlevel-background-color: ${slider_trough};
+  -barlevel-active-background-color: ${fg};
+  border-radius: 999px;
+}
+
+/* ---------- Modal dialogs ---------- */
+.modal-dialog,
+.run-dialog,
+.end-session-dialog {
+  background-color: ${dialog_bg};
+  color: ${fg};
+  border: none;
+  border-radius: 22px;
+  box-shadow: 0 3px 10px 0 ${glass_shadow};
+}
+.modal-dialog .modal-dialog-content-box {
+  margin-bottom: 24px;
+}
+/* The button row has no style class, so the inset comes from button margins.
+   !important is needed to beat Yaru's own !important first/last-child margins. */
+.modal-dialog .modal-dialog-linked-button,
+.modal-dialog .modal-dialog-linked-button:ltr,
+.modal-dialog .modal-dialog-linked-button:rtl {
+  background-color: ${tile_bg};
+  color: ${fg};
+  border: none;
+  box-shadow: none;
+  border-radius: 999px !important;
+  margin: 0 5px 16px 5px !important;
+  padding: 9px 18px;
+}
+.modal-dialog .modal-dialog-linked-button:first-child:ltr,
+.modal-dialog .modal-dialog-linked-button:last-child:rtl {
+  margin-left: 16px !important;
+}
+.modal-dialog .modal-dialog-linked-button:last-child:ltr,
+.modal-dialog .modal-dialog-linked-button:first-child:rtl {
+  margin-right: 16px !important;
+}
+.modal-dialog .modal-dialog-linked-button:first-child:last-child {
+  margin-left: 16px !important;
+  margin-right: 16px !important;
+}
+.modal-dialog .modal-dialog-linked-button:focus {
+  box-shadow: 0 0 0 3px ${accent_glow} !important;
+}
+.modal-dialog .modal-dialog-linked-button:hover,
+.modal-dialog .modal-dialog-linked-button:focus {
+  background-color: ${tile_hover};
+}
+.modal-dialog .modal-dialog-linked-button:active {
+  background-color: ${tile_active};
+}
+.modal-dialog .modal-dialog-linked-button:default,
+.modal-dialog .modal-dialog-linked-button:default:focus {
+  background-color: ${accent};
+  color: #ffffff;
+}
+.modal-dialog .modal-dialog-linked-button:default:hover {
+  background-color: ${accent_hover};
+}
+.modal-dialog .modal-dialog-linked-button:default:active {
+  background-color: ${accent_active};
+}
+.modal-dialog .modal-dialog-linked-button:default:focus {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55), 0 0 0 3px ${accent_glow} !important;
+}
+.modal-dialog .modal-dialog-linked-button.destructive-action {
+  background-color: #ff3b30;
+  color: #ffffff;
+}
+
+/* ---------- Generic shell buttons & tooltips ---------- */
+.button.default,
+.icon-button.default {
+  background-color: ${accent};
+  color: #ffffff;
+}
+.window-caption,
+.screenshot-ui-tooltip {
+  background-color: ${menu_bg};
+  color: ${fg};
+  border-radius: 9px;
+  border: 1px solid ${glass_border};
+}
+
+/* St gradients preserve the tint alpha while adding light through the surface. */
+#panel {
+  background-gradient-direction: vertical;
+  background-gradient-start: ${panel_bg_top};
+  background-gradient-end: ${panel_bg};
+}
+#panel:overview,
+#panel.unlock-screen,
+#panel.login-screen {
+  background-gradient-direction: none;
+}
+.popup-menu-content,
+.candidate-popup-content,
+.quick-settings,
+.quick-toggle-menu,
+.app-folder-dialog,
+.switcher-list,
+.workspace-switcher,
+.osd-window {
+  background-gradient-direction: vertical;
+  background-gradient-start: ${menu_bg_top};
+  background-gradient-end: ${menu_bg};
+}
+.popup-menu-content,
+.candidate-popup-content,
+.quick-settings {
+  box-shadow: inset 0 1px 0 0 ${material_highlight} !important;
+}
+/* Shell renders a banner's outer shadow as a square halo when it also has a gradient. */
+.notification-banner {
+  background-gradient-direction: none;
+}
+.modal-dialog,
+.run-dialog,
+.end-session-dialog {
+  background-gradient-direction: vertical;
+  background-gradient-start: ${dialog_bg_top};
+  background-gradient-end: ${dialog_bg};
+}
+#dashtodockContainer #dash .dash-background {
+  background-gradient-direction: vertical;
+  background-gradient-start: ${dock_bg_top};
+  background-gradient-end: ${dock_bg};
+  box-shadow: inset 0 1px 0 0 ${material_highlight} !important;
+}

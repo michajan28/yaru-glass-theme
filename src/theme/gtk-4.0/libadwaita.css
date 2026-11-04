@@ -1,0 +1,102 @@
+/* ==========================================================================
+ * Yaru Glass — GTK 4 / libadwaita overrides
+ * Installed as ~/.config/gtk-4.0/gtk.css (symlink) by yaru-glass-sync while a
+ * Yaru-Glass theme is active. Works for both light and dark: colors are
+ * either fixed glass colors or derived from libadwaita's named colors.
+ * ========================================================================== */
+
+/* ---------- glass accent (system blue) ---------- */
+@define-color accent_bg_color #007AFF;
+@define-color accent_fg_color #ffffff;
+@define-color accent_color mix(#007AFF, @window_fg_color, 0.12);
+@define-color yaru_accent_bg_color #007AFF;
+@define-color yaru_accent_color @accent_color;
+@define-color yaru_link_color @accent_color;
+@define-color yaru_link_visited_color mix(@accent_color, @window_fg_color, 0.25);
+
+/* ---------- Windows: larger glass corner radius ---------- */
+window.csd:not(.tiled):not(.tiled-top):not(.tiled-bottom):not(.tiled-left):not(.tiled-right):not(.maximized):not(.fullscreen) {
+  border-radius: 14px;
+}
+
+/* ---------- Traffic-light window buttons (kept on the right) ---------- */
+windowcontrols {
+  border-spacing: 2px;
+}
+windowcontrols > button,
+windowcontrols > button:hover,
+windowcontrols > button:active,
+windowcontrols > button:backdrop {
+  min-width: 14px;
+  min-height: 14px;
+  padding: 0 3px;
+  margin: 0;
+  background: none;
+  box-shadow: none;
+}
+windowcontrols > button > image {
+  -gtk-icon-size: 10px;
+  padding: 2px;
+  border-radius: 100%;
+  color: transparent;
+  -gtk-icon-shadow: none;
+  background-color: alpha(@window_fg_color, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  transition: color 120ms ease, filter 120ms ease;
+}
+windowcontrols > button.close > image { background-color: #ff5f57; }
+windowcontrols > button.minimize > image { background-color: #febc2e; }
+windowcontrols > button.maximize > image { background-color: #28c840; }
+
+/* Glyphs appear when hovering the button group, as on glass */
+windowcontrols:hover > button > image {
+  color: rgba(0, 0, 0, 0.6);
+}
+windowcontrols > button:active > image {
+  filter: brightness(0.82);
+}
+
+/* Unfocused windows: grey dots, colors return on hover */
+windowcontrols > button:backdrop > image,
+windowcontrols > button.close:backdrop > image,
+windowcontrols > button.minimize:backdrop > image,
+windowcontrols > button.maximize:backdrop > image {
+  background-color: alpha(@window_fg_color, 0.2);
+}
+windowcontrols:hover > button.close:backdrop > image { background-color: #ff5f57; }
+windowcontrols:hover > button.minimize:backdrop > image { background-color: #febc2e; }
+windowcontrols:hover > button.maximize:backdrop > image { background-color: #28c840; }
+
+/* ---------- Menus: glass-style accent highlight ---------- */
+popover.menu > contents,
+popover > contents {
+  border-radius: 14px;
+}
+popover.menu > contents {
+  padding: 5px;
+}
+popover.menu modelbutton {
+  border-radius: 7px;
+  min-height: 26px;
+}
+popover.menu modelbutton:hover,
+popover.menu modelbutton:selected,
+popover.menu modelbutton:focus:focus-visible {
+  color: @accent_fg_color;
+  background-color: @accent_bg_color;
+}
+popover.menu modelbutton:hover accelerator,
+popover.menu modelbutton:selected accelerator {
+  color: alpha(@accent_fg_color, 0.75);
+}
+
+/* ---------- Sidebars: rounded selection pills ---------- */
+.navigation-sidebar > row,
+.navigation-sidebar > listview > row {
+  border-radius: 8px;
+}
+
+/* ---------- Tooltips ---------- */
+tooltip.background {
+  border-radius: 9px;
+}

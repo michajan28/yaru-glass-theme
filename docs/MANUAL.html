@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yaru Glass — User Manual</title><style>
+:root { color-scheme: light dark; --accent: #007AFF; --bg: #f5f5f7; --card: #fff; --fg: #1d1d1f; --muted: #6e6e73; --line: rgba(0,0,0,.1); }
+@media (prefers-color-scheme: dark) { :root { --accent: #0A84FF; --bg: #1c1c1e; --card: #2c2c2e; --fg: #f5f5f7; --muted: #a1a1a6; --line: rgba(255,255,255,.12); } }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 "Inter Variable", Inter, "Ubuntu Sans", sans-serif; }
+main { max-width: 860px; margin: 40px auto; padding: 40px 48px; background: var(--card); border-radius: 22px; box-shadow: 0 10px 40px rgba(0,0,0,.08); }
+h1 { font-size: 2.2em; margin-top: 0; letter-spacing: -.02em; }
+h2 { margin-top: 2.2em; padding-top: .6em; border-top: 1px solid var(--line); letter-spacing: -.01em; }
+a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+img { max-width: 100%; border-radius: 14px; margin: 6px 6px 6px 0; box-shadow: 0 6px 24px rgba(0,0,0,.15); vertical-align: top; }
+p > img { max-width: 48%; }
+code { font: 13px/1.5 "Ubuntu Sans Mono", ui-monospace, monospace; background: rgba(127,127,127,.14); padding: 2px 6px; border-radius: 6px; }
+pre { background: #1d1d1f; color: #f5f5f7; padding: 14px 18px; border-radius: 12px; overflow-x: auto; }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; }
+blockquote { margin: 1em 0; padding: 10px 16px; border-left: 4px solid var(--accent); background: rgba(0,122,255,.08); border-radius: 0 10px 10px 0; }
+hr { border: none; }
+</style></head>
+<body><main><h1 id="yaru-glass-user-manual">Yaru Glass — User Manual</h1>
+<p>Version 2.2.4 · for Ubuntu 24.04 LTS (GNOME Shell 46) and Ubuntu 26.04 LTS (GNOME Shell 50)</p>
+<p>Yaru Glass is a pair of desktop themes for Ubuntu, <strong>Yaru-Glass</strong> (light) and
+<strong>Yaru-Glass-dark</strong> (dark). Both are built on top of Ubuntu's own Yaru theme with
+translucent surfaces and coordinated light/dark styling. Ubuntu's Yaru icons and
+the Ubuntu logo are kept.</p>
+<p><img alt="Light" src="screenshots/app-light.png" /> <img alt="Dark" src="screenshots/app-dark.png" /></p>
+<p><img alt="Dock" src="screenshots/dock.png" /></p>
+<hr />
+<h2 id="contents">Contents</h2>
+<ol>
+<li><a href="#1-what-you-get">What you get</a></li>
+<li><a href="#2-requirements">Requirements</a></li>
+<li><a href="#3-installation">Installation</a></li>
+<li><a href="#4-everyday-use">Everyday use</a></li>
+<li><a href="#5-customisation">Customisation</a></li>
+<li><a href="#6-updating">Updating</a></li>
+<li><a href="#7-uninstalling">Uninstalling</a></li>
+<li><a href="#8-troubleshooting">Troubleshooting</a></li>
+<li><a href="#9-files-and-folders">Files and folders</a></li>
+<li><a href="#10-credits-and-licences">Credits and licences</a></li>
+</ol>
+<hr />
+<h2 id="1-what-you-get">1. What you get</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Look</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Menu bar</strong> (top panel)</td>
+<td>Transparent tint, slimmer, regular-weight text, clock on the right</td>
+</tr>
+<tr>
+<td><strong>Menus, Quick Settings, calendar, notifications</strong></td>
+<td>Translucent glass, large rounded corners, pill toggles, blue (<code>#007AFF</code>) highlights</td>
+</tr>
+<tr>
+<td><strong>Dialogs</strong> (log out, password, …)</td>
+<td>Rounded glass card, pill buttons with spacing from the edges</td>
+</tr>
+<tr>
+<td><strong>Dock</strong> (Ubuntu Dock)</td>
+<td>Floating glass dock, 24 px corners, native dashes in each app icon's dominant color</td>
+</tr>
+<tr>
+<td><strong>App switcher, volume/brightness pop-ups</strong></td>
+<td>Glass panels</td>
+</tr>
+<tr>
+<td><strong>Windows</strong></td>
+<td>Red / yellow / green buttons on the <strong>right</strong>; symbols show on hover, grey when the window is inactive; 14 px rounded corners</td>
+</tr>
+<tr>
+<td><strong>Apps</strong></td>
+<td>Blue accent in both older (GTK 3) and newer (GTK 4 / libadwaita) apps</td>
+</tr>
+<tr>
+<td><strong>Font</strong></td>
+<td><a href="https://rsms.me/inter/">Inter</a>, an open-source interface typeface</td>
+</tr>
+<tr>
+<td><strong>Search</strong></td>
+<td>Standard GNOME search: press <strong>Super</strong> and type</td>
+</tr>
+<tr>
+<td><strong>Light / dark</strong></td>
+<td>Switches automatically at sunrise and sunset (Automatic Theme Switcher) or with the <em>Dark Style</em> toggle</td>
+</tr>
+</tbody>
+</table>
+<h3 id="extensions-installed-and-configured">Extensions installed and configured</h3>
+<table>
+<thead>
+<tr>
+<th>Extension</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User Themes</td>
+<td>Applies the theme to the menu bar, menus, dock and dialogs</td>
+</tr>
+<tr>
+<td>Blur my Shell</td>
+<td>Rounded dynamic panel, popup and dock backgrounds; independent blur switch; unrelated effects preserved</td>
+</tr>
+<tr>
+<td>Just Perfection</td>
+<td>Moves the clock to the right</td>
+</tr>
+<tr>
+<td>Logo Menu</td>
+<td>Ubuntu 24.04 only: menu behind the Ubuntu logo (top-left); GNOME 50 uses standard Activities</td>
+</tr>
+<tr>
+<td>Automatic Theme Switcher</td>
+<td>Light theme by day, dark theme by night</td>
+</tr>
+<tr>
+<td>Ubuntu Dock, Ubuntu AppIndicators</td>
+<td>Ubuntu built-ins; enabled if present</td>
+</tr>
+</tbody>
+</table>
+<h3 id="220-extension-policy">2.2.0 extension policy</h3>
+<p>These exact releases are enforced and tested on the named Ubuntu stacks.
+The matrix is unchanged in 2.2.1. See
+<a href="RELEASE-2.2.1.md">current release evidence and validation limits</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Extension</th>
+<th>GNOME 46</th>
+<th>GNOME 50</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User Themes</td>
+<td>60</td>
+<td>79</td>
+</tr>
+<tr>
+<td>Blur my Shell</td>
+<td>77</td>
+<td>77</td>
+</tr>
+<tr>
+<td>Just Perfection</td>
+<td>37</td>
+<td>37</td>
+</tr>
+<tr>
+<td>Automatic Theme Switcher</td>
+<td>11</td>
+<td>11</td>
+</tr>
+<tr>
+<td>Logo Menu</td>
+<td>41</td>
+<td>Omitted pending real event-handler checks</td>
+</tr>
+<tr>
+<td>Ubuntu Dock</td>
+<td>Metadata 90; package <code>90ubuntu3</code></td>
+<td>Metadata 105; Ubuntu extension bundle <code>50.26.04.8ubuntu</code></td>
+</tr>
+<tr>
+<td>Ubuntu AppIndicators</td>
+<td>Package <code>58-1ubuntu24.04.1</code></td>
+<td>Ubuntu extension bundle <code>50.26.04.8ubuntu</code></td>
+</tr>
+</tbody>
+</table>
+<p>Ubuntu AppIndicators has no numeric version in its metadata, so the policy checks
+its Ubuntu package instead. Installation checks pinned archive metadata and
+required profile schemas; enabling checks the installed release. Managed blur
+also checks the active release and rounded dynamic renderer. Existing mismatches
+are reported, not silently replaced or downgraded. Automatic extension/system
+updates can move outside this policy; do not automatically downgrade security
+updates to satisfy it. A revised policy needs new validation.
+<code>--no-extensions</code> avoids downloading/enabling extensions; <code>--theme-only</code> avoids
+extension changes. See the installed helper diagnostics for the required release.
+Enabling uses one batch request and waits for the Shell's reported state.
+An accepted request is not proof of activation. If managed appearance cannot
+activate, the installer exits with an error after explaining that files were
+installed but appearance is incomplete. Check Extension Manager, log out/in,
+and rerun the installer; do not treat that state as a successful installation.</p>
+<hr />
+<h2 id="2-requirements">2. Requirements</h2>
+<ul>
+<li><strong>Ubuntu 24.04 LTS / GNOME Shell 46</strong> or <strong>Ubuntu 26.04 LTS / GNOME Shell 50</strong>
+  with the standard Ubuntu desktop. Wayland is the validated session.
+  Other Ubuntu/GNOME versions are untested.</li>
+<li>An internet connection during installation, to download the extensions.</li>
+<li>Your user password (only for installing missing system packages with <code>sudo</code>).</li>
+</ul>
+<p>See <a href="RELEASE-2.0.0.md">2.0.0 validation and limits</a>, including the software-rendered
+Ubuntu 26.04 test VM and isolated lifecycle checks. Finish Ubuntu's first-run
+wizard before installation; its appearance page can reset custom GTK themes.
+Logo Menu is not installed, enabled or configured
+on GNOME 50 because release 45 logs an unimplemented event-handler error.
+Existing independently installed extensions are left alone. Its upstream fix
+will be rechecked before each project release; support is not inferred from
+extension metadata alone.</p>
+<p>The installer adds these Ubuntu packages if they are missing:
+<code>yaru-theme-gtk</code>, <code>yaru-theme-gnome-shell</code>, <code>yaru-theme-icon</code>, <code>yaru-theme-sound</code>,
+<code>gnome-shell-extension-ubuntu-dock</code>, <code>gnome-shell-extension-appindicator</code>,
+<code>gnome-shell-extension-manager</code>, <code>python3</code>, <code>python3-gi</code>, <code>gir1.2-glib-2.0</code>,
+<code>libglib2.0-bin</code>, <code>gir1.2-gtk-4.0</code>, <code>gir1.2-adw-1</code>, <code>gir1.2-gdkpixbuf-2.0</code>, <code>dconf-cli</code>, <code>curl</code>, <code>unzip</code>,
+<code>fontconfig</code>.</p>
+<hr />
+<h2 id="3-installation">3. Installation</h2>
+<h3 id="switching-from-an-earlier-project-name">Switching from an earlier project name</h3>
+<p>This is a breaking rename, not an automatic upgrade from an earlier-branded
+installation. Commands, desktop app IDs, theme names, configuration paths and
+the sync service now use Yaru Glass. No legacy aliases are installed.</p>
+<ol>
+<li>Back up the earlier installation's preference files and original installation
+  backup to a separate location.</li>
+<li>Run the earlier installation's own uninstaller to restore its managed desktop
+  settings and stop its sync service. Do not use this version's uninstaller for
+  that installation. Do not purge anything before making the backup.</li>
+<li>Install Yaru Glass from the current source or a newly built package. This
+  creates a new first-install backup after the earlier theme has been removed.</li>
+<li>To retain appearance choices, copy only <code>settings.json</code>, <code>app-appearance.json</code>
+  and <code>files-appearance.json</code> from your saved preferences into
+  <code>${XDG_CONFIG_HOME:-$HOME/.config}/yaru-glass/</code> before opening Settings.
+  Do not copy managed-effect/wallpaper ownership state, service files or old
+  installation backups into the new installation.</li>
+</ol>
+<p>The source rename does not modify an existing installation or rebuild historical
+archives. The package commands below illustrate the new naming convention; use
+the actual filename and version of your newly supplied package.</p>
+<h3 id="installing-a-package">Installing a package</h3>
+<ol>
+<li>Copy <code>yaru-glass-theme-2.0.0.tar.gz</code> and its <code>.sha256</code> file to the target computer.</li>
+<li>Open <strong>Terminal</strong> in the folder that holds the file and run:</li>
+</ol>
+<p><code>bash
+   sha256sum -c yaru-glass-theme-2.0.0.tar.gz.sha256
+   tar xzf yaru-glass-theme-2.0.0.tar.gz
+   cd yaru-glass-theme-2.0.0
+   ./scripts/install.sh</code></p>
+<ol start="3">
+<li>Answer <strong>Y</strong>, and type your password if asked.</li>
+<li>If the installer says <strong>"New extensions were installed — log out and log back in"</strong>,
+   do so. On Wayland, GNOME only loads new extensions after a fresh login.</li>
+<li>Restart any apps that were open.</li>
+</ol>
+<blockquote>
+<p>Run the installer as your normal user, <strong>not</strong> with <code>sudo</code>. It asks for the password
+itself when it needs it.</p>
+</blockquote>
+<h3 id="installer-options">Installer options</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--no-apt</code></td>
+<td>Skip system packages (no password prompt). Use when everything is already installed.</td>
+</tr>
+<tr>
+<td><code>--no-extensions</code></td>
+<td>Don't download or enable extensions</td>
+</tr>
+<tr>
+<td><code>--theme-only</code></td>
+<td>Install the themes, font and sync service, but keep your current dock and extension settings</td>
+</tr>
+<tr>
+<td><code>-y</code>, <code>--yes</code></td>
+<td>Don't ask for confirmation</td>
+</tr>
+<tr>
+<td><code>-h</code>, <code>--help</code></td>
+<td>Show help</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-the-installer-does-step-by-step">What the installer does, step by step</h3>
+<ol>
+<li>Installs missing system packages (asks for your password).</li>
+<li>Copies itself to <code>~/.local/share/yaru-glass</code>.</li>
+<li><strong>Backs up</strong> your current appearance and extension settings to
+   <code>~/.local/share/yaru-glass/backup/original</code> (only on the first install).</li>
+<li>Installs the bundled Inter font to <code>~/.local/share/fonts/Inter</code>.</li>
+<li>Downloads the extensions above from extensions.gnome.org (the right version for your
+   GNOME) and enables them. Extensions you already have are left as they are.</li>
+<li>Builds the two themes into <code>~/.local/share/themes</code> from your system's Yaru theme.</li>
+<li>Applies fonts and the settings profile (dock, Blur my Shell, clock position, Search
+   Light, …).</li>
+<li>Sets up the background service <code>yaru-glass-sync</code> (see 4.2).</li>
+<li>Activates the light or dark theme to match your current <em>Dark Style</em> setting.</li>
+</ol>
+<p>You can run the installer again at any time. It is safe to repeat, and your original
+backup is never overwritten.</p>
+<hr />
+<h2 id="4-everyday-use">4. Everyday use</h2>
+<h3 id="41-light-and-dark">4.1 Light and dark</h3>
+<p>You can switch in either of these ways:</p>
+<ul>
+<li><strong>Automatically:</strong> Automatic Theme Switcher uses the light theme from sunrise and the
+  dark theme from sunset, based on your location. To change the times or triggers, open
+  <strong>Extension Manager → Automatic Theme Switcher → ⚙</strong>.</li>
+<li><strong>Manually:</strong> use the <strong>Dark Style</strong> toggle in Quick Settings (top-right menu).</li>
+</ul>
+<p>Both ways switch everything together: apps, menu bar, menus and dock.</p>
+<h3 id="42-the-sync-service">4.2 The sync service</h3>
+<p><code>yaru-glass-sync</code> runs in the background and keeps all parts of the theme on the same
+variant. Without it, newer GNOME apps or the menu bar could stay light while the rest
+turns dark. It only acts while one of the Yaru Glass themes is selected. If you choose a
+different theme, it removes its own tweaks automatically.</p>
+<pre><code class="language-bash">systemctl --user status yaru-glass-sync     # check it is running
+systemctl --user restart yaru-glass-sync    # restart it
+journalctl --user -u yaru-glass-sync        # its log
+</code></pre>
+<h3 id="43-search">4.3 Search</h3>
+<p>Press <strong>Super</strong> (the Windows/⌘ key), type, then press <strong>Enter</strong> to use GNOME's
+built-in search. The theme no longer installs or configures Search Light on either
+Ubuntu stack, and new installs leave keyboard-layout shortcuts unchanged.
+Upgrades leave any existing Search Light installation and settings alone; disable
+or remove it in Extension Manager if unwanted. Original backups and installer
+ownership records are retained so uninstall can still restore earlier settings.</p>
+<h3 id="44-choosing-the-theme-manually">4.4 Choosing the theme manually</h3>
+<p>The themes are listed as <strong>Yaru-Glass</strong> and <strong>Yaru-Glass-dark</strong>, for example in
+GNOME Tweaks. Selecting either one is enough; the sync service picks the matching menu
+bar theme and Dark Style setting.</p>
+<hr />
+<h2 id="5-customisation">5. Customisation</h2>
+<h3 id="theme-transparency">Theme transparency</h3>
+<p>Open <strong>Yaru Glass Settings</strong> from the application launcher, or run
+<code>~/.local/bin/yaru-glass-settings</code>.</p>
+<p>The window has three pages: <strong>Shell</strong> for glass style and Shell transparency,
+<strong>Applications</strong> for Settings-app and Files transparency, presets and restart,
+and <strong>Wallpapers</strong> for the light/dark image previews and pickers. Each page scrolls
+independently. At narrow window widths, page navigation switches to a compact
+drop-down; the pages scroll vertically without horizontal scrolling. Switching
+pages does not apply, reset or save any settings.
+Status and Retry controls stay beside their corresponding settings; Shell/app/Files
+errors select the relevant page so they are not hidden.</p>
+<p>Choose <strong>Frost</strong> (default, stronger tint) or <strong>Crystal</strong> (clearer tint).
+Version 2.2.0 adds <strong>Layered</strong> lighting and reflections.
+<strong>Dynamic background blur</strong> is on by default and samples windows behind Shell
+surfaces, rather than a separate wallpaper image. The independent switch disables
+blur without disabling the layered tint. <strong>Solid</strong> suppresses effective blur
+without changing the saved preference. Older preference files default to blur on.
+Blur my Shell must be enabled and running with the required rounded rendering
+capabilities. Other pipelines/effects are left alone. Leaving this theme restores
+managed extension settings; returning reapplies the saved style and blur preference.
+Version <strong>2.2.1</strong> fixes a 2.2.0 color encoding bug that hid all six managed
+pipelines from Blur my Shell and caused Default fallback. Upgrading and reapplying
+the saved appearance repairs the existing library, preserving unrelated effects
+and color values; do not reset the library manually. Repair briefly disables and
+reenables Blur my Shell, waits for its active state and rebuilds cached panel,
+popup and dock effects. Ordinary style changes do not restart the extension.
+If preferences were already open, close and reopen them after upgrading.
+The <a href="RELEASE-2.2.1.md">2.2.1 release notes</a> distinguish actual parser/preferences
+and running-actor checks from remaining visual limits. Extension metadata or
+automated CSS checks alone are not desktop certification.</p>
+<p>The <strong>0–50%</strong> slider increases transparency within the chosen style. <strong>25%</strong> is the
+default; <strong>Reset Shell appearance…</strong> asks for confirmation and restores Frost/25,
+with Solid off and blur on. It preserves readability boost and app/Files/wallpaper settings.
+Text-bearing surfaces retain a protective tint for readable text, so <strong>0%</strong> is not
+fully opaque and <strong>50%</strong> is not invisible. The popup tint has been strengthened
+compared with the earlier theme to avoid faint labels over bright/dark content.
+Changes apply automatically after a short pause, to both light and dark variants.
+Close and reopen a popup if needed to see the change.</p>
+<p>This changes the panel, menus, calendar popup, dock, and other Shell surface fills,
+not GTK app windows, text, borders, or solid accent colors. The slider does not
+change blur strength: Frost uses a softer, stronger blur and Crystal a clearer one.
+App backgrounds remain unblurred. Layered gradients preserve protective tint alpha;
+popup and dock reflections do not add border geometry. Notification banners use a
+flat tint with a small rounded shadow. Notification headers, icons and
+timestamps use the full foreground colour. The plain calendar and today's marker
+are preserved.</p>
+<p>The app shows when a value has been applied and saved, or displays an error with a
+Retry button. Closing while a change is pending waits for it to finish; a failure
+keeps the window open. Settings are stored in
+<code>~/.config/yaru-glass/settings.json</code> (or under <code>$XDG_CONFIG_HOME</code>) and are reused by
+future builds and reinstalls. Normal uninstall preserves them; <code>--purge</code> removes them.
+Choosing a level does not switch you away from a different GTK/Shell theme.
+Failures restore the previous generated CSS and managed effects where possible;
+any restoration failure is reported rather than marked successful.</p>
+<h3 id="coordinated-presets-solid-and-readability-boost">Coordinated presets, Solid and readability boost</h3>
+<p>On the Shell page, select a preset and choose <strong>Preview preset…</strong>. The dialog shows
+current and target values grouped under Shell, Settings app and Files, with
+readable names and values (for example, <code>Transparency level: 25% → 50%</code>).
+Cancel is the default and changes nothing.</p>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Shell</th>
+<th>Settings app</th>
+<th>Files</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Solid</td>
+<td>Frost / 0, Solid on</td>
+<td>Off / 25</td>
+<td>Off / 25</td>
+</tr>
+<tr>
+<td>Balanced Frost</td>
+<td>Frost / 25, Solid off</td>
+<td>On / 25</td>
+<td>On / 25</td>
+</tr>
+<tr>
+<td>Clear Crystal</td>
+<td>Crystal / 50, Solid off</td>
+<td>On / 50</td>
+<td>On / 50</td>
+</tr>
+</tbody>
+</table>
+<p>Levels are relative, not literal alpha percentages. Applying changes enablement
+as shown, but <strong>never changes wallpapers, readability boost or blur preference, and never restarts
+Files automatically</strong>. The saved preset label is derived from actual settings;
+individual edits may make it <strong>Custom</strong>.</p>
+<p><strong>Solid Shell backgrounds</strong> is also available independently. It makes primary
+panel/menu/calendar/Quick Settings/notification/dialog/dock/switcher/OSD fills
+opaque. The slider is disabled, retaining its value until Solid is turned off.
+Effective Shell blur is also disabled until Solid is turned off.
+Hover, focus and selection overlays keep their normal behavior.</p>
+<p><strong>Readability boost</strong> is off by default. It halves the remaining backdrop
+contribution to supported primary Shell, enabled Settings and enabled Files
+backgrounds: <code>boosted alpha = alpha + (1 - alpha) / 2</code>. For example, Files at
+Crystal/50 becomes 85% opaque rather than 70%. Disabled integrations remain off;
+Solid takes precedence. Sliders, text/icon opacity and solid file content/controls
+are unchanged. The separate boost reset asks for confirmation and switches it off.
+This is not GNOME's High Contrast theme or a guarantee on every backdrop.</p>
+<p>The overview distinguishes selected GTK theme/GTK4 link state, saved values and
+unknown live Files CSS. Shell reload is requested, not pixel-inspected. An inactive
+project theme is not automatically activated. A confirmed Files restart is valid
+only for this session and is invalidated by later relevant changes.
+Coordinated operations share a lock and restore prior preferences, CSS and managed
+effects on handled failure; restoration errors are shown explicitly. An unexpected
+process interruption is not a filesystem-wide transaction guarantee.
+If preferences cannot be read, the app labels its displayed defaults as unsaved.
+Reset and repair confirmations list the affected sections and show readable
+before/after values instead of a raw settings dump. <strong>Repair invalid preferences…</strong>
+on the Shell page confirms replacement of only the invalid sections, including
+when several files are malformed; an unreadable previous value is identified as
+unavailable rather than shown as the fallback default.
+Valid sections and wallpapers stay unchanged; filesystem permission failures
+must still be resolved before a save can succeed.</p>
+<h3 id="settings-app-transparency-experimental">Settings app transparency (experimental)</h3>
+<p>The separate <strong>Settings app transparency</strong> section affects only Yaru Glass Settings,
+not Files or other GTK apps. It is <strong>off by default</strong>. Enable it and use its own
+<strong>0–50%</strong> slider; 0% is opaque and 25% is the initial level. Changes apply and save
+after a short pause through the shared worker, without rebuilding the Shell.
+The window changes only after saving succeeds. <strong>Reset Settings app…</strong> confirms
+before restoring off/25; other sections stay unchanged.</p>
+<p>Explanatory labels and titlebar text use the full foreground colour when enabled,
+rather than reduced-opacity text, to preserve contrast over windows underneath.
+The background and titlebar become transparent over windows underneath, without
+blur. Controls retain solid backgrounds and text/icons stay fully opaque. The tint
+follows the successfully applied Frost/Crystal style and GNOME's light/dark scheme.
+Turning it off restores the normal solid appearance.</p>
+<p>These preferences are stored separately in <code>~/.config/yaru-glass/app-appearance.json</code>
+(respecting <code>$XDG_CONFIG_HOME</code>). A save failure leaves the previous appearance in
+place and offers Retry. Normal uninstall keeps this preference; <code>--purge</code> removes it.</p>
+<h3 id="files-transparency-experimental">Files transparency (experimental)</h3>
+<p>The separate <strong>Files transparency</strong> section is off by default. Enable it and use
+its <strong>0–50%</strong> slider (initially 25%; 0% is opaque). Only Files' sidebar and
+headerbars become transparent. The main file area stays solid, and text, icons,
+selection markers and menus retain their existing styling. Other GTK apps and
+the Settings-app slider are unchanged. There is no background blur.</p>
+<p>Tint follows Frost/Crystal and the system light/dark colours. Changes save both
+theme variants and are retained by future builds. <strong>Fully quit and reopen Files</strong>
+after changing its controls, Frost/Crystal, or the active theme: GTK may not reload
+user CSS in a running process. Finish file transfers first. If closing all Files
+windows does not suffice, run <code>nautilus --quit</code>, then reopen Files. Closing windows
+alone can leave the background Files service running with the old stylesheet.
+At 10% the Crystal tint is 94% opaque with boost off: the effect is deliberately subtle;
+increase the Files slider toward 50% for a more visible effect. The settings app
+never closes Files automatically. The <strong>Restart Files…</strong> button asks for explicit
+confirmation and warns you to finish all transfers. Cancel is the default.
+On confirmation it requests a normal quit, waits for the Files D-Bus service to
+exit, then opens your Home folder. Existing windows/tabs are not restored.
+If quit/open fails or the service does not exit within 10 seconds, an error is
+shown; Files is never force-killed.</p>
+<p><strong>Solid</strong>, <strong>Subtle</strong>, <strong>Balanced</strong>, and <strong>Clear</strong> presets select off/0, on/10,
+on/25, and on/50 respectively. These are Files-only shortcuts, distinct from
+coordinated presets. <strong>Reset Files appearance</strong> asks for confirmation, disables the effect and
+returns its slider to 25 without changing Shell or Settings-app preferences.
+Files changes explicitly show <strong>Saved — restart required</strong>, distinct from
+<strong>Files restarted with the saved appearance</strong> after a successful restart.
+On launch the app cannot know whether Files has loaded the saved CSS, so it does
+not report the effect as live.
+The <strong>Saved background</strong> label shows the actual opacity and see-through amount
+for the saved Files level, applied Frost/Crystal style and readability boost. It describes the saved
+CSS, not a guarantee that a running Files process has reloaded it. The slider
+remains a relative level; the file content stays fully opaque. Restart Files
+after preset/reset changes too.</p>
+<p>This experimental integration has been verified on Nautilus 46 and 50 within
+the <a href="RELEASE-2.0.0.md">documented validation limits</a>. It uses selectors rooted in
+<code>window.nautilus-window</code> in our existing GTK4 overrides, which are linked only while
+a Yaru Glass theme is active. To revert, disable the switch and restart Files.
+The main content stays solid by design; there is no option to make it transparent.
+Preferences live in <code>~/.config/yaru-glass/files-appearance.json</code> (respecting
+<code>$XDG_CONFIG_HOME</code>). Save failures show an error/Retry and attempt CSS rollback.
+Normal uninstall retains the preference; <code>--purge</code> deletes it.</p>
+<h3 id="light-and-dark-wallpapers">Light and dark wallpapers</h3>
+<p>In <strong>Yaru Glass Settings</strong>, select <strong>Choose image…</strong> under Light wallpaper and Dark
+wallpaper. GNOME uses these for its light/dark color scheme, including automatic
+switches. Choose readable local images such as JPEG or PNG. Images are not copied:
+keep the originals in place. Cancelling the picker changes nothing.</p>
+<p>These controls use GNOME's <code>picture-uri</code> and <code>picture-uri-dark</code>, not a separate
+scheduler. Each selection includes a small, aspect-ratio-preserving image preview.
+Missing or unsupported images display a preview error without changing the wallpaper.
+The display reflects external wallpaper changes too. Lock-screen and
+image layout settings are unchanged.</p>
+<p><strong>Restore previous</strong> restores the value saved just before this app first edited
+that slot, unless you have since chosen a different wallpaper outside this app.
+Uninstall follows the same rule, leaving later external choices intact.
+Backups live under <code>~/.config/yaru-glass</code> (respecting <code>$XDG_CONFIG_HOME</code>) and are
+kept if restoration fails.</p>
+<p>The <a href="../demo/index.html">HTML demo</a> starts at fictional account selection, opens
+the simulated Ubuntu desktop after sign-in, returns to the lock screen when
+locked, and returns to account selection after log out. Its controls do not
+change your actual desktop settings. Use the simulated Settings window's
+<strong>Wallpapers</strong> page to compare surfaces over photo, white and dark wallpapers;
+browser blur and contrast are approximations, not a compositor-level guarantee.
+Version 2.2.2 keeps notification banners centered throughout their slide/fade
+animation on mobile layouts, including GNOME 46 WebKit. Reduced motion still
+disables the animation. See <a href="RELEASE-2.2.2.md">demo regression evidence</a>.</p>
+<h3 id="editing-theme-sources">Editing theme sources</h3>
+<p>All sources are in <code>~/.local/share/yaru-glass</code>. After any change, rebuild:</p>
+<pre><code class="language-bash">~/.local/share/yaru-glass/scripts/build.py
+</code></pre>
+<p>The menu bar, menus and dock reload immediately. Restart apps to see app changes.</p>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Transparency level</td>
+<td>Yaru Glass Settings (application launcher)</td>
+</tr>
+<tr>
+<td>Frost / Crystal and paired wallpapers</td>
+<td>Yaru Glass Settings (application launcher)</td>
+</tr>
+<tr>
+<td>Base glass colours and accent colour of menu bar / menus / dock</td>
+<td><code>VARIANTS</code> in <code>scripts/build.py</code> (<code>panel_bg</code>, <code>menu_bg</code>, <code>dock_bg</code>, <code>accent</code>, …); saved transparency is applied to surface fills</td>
+</tr>
+<tr>
+<td>Menu bar, menus, dock, dialogs: sizes and corners</td>
+<td><code>src/theme/gnome-shell/glass.css.in</code></td>
+</tr>
+<tr>
+<td>Older apps (GTK 3): window buttons, menus</td>
+<td><code>src/theme/gtk-3.0/glass.css</code></td>
+</tr>
+<tr>
+<td>Newer apps (GTK 4 / libadwaita): accent, window buttons, corners</td>
+<td><code>src/theme/gtk-4.0/libadwaita.css</code></td>
+</tr>
+<tr>
+<td>Layered tint and dynamic Shell blur</td>
+<td>Frost / Crystal and Dynamic background blur in Yaru Glass Settings</td>
+</tr>
+<tr>
+<td>Dock size, auto-hide, position</td>
+<td>Settings → Ubuntu Desktop → Dock</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip:</strong> the app manages rounded live Shell blur automatically; no manual Blur my
+Shell configuration is needed. Settings/Files remain tint-only, and switching
+away restores project-owned extension settings.</p>
+</blockquote>
+<h3 id="making-your-own-package">Making your own package</h3>
+<p>When you have tweaked things the way you like, create a new package that includes your
+current extension settings:</p>
+<pre><code class="language-bash">./scripts/make-package.sh             # writes to dist/releases/ in this project
+./scripts/make-package.sh /some/dir    # or elsewhere
+./scripts/make-package.sh --curated-profiles /empty/output/dir
+</code></pre>
+<p>Run these commands from the source or installed project root. Packaging updates
+<code>assets/profiles/</code> from your current extension settings. Review those changes
+before committing. To change the version number, edit <code>VERSION</code> before packaging.
+For curated releases use <code>--curated-profiles</code>: it skips live capture and preserves
+the supplied profiles. Existing archives or checksums are never overwritten.
+Missing Markdown rendering is reported; the existing HTML manual is then required.</p>
+<hr />
+<h2 id="6-updating">6. Updating</h2>
+<ul>
+<li><strong>After Ubuntu updates the Yaru theme:</strong> run <code>~/.local/share/yaru-glass/scripts/build.py</code>
+  to rebuild on top of the new Yaru.</li>
+<li><strong>New package version:</strong> extract it and run <code>./scripts/install.sh</code> again.</li>
+<li>Extensions can be updated through <strong>Extension Manager</strong>, but the
+  exact-version policy rejects unvalidated releases; check compatibility first.</li>
+</ul>
+<hr />
+<h2 id="7-uninstalling">7. Uninstalling</h2>
+<pre><code class="language-bash">~/.local/share/yaru-glass/scripts/uninstall.sh                       # restore previous settings
+~/.local/share/yaru-glass/scripts/uninstall.sh --remove-extensions   # …and remove extensions the installer added
+~/.local/share/yaru-glass/scripts/uninstall.sh --purge               # …and delete themes, font, service and files
+</code></pre>
+<p>The uninstaller restores the settings saved before the first install: theme, fonts,
+shortcuts, enabled extensions and extension settings. Before <code>--purge</code> deletes the
+folder, it copies the backup to <code>~/.local/share/yaru-glass-backup-&lt;date&gt;</code>.
+System packages installed with apt are kept, since they are standard Ubuntu packages.
+Log out and back in afterwards for a completely clean state.</p>
+<hr />
+<h2 id="8-troubleshooting">8. Troubleshooting</h2>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Solution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Menu bar and dock still look like normal Ubuntu</td>
+<td>Log out and back in, because new extensions load only after login. Then check that <strong>User Themes</strong> is enabled in Extension Manager.</td>
+</tr>
+<tr>
+<td>An app still has orange accents or square buttons</td>
+<td>Restart the app.</td>
+</tr>
+<tr>
+<td><strong>Firefox, Thunderbird and other Snap apps</strong> use plain Yaru</td>
+<td>Snap apps can't read themes from your home folder. This is a Snap limitation.</td>
+</tr>
+<tr>
+<td>Newer apps stay light in dark mode (or vice versa)</td>
+<td><code>systemctl --user restart yaru-glass-sync</code></td>
+</tr>
+<tr>
+<td>Blur sticks out past rounded corners</td>
+<td>Match the corner radii in Blur my Shell with the theme (see the tip in section 5).</td>
+</tr>
+<tr>
+<td>Something looks broken after an Ubuntu upgrade</td>
+<td>Run <code>scripts/build.py</code> again. If it persists, <code>scripts/uninstall.sh</code> returns you to the previous setup.</td>
+</tr>
+<tr>
+<td>Installer stops: "missing …Yaru-blue…"</td>
+<td><code>sudo apt install yaru-theme-gtk yaru-theme-gnome-shell</code></td>
+</tr>
+</tbody>
+</table>
+<p>Useful logs:</p>
+<pre><code class="language-bash">journalctl --user -u yaru-glass-sync -b           # sync service
+journalctl -b /usr/bin/gnome-shell | grep -i theme  # GNOME Shell theme loading
+</code></pre>
+<h3 id="local-diagnostics">Local diagnostics</h3>
+<p>Available starting with version 2.2.3.
+In Yaru Glass Settings, choose the <strong>Diagnostics</strong> button at the left of the
+header. (In 2.2.3 it was an unlabeled ⓘ icon next to the window controls.) View up to 200
+recent sanitized events, filter by minimum level, refresh, copy the visible
+records, or enable optional verbose logging. Reads and exports run in the
+background; storage/export failures appear explicitly, never as confirmed success.</p>
+<p>The command-line equivalent is:</p>
+<pre><code class="language-bash">yaru-glass-logs show --limit 200 --level INFO
+yaru-glass-logs follow --level WARNING
+yaru-glass-logs verbose on
+yaru-glass-logs verbose off
+yaru-glass-logs export ./new-diagnostic-report.json
+</code></pre>
+<p>INFO, warnings and errors are recorded by default. Verbose mode adds safe DEBUG
+events, not extra personal data. Key operations include apply/rollback, managed
+pipeline repair, extension activation, sync failures/recovery, wallpaper actions,
+confirmed Files restart requests and installation outcomes. An operation ID
+correlates Settings with its worker and lifecycle scripts with their helpers.
+Reload requests remain distinct from verified live appearance.</p>
+<p>Logs are JSON Lines in <code>${XDG_STATE_HOME:-~/.local/state}/yaru-glass/</code>:
+<code>events.jsonl</code> and four rotated siblings, each at most 2 MiB (10 MiB total).
+The directory is private (0700), files are 0600. A separate lock coordinates
+writers; a busy/unwritable log emits a bounded stderr warning without breaking
+the appearance action. The viewer/CLI reports unavailable storage. Invalid
+records are counted and omitted, never displayed as raw text.</p>
+<p><strong>Privacy:</strong> logs retain allowlisted actions, outcomes, selected non-personal
+fields, error categories and repository file basenames/line numbers. They omit
+exception messages, credentials, personal paths, wallpaper names, environment,
+raw commands/output, complete preferences, backups and journal dumps.
+<strong>Save report…</strong> explains its contents and asks for a local destination.
+Export includes up to 1,000 sanitized recent events, project/Python/Ubuntu/GNOME
+versions and known extension states/compatibility where available. Existing files
+are never overwritten. Reports are private JSON files; review them before sharing.
+There are no automatic uploads or telemetry.</p>
+<p>Upgrades and ordinary uninstall retain logs for diagnosis. <code>--purge</code> removes only
+known diagnostic logs/preferences, leaving the empty coordination lock inode to
+avoid racing a concurrent writer. Reports saved elsewhere and unknown files are
+not removed. No diagnostics operation changes appearance or restarts Files.</p>
+<hr />
+<h2 id="9-files-and-folders">9. Files and folders</h2>
+<pre><code>~/.local/share/yaru-glass/          installed copy of this package
+├── scripts/                        build, installer, uninstaller, packaging
+├── src/yaru_glass/                 shared Python modules
+├── src/theme/                      CSS sources (Shell, GTK 3, GTK 4)
+├── assets/profiles/                extension settings applied by the installer
+├── assets/fonts/Inter/             bundled Inter font (SIL OFL)
+├── bin/                            settings, sync, and runtime helpers
+├── docs/                           manual, roadmap, releases, and screenshots
+├── tests/                          regression tests
+├── backup/original/                your settings from before the first install
+└── state/                          extensions added by the installer
+~/.local/share/themes/Yaru-Glass[-dark]/   generated themes
+~/.config/gtk-4.0/gtk.css           link to GTK 4 overrides (managed by the sync service)
+~/.config/systemd/user/yaru-glass-sync.service
+~/.local/share/applications/org.yaru.glass.Settings.desktop
+~/.local/bin/yaru-glass-settings    native transparency settings app
+~/.config/yaru-glass/settings.json saved transparency (25% by default)
+</code></pre>
+<hr />
+<h2 id="10-credits-and-licences">10. Credits and licences</h2>
+<h3 id="yaru-origin-and-reuse">Yaru origin and reuse</h3>
+<p>Yaru Glass is an unofficial derivative of <a href="https://github.com/ubuntu/yaru">Yaru</a>,
+developed by the Ubuntu community, Canonical and other contributors. Original
+copyrights and licences remain with their respective holders. This project adds
+glass-style theme overrides, appearance controls, and Settings/sync tooling; these
+changes are not official Yaru releases.</p>
+<p>Yaru has mixed licensing, not a single licence covering every component. Its
+<a href="https://github.com/ubuntu/yaru#copying-or-reusing">Copying or Reusing notice</a>
+permits copying, redistribution and modification under each applicable licence:</p>
+<ul>
+<li><strong>Yaru icon assets:</strong> source SVG and rendered PNG assets are licensed under
+  <a href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0</a>.
+  Sharing them requires the applicable attribution and notices; shared adaptations
+  must indicate changes and use a licence permitted by the ShareAlike terms.</li>
+<li><strong>Scripts included in upstream Yaru:</strong> licensed under the
+  <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License, version 3</a>.
+  Redistributing covered scripts or modifications requires compliance with that
+  licence, including applicable notices and source-code requirements.</li>
+<li><strong>Other Yaru components:</strong> consult the relevant file headers, licence files and
+  <a href="https://github.com/ubuntu/yaru/blob/master/debian/copyright">upstream copyright inventory</a>.
+  Do not assume the icon or script licence applies to every stylesheet or asset.</li>
+</ul>
+<p>The build uses Yaru files installed on the host: GTK resources are linked, while
+Yaru Shell stylesheets and assets are copied and modified in generated themes.
+Generating a theme locally does not remove upstream licensing obligations.
+When redistributing Yaru-derived material, retain the applicable copyright and
+licence notices, provide attribution and identify modifications as required, and
+provide corresponding source in the manner required by the applicable licence.
+Renaming a derivative does not remove those obligations.</p>
+<p>Permission to reuse code or assets does not itself grant trademark rights or
+endorsement. This project is not affiliated with or endorsed by the Yaru project,
+or Canonical; its name does not assert official status or trademark permission.
+Ubuntu and Canonical are registered trademarks of Canonical Ltd.</p>
+<h3 id="other-components">Other components</h3>
+<ul>
+<li><strong>Inter</strong> by Rasmus Andersson, SIL Open Font License 1.1 (<code>assets/fonts/Inter/LICENSE.txt</code>).</li>
+<li>Extensions are downloaded from extensions.gnome.org and remain under their authors'
+  licences.</li>
+<li>Browser-demo photographs and icons have separate terms documented in the
+  <a href="../demo/demo-assets/lockscreen/ATTRIBUTION.md">lock-screen demo credits</a> and
+  <a href="../demo/demo-assets/desktop/ATTRIBUTION.md">desktop demo credits</a>.</li>
+</ul></main></body></html>

@@ -1,0 +1,187 @@
+#!/usr/bin/env python3
+"""yaru-glass-sync — keep the Yaru Glass theme pair consistent.
+
+While a Yaru-Glass theme is selected (e.g. by Automatic Theme Switcher
+or the Quick Settings "Dark Style" toggle) this keeps in sync:
+  * org.gnome.desktop.interface gtk-theme  <-> color-scheme
+  * User Themes shell theme (light/dark variant)
+  * ~/.config/gtk-4.0/gtk.css -> libadwaita overrides (symlink)
+When another theme is selected, the shell theme and GTK4 overrides are removed.
+"""
+import os
+import fcntl
+import sys
+from pathlib import Path
+
+from gi.repository import Gio, GLib
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src/yaru_glass"))
+import managed_glass
+import diagnostics
+import files_appearance
+from theme_settings import CONFIG_DIR, load_settings
+
+LIGHT = "Yaru-Glass"
+DARK = "Yaru-Glass-dark"
+HOME = Path.home()
+THEMES = HOME / ".local/share/themes"
+EXT_DIR = HOME / ".local/share/gnome-shell/extensions"
+GTK4_CSS = HOME / ".config/gtk-4.0/gtk.css"
+GTK4_TARGET = THEMES / LIGHT / "gtk-4.0/libadwaita.css"
+
+def ext_settings(uuid: str, schema_id: str):
+    schema_dir = EXT_DIR / uuid / "schemas"
+    sources = [Gio.SettingsSchemaSource.get_default()]
+    if schema_dir.is_dir():
+        sources.insert(0, Gio.SettingsSchemaSource.new_from_directory(
+            str(schema_dir), Gio.SettingsSchemaSource.get_default(), False))
+    for src in sources:
+        schema = src.lookup(schema_id, True) if src else None
+        if schema:
+            return Gio.Settings.new_full(schema, None, None)
+    return None
+
+
+def log(msg: str) -> None:
+    print(f"yaru-glass-sync: {msg}", flush=True)
+
+
+class Sync:
+    def __init__(self) -> None:
+        self.iface = Gio.Settings.new("org.gnome.desktop.interface")
+        self.user_theme = ext_settings("user-theme@gnome-shell-extensions.gcampax.github.com",
+                                       "org.gnome.shell.extensions.user-theme")
+        self.changed = set()
+        self.timeout_id = 0
+        self.last_error = None
+        self.iface.connect("changed::gtk-theme", self.on_changed)
+        self.iface.connect("changed::color-scheme", self.on_changed)
+        self.connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+        self.policy_uuids = frozenset(
+            managed_glass.policy_extension_uuids("46") +
+            managed_glass.policy_extension_uuids("50"))
+        self.connection.signal_subscribe(
+            "org.gnome.Shell.Extensions", "org.gnome.Shell.Extensions",
+            "ExtensionStateChanged", "/org/gnome/Shell/Extensions", None,
+            Gio.DBusSignalFlags.NONE, self.on_extension_changed)
+
+    def on_extension_changed(self, _connection, _sender, _path, _interface, _signal, parameters,
+                             _user_data=None):
+        uuid, info = parameters.unpack()
+        if (uuid in self.policy_uuids and info.get("state") == 1 and
+                self.iface.get_string("gtk-theme") in (LIGHT, DARK)):
+            diagnostics.event("sync", "activate", "confirmed", extension=uuid)
+            log(f"{uuid} became active; refreshing managed appearance")
+            self.on_changed(None, "extensions")
+
+    def on_changed(self, _settings, key: str) -> None:
+        self.changed.add(key)
+        if self.timeout_id:
+            GLib.source_remove(self.timeout_id)
+        # Debounce: theme switchers write gtk-theme and color-scheme back to back.
+        self.timeout_id = GLib.timeout_add(400, self.sync)
+
+    def sync(self) -> bool:
+        self.timeout_id = 0
+        changed, self.changed = self.changed, set()
+        theme = self.iface.get_string("gtk-theme")
+        scheme = self.iface.get_string("color-scheme")
+
+        if theme not in (LIGHT, DARK):
+            self.deactivate()
+            return GLib.SOURCE_REMOVE
+
+        if changed - {"extensions"} == {"gtk-theme"}:
+            dark = theme == DARK
+            if (scheme == "prefer-dark") != dark:
+                self.iface.set_string("color-scheme", "prefer-dark" if dark else "prefer-light")
+        else:
+            dark = scheme == "prefer-dark"
+            want = DARK if dark else LIGHT
+            if theme != want:
+                self.iface.set_string("gtk-theme", want)
+
+        self.activate(dark)
+        return GLib.SOURCE_REMOVE
+
+    def activate(self, dark: bool) -> None:
+        name = DARK if dark else LIGHT
+        if self.user_theme and self.user_theme.get_string("name") != name:
+            diagnostics.event("sync", "activate", "requested", theme=name)
+            self.user_theme.set_string("name", name)
+            log(f"shell theme -> {name}")
+        self.link_gtk4()
+        self.update_glass(True)
+    def deactivate(self) -> None:
+        diagnostics.event("sync", "deactivate", "requested", level="DEBUG")
+        self.update_glass(False)
+        if self.user_theme and self.user_theme.get_string("name") in (LIGHT, DARK):
+            self.user_theme.set_string("name", "")
+            log("shell theme -> default")
+        if GTK4_CSS.is_symlink() and os.readlink(GTK4_CSS) == str(GTK4_TARGET):
+            GTK4_CSS.unlink()
+            log("removed GTK4 overrides")
+
+    def update_glass(self, active: bool) -> None:
+        self.last_error = None
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        try:
+            with (CONFIG_DIR / "build.lock").open("a") as lock:
+                fcntl.flock(lock, fcntl.LOCK_EX)
+                if active:
+                    settings = load_settings()
+                    mode = settings["glass_mode"]
+                    managed_glass.apply(mode, settings["background_blur"], settings["solid"])
+                    files_appearance.refresh(mode)
+                else:
+                    managed_glass.restore()
+        except (*managed_glass.ERRORS, RuntimeError) as exc:
+            previous = getattr(self, "_diagnostic_error", None)
+            if previous != (type(exc).__name__, active):
+                diagnostics.event("sync", "apply" if active else "restore", "failure",
+                                  level="ERROR", error=exc)
+            self._diagnostic_error = (type(exc).__name__, active)
+            self.last_error = str(exc)
+            log(f"ERROR applying/restoring glass or Files appearance: {exc}")
+        else:
+            if getattr(self, "_diagnostic_error", None) is not None:
+                diagnostics.event("sync", "apply" if active else "restore", "success")
+            self._diagnostic_error = None
+
+    def link_gtk4(self) -> None:
+        if GTK4_CSS.is_symlink() and os.readlink(GTK4_CSS) == str(GTK4_TARGET):
+            return
+        GTK4_CSS.parent.mkdir(parents=True, exist_ok=True)
+        if GTK4_CSS.exists() or GTK4_CSS.is_symlink():
+            backup = GTK4_CSS.with_name("gtk.css.before-yaru-glass")
+            if not backup.exists():
+                GTK4_CSS.rename(backup)
+                log(f"backed up existing {GTK4_CSS} to {backup}")
+            else:
+                GTK4_CSS.unlink()
+        GTK4_CSS.symlink_to(GTK4_TARGET)
+        log("linked GTK4 overrides")
+
+
+def main() -> None:
+    diagnostics.event("sync", "startup", "start")
+    if "--restore-managed" in sys.argv:
+        import wallpapers
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        with (CONFIG_DIR / "build.lock").open("a") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            managed_glass.restore()
+            wallpapers.restore()
+        return
+    sync = Sync()
+    sync.changed.add("color-scheme")
+    sync.sync()
+    if "--once" in sys.argv:
+        if sync.last_error is not None:
+            raise SystemExit(1)
+        return
+    GLib.MainLoop().run()
+
+
+if __name__ == "__main__":
+    main()

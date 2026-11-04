@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="frame" x1="28" y1="13" x2="102" y2="115" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E9EDF0"/>
+      <stop offset=".48" stop-color="#8E969D"/>
+      <stop offset="1" stop-color="#D4D9DD"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="37" y1="21" x2="91" y2="109" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#132B42"/>
+      <stop offset=".52" stop-color="#087E8B"/>
+      <stop offset="1" stop-color="#E57B55"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="42" y1="44" x2="93" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D8F0E8"/>
+      <stop offset="1" stop-color="#EFC394"/>
+    </linearGradient>
+    <clipPath id="screen">
+      <rect x="35" y="18" width="58" height="92" rx="13"/>
+    </clipPath>
+  </defs>
+  <rect x="25" y="7" width="78" height="114" rx="22" fill="#171A1D"/>
+  <rect x="27" y="9" width="74" height="110" rx="20" stroke="url(#frame)" stroke-width="3"/>
+  <g clip-path="url(#screen)">
+    <rect x="35" y="18" width="58" height="92" rx="13" fill="url(#glass)"/>
+    <circle cx="82" cy="39" r="22" fill="#E9A776" fill-opacity=".88"/>
+    <path d="M31 76c12-16 25-21 39-15 10 4 17 15 28 13v40H31V76Z" fill="url(#ribbon)"/>
+    <path d="M31 89c14-12 27-13 39-5 10 6 17 13 28 10v24H31V89Z" fill="#F7D3A0" fill-opacity=".9"/>
+    <path d="M34 103c13-9 23-8 33-2 9 6 15 9 31 4v11H34v-13Z" fill="#F4EEE2" fill-opacity=".9"/>
+  </g>
+  <rect x="47" y="18" width="34" height="9" rx="4.5" fill="#111417"/>
+  <circle cx="77" cy="22.5" r="1.4" fill="#27343D"/>
+  <rect x="60" y="113" width="8" height="2" rx="1" fill="#AEB5BA"/>
+</svg>

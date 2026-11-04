@@ -1,0 +1,163 @@
+/* ==========================================================================
+ * Yaru Glass — GTK 3 overrides (imported after Yaru-blue and the color file)
+ * ========================================================================== */
+
+/* ---------- Traffic-light window buttons (kept on the right) ---------- */
+headerbar button.titlebutton:not(.appmenu),
+.titlebar button.titlebutton:not(.appmenu),
+headerbar.selection-mode button.titlebutton:not(.appmenu),
+headerbar button.titlebutton.close:not(.appmenu),
+headerbar button.titlebutton.minimize:not(.appmenu),
+headerbar button.titlebutton.maximize:not(.appmenu),
+.titlebar button.titlebutton.close:not(.appmenu),
+.titlebar button.titlebutton.minimize:not(.appmenu),
+.titlebar button.titlebutton.maximize:not(.appmenu) {
+  min-width: 16px;
+  min-height: 16px;
+  margin: 0 2px;
+  padding: 2px;
+  border: none;
+  border-radius: 100%;
+  box-shadow: none;
+  background-color: transparent;
+  color: transparent;
+  text-shadow: none;
+  -gtk-icon-shadow: none;
+  transition: none;
+}
+headerbar button.titlebutton:not(.appmenu) image,
+.titlebar button.titlebutton:not(.appmenu) image {
+  -gtk-icon-transform: scale(0.62);
+  -gtk-icon-shadow: none;
+}
+
+headerbar button.titlebutton.close:not(.appmenu),
+.titlebar button.titlebutton.close:not(.appmenu) {
+  background-image: radial-gradient(circle closest-side, @glass_tl_close 0%, @glass_tl_close 74%, @glass_tl_rim 82%, transparent 92%);
+}
+headerbar button.titlebutton.minimize:not(.appmenu),
+.titlebar button.titlebutton.minimize:not(.appmenu) {
+  background-image: radial-gradient(circle closest-side, @glass_tl_minimize 0%, @glass_tl_minimize 74%, @glass_tl_rim 82%, transparent 92%);
+}
+headerbar button.titlebutton.maximize:not(.appmenu),
+.titlebar button.titlebutton.maximize:not(.appmenu) {
+  background-image: radial-gradient(circle closest-side, @glass_tl_maximize 0%, @glass_tl_maximize 74%, @glass_tl_rim 82%, transparent 92%);
+}
+
+headerbar button.titlebutton.close:not(.appmenu):hover,
+headerbar button.titlebutton.minimize:not(.appmenu):hover,
+headerbar button.titlebutton.maximize:not(.appmenu):hover,
+.titlebar button.titlebutton.close:not(.appmenu):hover,
+.titlebar button.titlebutton.minimize:not(.appmenu):hover,
+.titlebar button.titlebutton.maximize:not(.appmenu):hover {
+  color: rgba(0, 0, 0, 0.6);
+}
+headerbar button.titlebutton.close:not(.appmenu):active,
+.titlebar button.titlebutton.close:not(.appmenu):active {
+  background-image: radial-gradient(circle closest-side, shade(@glass_tl_close, 0.85) 0%, shade(@glass_tl_close, 0.85) 74%, @glass_tl_rim 82%, transparent 92%);
+}
+headerbar button.titlebutton.minimize:not(.appmenu):active,
+.titlebar button.titlebutton.minimize:not(.appmenu):active {
+  background-image: radial-gradient(circle closest-side, shade(@glass_tl_minimize, 0.85) 0%, shade(@glass_tl_minimize, 0.85) 74%, @glass_tl_rim 82%, transparent 92%);
+}
+headerbar button.titlebutton.maximize:not(.appmenu):active,
+.titlebar button.titlebutton.maximize:not(.appmenu):active {
+  background-image: radial-gradient(circle closest-side, shade(@glass_tl_maximize, 0.85) 0%, shade(@glass_tl_maximize, 0.85) 74%, @glass_tl_rim 82%, transparent 92%);
+}
+
+/* Unfocused windows: grey dots, like glass */
+headerbar button.titlebutton.close:not(.appmenu):backdrop,
+headerbar button.titlebutton.minimize:not(.appmenu):backdrop,
+headerbar button.titlebutton.maximize:not(.appmenu):backdrop,
+.titlebar button.titlebutton.close:not(.appmenu):backdrop,
+.titlebar button.titlebutton.minimize:not(.appmenu):backdrop,
+.titlebar button.titlebutton.maximize:not(.appmenu):backdrop {
+  color: transparent;
+  background-image: radial-gradient(circle closest-side, @glass_tl_inactive 0%, @glass_tl_inactive 74%, @glass_tl_rim 82%, transparent 92%);
+}
+
+/* ---------- Menus (accent highlight like glass) ---------- */
+.csd.popup decoration,
+menu,
+.menu,
+.context-menu {
+  border-radius: 10px;
+}
+menu,
+.menu,
+.context-menu {
+  padding: 5px;
+}
+menu menuitem,
+.menu menuitem,
+.context-menu menuitem {
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+menu menuitem:hover,
+.menu menuitem:hover,
+.context-menu menuitem:hover {
+  color: #ffffff;
+  background-color: @glass_accent;
+}
+menu menuitem:hover label,
+menu menuitem:hover accelerator,
+menu menuitem:hover arrow,
+.menu menuitem:hover label,
+.context-menu menuitem:hover label {
+  color: #ffffff;
+}
+
+popover,
+popover.background {
+  border-radius: 12px;
+}
+popover modelbutton.flat,
+popover.background modelbutton.flat {
+  border-radius: 6px;
+}
+popover modelbutton.flat:hover,
+popover.background modelbutton.flat:hover {
+  color: #ffffff;
+  background-color: @glass_accent;
+}
+
+/* ---------- Text entries: glass focus ring ---------- */
+entry:focus,
+spinbutton:not(.vertical):focus {
+  border-color: @glass_accent;
+  box-shadow: 0 0 0 3px alpha(@glass_accent, 0.35);
+}
+
+/* ---------- Sidebars: rounded selection pills ---------- */
+placessidebar row,
+.sidebar row,
+stacksidebar row {
+  margin: 1px 8px;
+  border-radius: 7px;
+}
+placessidebar row:selected,
+.sidebar row:selected,
+stacksidebar row:selected {
+  color: inherit;
+  background-color: @glass_sidebar_selected;
+}
+placessidebar row:selected label,
+placessidebar row:selected image,
+.sidebar row:selected label,
+stacksidebar row:selected label {
+  color: inherit;
+}
+
+/* ---------- Default action buttons ---------- */
+button.suggested-action,
+button.destructive-action,
+.dialog-action-area button {
+  border-radius: 8px;
+}
+
+/* ---------- Tooltips ---------- */
+tooltip,
+tooltip.background {
+  border-radius: 8px;
+}
