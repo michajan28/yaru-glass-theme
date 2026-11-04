@@ -20,7 +20,7 @@ blockquote { margin: 1em 0; padding: 10px 16px; border-left: 4px solid var(--acc
 hr { border: none; }
 </style></head>
 <body><main><h1 id="yaru-glass-user-manual">Yaru Glass — User Manual</h1>
-<p>Version 2.3.0 · for Ubuntu 24.04 LTS (GNOME Shell 46) and Ubuntu 26.04 LTS (GNOME Shell 50)</p>
+<p>Version 2.3.1 · for Ubuntu 24.04 LTS (GNOME Shell 46) and Ubuntu 26.04 LTS (GNOME Shell 50)</p>
 <p>Yaru Glass is a pair of desktop themes for Ubuntu, <strong>Yaru-Glass</strong> (light) and
 <strong>Yaru-Glass-dark</strong> (dark). Both are built on top of Ubuntu's own Yaru theme with
 translucent surfaces and coordinated light/dark styling. Ubuntu's Yaru icons and
@@ -643,20 +643,25 @@ are errors, not an "up to date" result. Retry after resolving the reported cause
 <p>2.2.4 and earlier installations do not gain an update button retroactively.
 After the updater-enabled release is published, close all old Settings windows,
 finish appearance changes, and use its verified archive once on each account.
-The example below installs 2.3.0. Use a new empty directory and inspect the
+Older development installations may already have an Updates page but fail with
+<strong>Unexpected release payload path</strong>: their validator does not allow the
+<code>CONTRIBUTING.md</code> and <code>SECURITY.md</code> files added to the released package. Those
+installations also need this one-time bootstrap using the downloaded updater;
+retrying the old Settings updater cannot replace its own validator.</p>
+<p>The example below installs 2.3.1. Use a new empty directory and inspect the
 release notes first. Start only after the release archive and checksum are published.</p>
-<pre><code class="language-bash">mkdir yaru-glass-bootstrap-2.3.0
-cd yaru-glass-bootstrap-2.3.0
+<pre><code class="language-bash">mkdir yaru-glass-bootstrap-2.3.1
+cd yaru-glass-bootstrap-2.3.1
 curl --fail --location --proto '=https' --proto-redir '=https' \
-  -O https://github.com/michajan28/yaru-glass-theme/releases/download/v2.3.0/yaru-glass-theme-2.3.0.tar.gz
+  -O https://github.com/michajan28/yaru-glass-theme/releases/download/v2.3.1/yaru-glass-theme-2.3.1.tar.gz
 curl --fail --location --proto '=https' --proto-redir '=https' \
-  -O https://github.com/michajan28/yaru-glass-theme/releases/download/v2.3.0/yaru-glass-theme-2.3.0.tar.gz.sha256
-sha256sum --check yaru-glass-theme-2.3.0.tar.gz.sha256
+  -O https://github.com/michajan28/yaru-glass-theme/releases/download/v2.3.1/yaru-glass-theme-2.3.1.tar.gz.sha256
+sha256sum --check yaru-glass-theme-2.3.1.tar.gz.sha256
 # Continue only if checksum verification succeeded.
-tar -xzf yaru-glass-theme-2.3.0.tar.gz
-/usr/bin/python3 yaru-glass-theme-2.3.0/bin/yaru-glass-update install --bootstrap \
-  --archive &quot;$PWD/yaru-glass-theme-2.3.0.tar.gz&quot; \
-  --checksum &quot;$PWD/yaru-glass-theme-2.3.0.tar.gz.sha256&quot;
+tar -xzf yaru-glass-theme-2.3.1.tar.gz
+/usr/bin/python3 yaru-glass-theme-2.3.1/bin/yaru-glass-update install --bootstrap \
+  --archive &quot;$PWD/yaru-glass-theme-2.3.1.tar.gz&quot; \
+  --checksum &quot;$PWD/yaru-glass-theme-2.3.1.tar.gz.sha256&quot;
 </code></pre>
 <p>Bootstrap re-verifies and validates the local archive, uses the same preserving
 transaction, and installs the updater command. There is no second download or
@@ -781,6 +786,7 @@ fields, error categories and repository file basenames/line numbers. They omit
 exception messages, credentials, personal paths, wallpaper names, environment,
 raw commands/output, complete preferences, backups and journal dumps.
 <strong>Save report…</strong> explains its contents and asks for a local destination.
+The destination dialog stays open until you save, cancel, or close Settings.
 Export includes up to 1,000 sanitized recent events, project/Python/Ubuntu/GNOME
 versions and known extension states/compatibility where available. Existing files
 are never overwritten. Reports are private JSON files; review them before sharing.

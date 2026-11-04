@@ -2,10 +2,12 @@ import runpy
 import json
 import os
 import copy
+import gc
 import sys
 import tempfile
 import time
 import unittest
+import weakref
 from pathlib import Path
 from unittest.mock import patch
 
@@ -326,6 +328,36 @@ class SettingsUITests(unittest.TestCase):
         self.wait_diagnostics(window)
         self.assertIn("no success is confirmed", window.status.get_label())
         self.assertTrue(window.status.has_css_class("error"))
+
+    def test_diagnostics_export_retains_native_chooser_until_response_or_close(self):
+        import diagnostics
+        window = self.diagnostics_window()
+        references = []
+        with patch.object(Gtk.FileChooserNative, "show",
+                          lambda chooser: references.append(weakref.ref(chooser))), \
+             patch.object(diagnostics, "export_report") as export:
+            window.choose_export(None, "cancel")
+            self.assertEqual(references, [])
+            window.choose_export(None, "save")
+            gc.collect()
+            chooser = references[0]()
+            self.assertIsNotNone(chooser)
+            self.assertIs(window.export_chooser, chooser)
+            self.assertTrue(chooser.get_modal())
+            self.assertIs(chooser.get_transient_for(), self.window)
+            self.assertEqual(chooser.get_current_name(), "yaru-glass-diagnostics.json")
+            window.choose_export(None, "save")
+            self.assertEqual(len(references), 1)
+            chooser.emit("response", Gtk.ResponseType.CANCEL)
+            self.assertIsNone(window.export_chooser)
+            export.assert_not_called()
+            window.choose_export(None, "save")
+            self.assertIsNotNone(window.export_chooser)
+            window.on_close()
+            self.assertIsNone(window.export_chooser)
+            window.choose_export(None, "save")
+            self.assertEqual(len(references), 2)
+            export.assert_not_called()
 
     def test_diagnostics_async_worker_does_not_block_gtk(self):
         import threading
