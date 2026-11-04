@@ -23,6 +23,8 @@ import diagnostics
 
 
 SECTION_LABELS = {"shell": "Shell", "app": "Settings app", "files": "Files"}
+PAGES = (("shell", "Shell"), ("applications", "Applications"), ("wallpapers", "Wallpapers"),
+         ("diagnostics", "Diagnostics"), ("updates", "Updates"))
 SETTING_LABELS = {
     ("shell", "transparency"): "Transparency level",
     ("shell", "glass_mode"): "Glass style",
@@ -66,7 +68,7 @@ def format_confirmation_changes(snapshot, patch, invalid_sections=()):
 class SettingsWindow(Adw.ApplicationWindow):
     def __init__(self, application):
         super().__init__(application=application, title="Yaru Glass Settings")
-        self.set_default_size(540, 650)
+        self.set_default_size(740, 650)
         self.add_css_class("yaru-settings-window")
         self.timeout_id = 0
         self.process = None
@@ -78,6 +80,9 @@ class SettingsWindow(Adw.ApplicationWindow):
         self.files_restart_process = None
         self.files_restart_watch = 0
         self.files_restart_timeout = 0
+        self.update_installing = False
+        self.update_installed = False
+        self.loaded_version = (ROOT / "VERSION").read_text()
         error = None
         try:
             settings = load_settings()
@@ -104,17 +109,10 @@ class SettingsWindow(Adw.ApplicationWindow):
 
         content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         header = Adw.HeaderBar()
-        self.diagnostics_button = Gtk.Button(
-            child=Adw.ButtonContent(icon_name="dialog-information-symbolic", label="Diagnostics"),
-            tooltip_text="View Yaru Glass logs and export a diagnostic report")
-        self.diagnostics_button.update_property([Gtk.AccessibleProperty.LABEL], ["Open diagnostics"])
-        self.diagnostics_button.connect("clicked", self.open_diagnostics)
-        header.pack_start(self.diagnostics_button)
         content.append(header)
         self.pages = Gtk.Stack(vexpand=True)
         self.page_bodies = {}
-        for name, title in (("shell", "Shell"), ("applications", "Applications"),
-                            ("wallpapers", "Wallpapers")):
+        for name, title in PAGES:
             page_body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16,
                                 margin_top=20, margin_bottom=24, margin_start=24, margin_end=24)
             scroll = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER, vexpand=True)
@@ -126,7 +124,7 @@ class SettingsWindow(Adw.ApplicationWindow):
                                             margin_top=6, margin_bottom=6)
         self.navigation.update_property([Gtk.AccessibleProperty.LABEL], ["Settings pages"])
         self.compact_navigation = Gtk.DropDown(
-            model=Gtk.StringList.new(["Shell", "Applications", "Wallpapers"]),
+            model=Gtk.StringList.new([title for name, title in PAGES]),
             halign=Gtk.Align.CENTER, margin_top=6, margin_bottom=6)
         self.compact_navigation.update_property([Gtk.AccessibleProperty.LABEL], ["Settings pages"])
         self.compact_navigation.set_visible(False)
@@ -383,25 +381,53 @@ class SettingsWindow(Adw.ApplicationWindow):
                             "or Reset to replace the invalid setting.")
 
     def open_diagnostics(self, *_args):
-        from diagnostics_ui import DiagnosticsWindow
-        self.diagnostics_window = DiagnosticsWindow(self)
-        self.diagnostics_window.present()
+        self.pages.set_visible_child_name("diagnostics")
+
+    def open_updates(self, *_args):
+        self.pages.set_visible_child_name("updates")
+
+    def set_appearance_sensitive(self, sensitive):
+        for name in ("shell", "applications", "wallpapers"):
+            self.page_bodies[name].set_sensitive(sensitive)
+
+    def package_changed(self):
+        try:
+            changed = (ROOT / "VERSION").read_text() != self.loaded_version
+        except OSError as exc:
+            diagnostics.event("settings", "read", "failure", level="ERROR", error=exc)
+            print(f"yaru-glass-settings: installed version unavailable: {exc}", file=sys.stderr)
+            changed = True
+        if changed:
+            self.update_installed = True
+            self.set_appearance_sensitive(False)
+            self.status.set_label("App files changed. Close and reopen Settings before changing appearance.")
+        return changed
 
     def update_page_navigation(self, *_args):
-        width = self.get_width() or self.get_default_size()[0]
-        compact = width < 420
+        requested_width = self.get_default_size()[0]
+        default_changed = len(_args) > 1 and _args[1].name == "default-width"
+        width = requested_width if default_changed else self.get_width() or requested_width
+        compact = width < 680
         self.navigation.set_visible(not compact)
         self.compact_navigation.set_visible(compact)
 
     def on_compact_navigation_selected(self, *_args):
-        pages = ("shell", "applications", "wallpapers")
+        pages = tuple(name for name, title in PAGES)
         selected = self.compact_navigation.get_selected()
         if selected < len(pages):
             self.pages.set_visible_child_name(pages[selected])
 
     def sync_compact_navigation(self, *_args):
-        pages = ("shell", "applications", "wallpapers")
+        pages = tuple(name for name, title in PAGES)
         name = self.pages.get_visible_child_name()
+        if name == "diagnostics" and not hasattr(self, "diagnostics_page"):
+            from diagnostics_ui import DiagnosticsPage
+            self.diagnostics_page = DiagnosticsPage(self)
+            self.pages.get_child_by_name(name).set_child(self.diagnostics_page)
+        elif name == "updates" and not hasattr(self, "updates_page"):
+            from updates_ui import UpdatesPage
+            self.updates_page = UpdatesPage(self, ROOT)
+            self.pages.get_child_by_name(name).set_child(self.updates_page)
         selected = pages.index(name) if name in pages else 0
         if self.compact_navigation.get_selected() != selected:
             self.compact_navigation.set_selected(selected)
@@ -525,6 +551,9 @@ window.yaru-settings-window headerbar label {{
         dialog.present()
 
     def on_files_restart_confirmed(self, _dialog, response):
+        if self.update_installing or self.update_installed or self.package_changed():
+            self.files_status.set_label("Reopen Settings after the app update before restarting Files.")
+            return
         if response != "restart" or self.files_restart_process is not None or self.files_restart_watch:
             return
         self.files_restart_operation = diagnostics.new_operation()
@@ -665,6 +694,9 @@ window.yaru-settings-window headerbar label {{
         chooser.show()
 
     def on_wallpaper_chosen(self, chooser, response, key):
+        if self.update_installing or self.update_installed or self.package_changed():
+            chooser.destroy()
+            return
         try:
             if response == Gtk.ResponseType.ACCEPT:
                 file = chooser.get_file()
@@ -683,6 +715,8 @@ window.yaru-settings-window headerbar label {{
             self.chooser = None
 
     def restore_wallpaper(self, _button, key):
+        if self.update_installing or self.update_installed or self.package_changed():
+            return
         try:
             wallpapers.restore_slot(key)
             self.refresh_wallpapers()
@@ -793,6 +827,9 @@ window.yaru-settings-window headerbar label {{
             self.queue_patch(self.failed_patch)
 
     def queue_patch(self, patch):
+        if self.update_installing or self.update_installed or self.package_changed():
+            self.status.set_label("Wait for the app update, then close and reopen Settings.")
+            return
         if self.syncing:
             return
         if not self.files_restart.get_sensitive():
@@ -945,10 +982,16 @@ window.yaru-settings-window headerbar label {{
             self.pages.set_visible_child_name("shell")
 
     def on_close(self, _window):
+        if self.update_installing:
+            return True
         if not self.files_restart.get_sensitive():
             self.files_status.set_label("Please wait for the Files restart to finish.")
             return True
         if self.process is None and self.requested is None:
+            for name in ("diagnostics_page", "updates_page"):
+                page = getattr(self, name, None)
+                if page is not None:
+                    page.on_close()
             return False
         self.closing = True
         self.scale.set_sensitive(False)

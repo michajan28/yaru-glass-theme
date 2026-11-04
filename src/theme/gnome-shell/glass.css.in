@@ -480,6 +480,22 @@
 .app-folder {
   border-radius: 22px;
 }
+.overview-tile:hover,
+.app-folder:hover {
+  background-color: ${entry_hover};
+}
+.overview-tile:focus,
+.app-folder:focus {
+  background-color: ${entry_focus};
+  box-shadow: inset 0 0 0 2px ${accent};
+}
+.overview-tile:active,
+.app-folder:active {
+  background-color: ${entry_focus};
+}
+.overview-tile .overview-icon.overview-icon-with-label > StBoxLayout {
+  spacing: 8px;
+}
 .app-folder-dialog {
   background-color: ${menu_bg};
   border: 1px solid ${glass_border};

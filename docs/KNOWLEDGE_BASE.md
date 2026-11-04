@@ -7,7 +7,8 @@ and user manual. It is intended as a starting point for future maintenance.
 
 - **Purpose:** provide light and dark glass-inspired desktop themes for Ubuntu
   GNOME, while retaining Ubuntu's Yaru foundation, icons, and logo.
-- **Release in this tree:** `2.2.4` (`VERSION`), prepared locally; no remote publication.
+- **Release in this tree:** `2.3.0` (`VERSION`), distributed through public GitHub
+  Releases with a versioned archive and SHA-256 companion.
 - **Tested targets:** Ubuntu 24.04 LTS / GNOME Shell 46 and Ubuntu 26.04 LTS /
   GNOME Shell 50, Wayland. Other Ubuntu/GNOME versions are not guaranteed.
 - **Dual-stack validation:** Ubuntu 26.04 / GNOME 50 alongside 24.04.
@@ -99,7 +100,11 @@ readability compared with the earlier straight-alpha theme. Text uses opaque for
 colors; GTK app styling and solid accents are unchanged.
 
 The settings app remembers the level in `~/.config/yaru-glass/settings.json`
-and groups controls in three Gtk.Stack pages: Shell, Applications and Wallpapers.
+and groups controls in five Gtk.Stack pages: Shell, Applications, Wallpapers,
+Diagnostics and Updates. The latter two are lazily created inline Gtk.Box pages,
+not popup windows. Their confirmation/export dialogs remain explicitly invoked.
+The diagnostic viewer formats sanitized records as newest-first summaries and
+detail blocks; JSON storage/export and the CLI protocol remain unchanged.
 A keyboard-accessible StackSwitcher stays above independent scrollers. Page changes
 never save/rebuild. Error handlers select the relevant page; Files status distinguishes
 saved/restart-required from confirmed restart and does not claim live CSS on startup.
@@ -377,6 +382,53 @@ only the stale installed profile file, retaining existing extension settings,
 original backups and installer ownership records for uninstall compatibility.
 
 ## Uninstall and data behavior
+
+### App updater (2.3.0)
+
+`bin/yaru-glass-update` shares bounded release/asset validation in
+`src/yaru_glass/updates.py` with the asynchronous native `updates_ui.py` window.
+The public latest stable release must have exact versioned archive/checksum
+assets. Same-release checksums are integrity checks, not independent signatures.
+The CLI uses no gh/git, login, package manager or external Python dependency.
+
+`update_transaction.py` is deliberately not a wrapper around `install.sh`,
+which reapplies fonts/profiles and activation. It preserves saved preferences,
+customized profiles, original backups and extension ownership while staging
+complete app/theme trees. `build.py --stage-themes NEW_DIRECTORY` reads saved
+preferences and system Yaru resources but never activates or reloads the desktop.
+Keep this path free of managed-effect application and preference writes.
+
+`operation_lock.py` coordinates shared appearance/sync activity with exclusive
+update/install/uninstall activity. An inherited validated descriptor allows
+installer children to participate without deadlocking. Lock order is lifecycle
+then build; the updater also holds build.lock during staging/commit to exclude
+old bootstrap-era appearance workers. A pending journal blocks normal mutations.
+Sync defers while busy rather than changing the desktop during replacement.
+
+The private canonical same-filesystem workspace is
+`~/.local/share/yaru-glass-update/`. Orchestration runs from its retained
+`runner/bin/yaru-glass-update`; the runner can execute `recover` when the installed
+package is unavailable. Journal each replacement intent before renaming, preserve
+complete old trees, and retain evidence when restoration fails. Commit follows
+reload and original-service restoration; directory replacement is recoverable,
+not multi-directory atomic. Do not enable a previously disabled sync service,
+restart Files, import profiles, or select an inactive project theme.
+
+Bootstrap requires a verified local release archive/checksum and the same
+transaction against an owned canonical installation. Existing Settings windows
+must be closed first. Tests cover a synthetic 2.2.4 layout followed by an
+installed-CLI update with mocked downloads, real staged Yaru generation, private
+HOME/XDG/D-Bus and stubbed systemd. `test_updates.py` additionally injects archive,
+network, concurrency, generation, replacement/reload/service and recovery errors.
+This is not certification of arbitrary historical layouts or both live desktops.
+
+For 2.3.0, Settings and Files render fixtures use
+`tests/gtk_rendering.py:snapshot_widget` to request/wait for GTK after-paint before
+sampling the paintable cache. Fixed sleeps alone could sample the previous
+opaque/translucent frame. Keep the existing alpha/content assertions; do not
+raise tolerances to hide capture timing. GNOME 50/VM revalidation is deferred for
+this release; retain Logo Menu's GNOME 50 exclusion until actual interaction
+validation is available.
 
 - `~/.local/share/yaru-glass/scripts/uninstall.sh` restores the original backed-up settings.
 - `--remove-extensions` also removes extensions recorded as installed by this installer;

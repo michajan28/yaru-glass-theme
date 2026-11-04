@@ -98,6 +98,8 @@ class AppearanceTransactionTests(unittest.TestCase):
         self.root = Path(directory.name)
         self.config = self.root / "config"
         self.config.mkdir()
+        lock_directory = self.root / "updater"
+        lock_directory.mkdir()
         self.themes = self.root / "themes"
         self.paths = [self.themes / variant["name"] / child for variant in build.VARIANTS
                       for child in ("gnome-shell/gnome-shell.css", "gtk-4.0/libadwaita.css")]
@@ -109,6 +111,7 @@ class AppearanceTransactionTests(unittest.TestCase):
                                 "readability_boost": True}, self.shell_path)
         for patcher in (
             patch.dict(os.environ, {"XDG_STATE_HOME": str(self.root / "state")}),
+            patch.object(build.operation_lock, "directory", return_value=lock_directory),
             patch.object(build, "CONFIG_DIR", self.config),
             patch.object(build, "THEMES_DIR", self.themes),
             patch.object(build, "load_settings", side_effect=lambda: settings.load_settings(self.shell_path)),

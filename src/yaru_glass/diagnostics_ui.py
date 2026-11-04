@@ -1,5 +1,5 @@
 """Asynchronous local diagnostic viewer; no appearance controls or uploads."""
-import json
+from datetime import datetime
 import threading
 
 import gi
@@ -10,16 +10,39 @@ from gi.repository import Adw, GLib, Gtk
 import diagnostics
 
 
-class DiagnosticsWindow(Adw.Window):
+def format_record(record):
+    timestamp = datetime.fromisoformat(record["timestamp"]).astimezone().isoformat(
+        sep=" ", timespec="seconds")
+    phase = {"start": "Started", "success": "Completed", "failure": "Failed",
+             "requested": "Requested", "confirmed": "Confirmed", "pending": "Pending"}[record["phase"]]
+    summary = (f"{timestamp}  [{record['level']}]\n"
+               f"{record['component'].replace('_', ' ').title()} / "
+               f"{record['action'].replace('_', ' ').title()} - {phase}\n")
+    details = []
+    for key, value in sorted(record["fields"].items()):
+        if type(value) is bool:
+            value = "Yes" if value else "No"
+        details.append(f"{key.replace('_', ' ').capitalize()}: {value}")
+    failure = record.get("error")
+    if failure:
+        details.append("Error: " + failure["type"])
+        if "errno" in failure:
+            details.append("System error: " + failure["errno"])
+        details.extend(f"At: {frame['file']}:{frame['line']}" for frame in failure.get("frames", []))
+    details.append(f"Operation: {record['operation']}")
+    details.append(f"Version: {record['version']}  |  Process: {record['pid']}")
+    return summary, "\n".join(details) + "\n\n"
+
+
+class DiagnosticsPage(Gtk.Box):
     def __init__(self, parent):
-        super().__init__(title="Yaru Glass Diagnostics", transient_for=parent, modal=False)
-        self.set_default_size(700, 560)
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=12,
+                         margin_top=20, margin_bottom=20)
+        self.parent = parent
         self.closed = False
         self.busy = False
         self.stored_verbose = False
-        self.connect("close-request", self.on_close)
-        body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        body.append(Adw.HeaderBar())
+        body = self
         description = Gtk.Label(
             label="Local logs only. No automatic uploads. Reports exclude personal paths, "
                   "credentials and full settings. Review reports before sharing.",
@@ -28,7 +51,10 @@ class DiagnosticsWindow(Adw.Window):
         toolbar = Gtk.Box(spacing=8, margin_start=16, margin_end=16)
         self.level = Gtk.DropDown(model=Gtk.StringList.new(["All", "Info", "Warnings", "Errors"]))
         self.level.update_property([Gtk.AccessibleProperty.LABEL], ["Minimum log level"])
-        toolbar.append(self.level)
+        body.append(self.level)
+        self.level.set_margin_start(16)
+        self.level.set_margin_end(16)
+        self.level.set_halign(Gtk.Align.START)
         self.refresh_button = Gtk.Button(label="Refresh")
         self.refresh_button.connect("clicked", self.refresh)
         toolbar.append(self.refresh_button)
@@ -48,12 +74,20 @@ class DiagnosticsWindow(Adw.Window):
                                 margin_start=16, margin_end=16)
         body.append(self.status)
         self.text = Gtk.TextView(editable=False, monospace=True, wrap_mode=Gtk.WrapMode.WORD_CHAR)
+        self.text.set_left_margin(12)
+        self.text.set_right_margin(12)
+        self.text.set_top_margin(12)
+        self.text.set_bottom_margin(12)
+        self.text.set_pixels_above_lines(2)
+        buffer = self.text.get_buffer()
+        buffer.create_tag("summary", weight=700, pixels_above_lines=6)
+        buffer.create_tag("details", scale=.9, left_margin=20)
+        buffer.create_tag("error", weight=700, underline=1)
         self.text.update_property([Gtk.AccessibleProperty.LABEL], ["Recent sanitized diagnostic records"])
         scroll = Gtk.ScrolledWindow(vexpand=True, hexpand=True,
                                     margin_start=16, margin_end=16, margin_bottom=16)
         scroll.set_child(self.text)
         body.append(scroll)
-        self.set_content(body)
         self.level.connect("notify::selected", self.refresh)
         self.verbose_handler = self.verbose_switch.connect("notify::active", self.change_verbose)
         self.refresh()
@@ -110,14 +144,19 @@ class DiagnosticsWindow(Adw.Window):
         def finished(result):
             data, verbose = result
             self.stored_verbose = verbose
-            self.text.get_buffer().set_text("\n".join(
-                json.dumps(record, sort_keys=True) for record in data["records"]))
+            buffer = self.text.get_buffer()
+            buffer.set_text("")
+            for record in reversed(data["records"]):
+                summary, details = format_record(record)
+                tags = ("summary", "error") if record["level"] in {"ERROR", "WARNING"} else ("summary",)
+                buffer.insert_with_tags_by_name(buffer.get_end_iter(), summary, *tags)
+                buffer.insert_with_tags_by_name(buffer.get_end_iter(), details, "details")
             self.verbose_switch.handler_block(self.verbose_handler)
             try:
                 self.verbose_switch.set_active(verbose)
             finally:
                 self.verbose_switch.handler_unblock(self.verbose_handler)
-            self.status.set_label(f"{len(data['records'])} recent records. "
+            self.status.set_label(f"{len(data['records'])} recent events, newest first. "
                                   f"{data['invalid_records']} invalid records omitted.")
 
         self.run_job(work, finished)
@@ -148,7 +187,7 @@ class DiagnosticsWindow(Adw.Window):
 
     def confirm_export(self, *_args):
         dialog = Adw.MessageDialog.new(
-            self, "Save a diagnostic report?",
+            self.parent, "Save a diagnostic report?",
             "Includes up to 1,000 sanitized recent events, project/GNOME version and known "
             "extension states. No credentials, personal paths, full preferences or journal "
             "dump. Choose a new file (existing files are never overwritten). "
@@ -163,7 +202,7 @@ class DiagnosticsWindow(Adw.Window):
     def choose_export(self, _dialog, response):
         if response != "save":
             return
-        chooser = Gtk.FileChooserNative.new("Save sanitized diagnostic report", self,
+        chooser = Gtk.FileChooserNative.new("Save sanitized diagnostic report", self.parent,
                                              Gtk.FileChooserAction.SAVE, "Save", "Cancel")
         chooser.set_current_name("yaru-glass-diagnostics.json")
         chooser.connect("response", self.on_export_chosen)

@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src/yaru_glass"
 import managed_glass
 import diagnostics
 import files_appearance
+import operation_lock
 from theme_settings import CONFIG_DIR, load_settings
 
 LIGHT = "Yaru-Glass"
@@ -82,6 +83,16 @@ class Sync:
         self.timeout_id = GLib.timeout_add(400, self.sync)
 
     def sync(self) -> bool:
+        try:
+            with operation_lock.locked():
+                return self.sync_locked()
+        except operation_lock.BusyError as exc:
+            log(str(exc))
+            self.timeout_id = GLib.timeout_add(1000, self.sync)
+            self.last_error = str(exc)
+            return GLib.SOURCE_REMOVE
+
+    def sync_locked(self) -> bool:
         self.timeout_id = 0
         changed, self.changed = self.changed, set()
         theme = self.iface.get_string("gtk-theme")
@@ -126,7 +137,7 @@ class Sync:
         self.last_error = None
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
         try:
-            with (CONFIG_DIR / "build.lock").open("a") as lock:
+            with operation_lock.locked(), (CONFIG_DIR / "build.lock").open("a") as lock:
                 fcntl.flock(lock, fcntl.LOCK_EX)
                 if active:
                     settings = load_settings()
@@ -168,7 +179,7 @@ def main() -> None:
     if "--restore-managed" in sys.argv:
         import wallpapers
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-        with (CONFIG_DIR / "build.lock").open("a") as lock:
+        with operation_lock.locked(), (CONFIG_DIR / "build.lock").open("a") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
             managed_glass.restore()
             wallpapers.restore()

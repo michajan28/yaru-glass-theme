@@ -63,6 +63,17 @@ for path, class_name in (
         profiles = 'for f in "$DEST"/assets/profiles/*.ini; do' + profiles.split("  done", 1)[0] + "done\n"
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
+            (root / "scripts").mkdir()
+            (root / "src").mkdir()
+            (root / "bin").mkdir()
+            shutil.copytree(ROOT / "src/yaru_glass", root / "src/yaru_glass")
+            shutil.copy2(ROOT / "bin/yaru-glass-logs", root / "bin/yaru-glass-logs")
+            shutil.copy2(ROOT / "VERSION", root / "VERSION")
+            home = root / "home"
+            for uuid in ("logomenu@aryan_k", "just-perfection-desktop@just-perfection"):
+                metadata = home / ".local/share/gnome-shell/extensions" / uuid / "metadata.json"
+                metadata.parent.mkdir(parents=True)
+                metadata.write_text("{}")
             stub = root / "gnome-shell"
             dconf = root / "dconf"
             dconf.write_text("#!/bin/sh\nprintf '%s\\n' \"$*\"\n")
@@ -71,16 +82,11 @@ for path, class_name in (
                 path = root / "assets/profiles" / f"{name}.ini"
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("[/]\\n")
-            home = root / "home"
-            for uuid in ("logomenu@aryan_k", "just-perfection-desktop@just-perfection"):
-                metadata = home / ".local/share/gnome-shell/extensions" / uuid / "metadata.json"
-                metadata.parent.mkdir(parents=True)
-                metadata.write_text("{}")
             for version in ("46", "50"):
                 with self.subTest(version=version):
                     stub.write_text(f"#!/bin/sh\necho 'GNOME Shell {version}'\n")
                     stub.chmod(0o755)
-                    script = root / "preflight.sh"
+                    script = root / "scripts/preflight.sh"
                     script.write_text(preflight + '\nprintf "EXTENSION:%s\\n" "${EXTENSIONS[@]}"\n'
                                       f'DEST="{root}"\n' + profiles)
                     result = subprocess.run(
@@ -123,7 +129,7 @@ for path, class_name in (
             temporary = Path(directory)
             project = temporary / "project"
             project.mkdir()
-            for name in ("README.md", "CHANGELOG.md", "AGENTS.md", "VERSION", ".github/skills",
+            for name in ("README.md", "CHANGELOG.md", "AGENTS.md", "CONTRIBUTING.md", "SECURITY.md", "VERSION", ".github/skills",
                          "src", "scripts", "bin", "assets", "docs", "demo", "tests"):
                 source = ROOT / name
                 target = project / name
@@ -186,7 +192,8 @@ for path, class_name in (
                             parts = Path(name).parts
                             self.assertFalse(set(parts) & {".git", "dist", "backup", "state", "__pycache__"})
                             self.assertFalse(name.endswith((".pyc", ".pyo")))
-                        for name in ("CHANGELOG.md", "AGENTS.md", ".github/skills/yaru-release/SKILL.md",
+                        for name in ("CHANGELOG.md", "AGENTS.md", "CONTRIBUTING.md", "SECURITY.md",
+                                     ".github/skills/yaru-release/SKILL.md",
                                      "scripts/install.sh", "scripts/uninstall.sh", "scripts/build.py",
                                      "bin/yaru-glass-settings", "bin/yaru-glass-sync", "bin/yaru-glass-logs",
                                      "src/yaru_glass/diagnostics.py", "src/yaru_glass/diagnostics_ui.py",
@@ -221,6 +228,14 @@ for path, class_name in (
         self.assertIn("custom-theme-customize-running-dots=false", profile)
         template = (ROOT / "src/theme/gnome-shell/glass.css.in").read_text()
         self.assertNotIn(".app-grid-running-dot", template)
+
+    def test_app_grid_tiles_have_clear_interaction_states(self):
+        template = (ROOT / "src/theme/gnome-shell/glass.css.in").read_text()
+        self.assertIn(".overview-tile:hover", template)
+        self.assertIn(".overview-tile:focus", template)
+        self.assertIn("box-shadow: inset 0 0 0 2px ${accent};", template)
+        self.assertIn(".overview-tile:active", template)
+        self.assertIn(".overview-icon.overview-icon-with-label > StBoxLayout", template)
 
     @unittest.skipIf(os.geteuid() == 0, "The uninstaller rejects root before checking its source path")
     def test_purge_refuses_to_delete_the_checkout(self):

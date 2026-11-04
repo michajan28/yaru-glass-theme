@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src/yaru_glass"))
 import files_appearance
 import diagnostics
+import operation_lock
 
 from theme_settings import (
     CONFIG_DIR, atomic_write, load_settings, save_settings, shell_colors,
@@ -372,13 +373,20 @@ def main() -> None:
     parser.add_argument("--glass-mode", choices=("frost", "crystal"), help="Glass treatment (default: saved setting or frost)")
     parser.add_argument("--save-setting", action="store_true", help="Save the level after building and reloading successfully")
     parser.add_argument("--appearance-patch", help="Validated JSON section/field update; saves all affected preferences")
+    parser.add_argument("--stage-themes", type=Path,
+                        help="Generate complete themes in a NEW directory without changing the desktop")
     args = parser.parse_args()
+    if args.stage_themes:
+        if args.shell_only or args.appearance_patch or args.transparency is not None or args.glass_mode or args.save_setting:
+            parser.error("--stage-themes cannot be combined with appearance changes")
+        stage_themes(args.stage_themes)
+        return
     if args.appearance_patch and (args.transparency is not None or args.glass_mode is not None or args.save_setting):
         parser.error("--appearance-patch cannot be combined with individual setting arguments")
     if args.save_setting and args.transparency is None and args.glass_mode is None:
         parser.error("--save-setting requires --transparency or --glass-mode")
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-    with (CONFIG_DIR / "build.lock").open("a") as lock:
+    with operation_lock.locked(), (CONFIG_DIR / "build.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         patch = json.loads(args.appearance_patch) if args.appearance_patch else {}
         if args.transparency is not None:
@@ -387,6 +395,30 @@ def main() -> None:
             patch.setdefault("shell", {})["glass_mode"] = args.glass_mode
         desired = apply_locked(patch, args.shell_only, bool(args.appearance_patch) or args.save_setting)
         print(json.dumps(desired))
+
+
+def stage_themes(output):
+    settings = load_settings()
+    files = load_app_appearance(CONFIG_DIR / "files-appearance.json")
+    if project_theme_active():
+        import managed_glass
+        managed_glass.verify_capabilities(managed_glass.desired_keys(
+            settings["glass_mode"], settings["background_blur"], settings["solid"]))
+    for variant in VARIANTS:
+        for gtk in ("gtk-3.0", "gtk-4.0"):
+            resource = SYS_THEMES / variant["base"] / gtk / "gtk.gresource"
+            if not resource.is_file():
+                raise FileNotFoundError(f"Missing system Yaru resource: {resource}")
+    output.mkdir(mode=0o700)
+    for variant in VARIANTS:
+        out = output / variant["name"]
+        build_index(variant, out)
+        build_gtk(variant, out, settings["glass_mode"])
+        build_shell(variant, out, settings["transparency"], glass_mode=settings["glass_mode"],
+                    solid=settings["solid"], readability_boost=settings["readability_boost"])
+        path = out / "gtk-4.0/libadwaita.css"
+        write(path, files_appearance.replace_css(path.read_text(), files, settings["glass_mode"],
+                                                settings["readability_boost"]))
 
 
 if __name__ == "__main__":

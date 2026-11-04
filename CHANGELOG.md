@@ -7,6 +7,50 @@ record them. Validation dates are not treated as publication dates.
 
 ## Unreleased
 
+## 2.3.0
+
+User-confirmed app updates, integrated Settings utility pages and readable logs.
+See [release evidence and validation limits](docs/RELEASE-2.3.0.md).
+
+### Added
+
+- Manual stable GitHub release checks and confirmed app/theme updates through
+  Settings **Updates** and `yaru-glass-update`, without GitHub login, sudo,
+  unattended updates or extension/profile resets.
+- Bounded HTTPS downloads, exact release assets and SHA-256 verification,
+  validated archive staging, complete generated-theme replacement, lifecycle
+  coordination, and persistent recovery for failed/interrupted updates.
+- Verified local-archive bootstrap for existing installations, with isolated
+  synthetic 2.2.4-to-feature and subsequent installed-CLI upgrade regressions.
+  Settings distinguishes installation, reload requests and relaunch/Files
+  restart requirements; no Files restart or inactive-theme activation is forced.
+
+### Changed
+
+- Diagnostics and Updates now follow Wallpapers in the same Settings navigation
+  group and open inline instead of in separate windows. Narrow layouts use the
+  same five-page dropdown. The header contains only the title/window controls.
+- Diagnostic events display newest first with local timestamps, severity and
+  action summaries, indented fields/errors and operation IDs. Copy uses readable
+  text; sanitized JSON storage and export are unchanged.
+- **2.3.0 delivers the app updater**; custom lock screen moves
+  to Later, unnumbered.
+- Installer, uninstaller, generation and sync coordinate with the updater.
+  Purge removes updater-owned runner/staging data and its launcher, retaining
+  the coordination inode. Native updater and failure/recovery tests use private
+  HOME/XDG and mocked networking or isolated desktop services.
+
+### Improved
+
+- GNOME app-grid and folder tiles now have clearer hover, keyboard-focus and
+  pressed states, with more room between each icon and its label.
+
+### Tests
+
+- GTK transparency fixtures request and wait for a painted frame before reading
+  the widget paintable, rather than sampling a potentially stale render cache.
+  Exact alpha, solid-content and unrelated-window assertions remain unchanged.
+
 ### Repository
 
 - Add issue-linked feature/bugfix PR checks, pinned GitHub Actions CI and
@@ -15,6 +59,8 @@ record them. Validation dates are not treated as publication dates.
   repository security alerts and private reporting.
 - Supply Yaru and dconf dependencies for hosted tests, skip UI fixtures without
   a usable display, and isolate installer profile fixtures from host extensions.
+- Include contributor/security documents in installation and update payloads so
+  their README links remain valid in extracted packages.
 
 ## 2.2.4
 

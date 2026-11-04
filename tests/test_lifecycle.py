@@ -22,7 +22,7 @@ class LifecycleTests(unittest.TestCase):
             runtime.mkdir(mode=0o700)
             project = temporary / "project"
             project.mkdir()
-            for name in ("README.md", "CHANGELOG.md", "AGENTS.md", "VERSION",
+            for name in ("README.md", "CHANGELOG.md", "AGENTS.md", "CONTRIBUTING.md", "SECURITY.md", "VERSION",
                          ".github", "src", "scripts", "bin", "assets", "docs", "tests"):
                 source, target = ROOT / name, project / name
                 if source.is_dir():
