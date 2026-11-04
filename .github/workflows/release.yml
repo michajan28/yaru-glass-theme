@@ -52,7 +52,9 @@ jobs:
       - name: Install GNOME test and documentation dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends -y gjs gnome-shell python3-markdown
+          sudo apt-get install --no-install-recommends -y \
+            python3-gi gjs gnome-shell yaru-theme-gtk yaru-theme-gnome-shell \
+            dconf-cli dbus-daemon libglib2.0-bin fontconfig python3-markdown
 
       - name: Run Python test suite
         run: /usr/bin/python3 -m unittest discover -s tests -p 'test_*.py' -v
