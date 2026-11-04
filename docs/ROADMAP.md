@@ -2,8 +2,8 @@
 
 Readable glass. Consistent controls. Safe upgrades.
 
-**Baseline:** 2.2.4 (published on GitHub; historical milestone evidence below retained)<br />
-**Status:** Private diagnostics delivered; user-confirmed app updates next<br />
+**Baseline:** 2.3.0 (GitHub release; historical milestone evidence below retained)<br />
+**Status:** User-confirmed app updates delivered; later feature scope remains unnumbered<br />
 **Target stacks:** Ubuntu 24.04 / GNOME 46 and Ubuntu 26.04 / GNOME 50, Wayland  
 **Limits:** Earlier compatibility evidence is not certification of new effects
 
@@ -54,13 +54,13 @@ the [manual](MANUAL.md) and [maintenance knowledge base](KNOWLEDGE_BASE.md).
 | 2.2.1 / 2.2.2: maintenance | Delivered locally | Repair rejected/cached pipelines; fix GNOME 46 demo notification animation overflow | Separate release evidence and dual-stack regressions |
 | 2.2.3: private diagnostics | Delivered locally | Local bounded logs, safe operation/error correlation, Settings viewer, CLI and explicit sanitized report export | 209 regression tests pass per GNOME stack; privacy/concurrency/rollback/lifecycle covered; no automatic uploads |
 | 2.2.4: maintenance | Delivered locally | Remove the square notification halo; labeled Diagnostics header button | Compositor captures on GNOME 46/50; native St gradient regression; 211 tests per stack |
-| 2.3.0: app updater | Next, approved | Check and install stable GitHub releases from Settings or CLI, preserving customization | Verified staging, failure recovery, older-install bootstrap and isolated lifecycle checks |
+| 2.3.0: app updater | Delivered | Check and install stable GitHub releases; inline Diagnostics/Updates, readable logs and app-grid feedback | Verified staging, recovery and bootstrap; GNOME 46 checks; GNOME 50/VM revalidation deferred |
 | Custom lock screen | Later, unnumbered | Adapt the browser concept using a supported native mechanism | Approve native scope, privacy and safe authentication boundaries |
 | Personal appearance profiles | Later, unnumbered | Safely save, preview and restore appearance choices | Approve format and reuse validated transactions |
 
 Maintenance fixes need not wait for the next feature milestone.
 Diagnostics ships in 2.2.3; 2.2.4 makes it discoverable and fixes the notification halo.
-2.3.0 now targets app updates; custom lock screen is deferred without a version.
+2.3.0 delivers app updates; custom lock screen is deferred without a version.
 Logs are enabled by
 default for key actions/warnings/errors, with optional verbose mode; private
 10 MiB rotation and sanitized local reports do not collect full preferences,
@@ -200,7 +200,7 @@ background blur, with reliable integrations and a quality-gated local release.
 **Dependency:** retain the accepted 2.1 visual baseline. Tooling must not become
 a reason to rewrite the theme or add a large build framework.
 
-## 7. Next: 2.3.0 — app updater
+## 7. Delivered: 2.3.0 — app updater
 
 **Goal:** make upgrades convenient across machines and accounts, without resetting
 each user's appearance or requiring a GitHub account.
@@ -219,6 +219,10 @@ each user's appearance or requiring a GitHub account.
   subsequent update in isolated fixtures on the supported stacks.
 
 Tracking: [implementation issue #6](https://github.com/michajan28/yaru-glass-theme/issues/6).
+See [release evidence and limits](RELEASE-2.3.0.md). Diagnostics and Updates are
+inline pages after Wallpapers; local logs are formatted for reading while export
+remains JSON. Rendering fixtures synchronize to GTK's painted frame. Validation
+for this milestone is on GNOME 46; no GNOME 50/VM revalidation is claimed.
 
 ### Later, unnumbered — custom lock screen
 
@@ -296,8 +300,9 @@ Add coverage for behavior changes, not arbitrary numeric targets.
 **2.2.0** delivers Layered glass, automatic rounded Blur my Shell integration,
 extension-version enforcement, dock dashes and demo regressions. See its
 [release evidence and limits](RELEASE-2.2.0.md).
-The next milestone is **2.3.0 app updater**, with user-confirmed stable GitHub
-updates and a preservation-focused transaction. Custom lock screen and personal
+**2.3.0 delivers the app updater**, with user-confirmed stable GitHub updates,
+a preservation-focused transaction and integrated utility pages.
+Next, handle reproducible maintenance issues; custom lock screen and personal
 appearance profiles remain later and unnumbered. Native lock-screen work still
 requires a separately approved mechanism and safe authentication boundaries.
 

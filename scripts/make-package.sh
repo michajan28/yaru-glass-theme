@@ -50,7 +50,7 @@ fi
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 mkdir -p "$STAGE/$NAME"
-(cd "$ROOT" && tar cf - --exclude='__pycache__' --exclude='*.py[cod]' --exclude='.git' README.md CHANGELOG.md AGENTS.md VERSION .github/skills src scripts bin assets docs demo tests) | (cd "$STAGE/$NAME" && tar xf -)
+(cd "$ROOT" && tar cf - --exclude='__pycache__' --exclude='*.py[cod]' --exclude='.git' README.md CHANGELOG.md AGENTS.md CONTRIBUTING.md SECURITY.md VERSION .github/skills src scripts bin assets docs demo tests) | (cd "$STAGE/$NAME" && tar xf -)
 chmod +x "$STAGE/$NAME"/scripts/*.sh "$STAGE/$NAME"/scripts/*.py "$STAGE/$NAME"/bin/*
 
 mkdir -p "$OUT_DIR"

@@ -18,7 +18,7 @@ MAX_EXPANDED = 256 * 1024 * 1024
 MAX_MEMBERS = 10000
 TIMEOUT = 20
 DEADLINE = 180
-PAYLOAD = frozenset({"README.md", "CHANGELOG.md", "AGENTS.md", "VERSION",
+PAYLOAD = frozenset({"README.md", "CHANGELOG.md", "AGENTS.md", "CONTRIBUTING.md", "SECURITY.md", "VERSION",
                      ".github", "src", "scripts", "bin", "assets", "docs", "tests", "demo"})
 REQUIRED = ("VERSION", "scripts/build.py", "scripts/uninstall.sh",
             "bin/yaru-glass-settings", "bin/yaru-glass-sync", "bin/yaru-glass-update",

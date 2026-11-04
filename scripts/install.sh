@@ -195,7 +195,7 @@ done
 step "Installing files to $DEST"
 if [[ "$PKG" != "$DEST" ]]; then
   mkdir -p "$DEST"
-  (cd "$PKG" && tar cf - --exclude='__pycache__' --exclude='*.py[cod]' --exclude='.git' README.md CHANGELOG.md AGENTS.md VERSION .github/skills src scripts bin assets docs tests) | (cd "$DEST" && tar xf -)
+  (cd "$PKG" && tar cf - --exclude='__pycache__' --exclude='*.py[cod]' --exclude='.git' README.md CHANGELOG.md AGENTS.md CONTRIBUTING.md SECURITY.md VERSION .github/skills src scripts bin assets docs tests) | (cd "$DEST" && tar xf -)
 fi
 # Remove the retired profile left by an upgrade; keep original backups and state.
 rm -f "$DEST/assets/profiles/search-light.ini"

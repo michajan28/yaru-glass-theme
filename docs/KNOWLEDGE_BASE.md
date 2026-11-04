@@ -7,7 +7,8 @@ and user manual. It is intended as a starting point for future maintenance.
 
 - **Purpose:** provide light and dark glass-inspired desktop themes for Ubuntu
   GNOME, while retaining Ubuntu's Yaru foundation, icons, and logo.
-- **Release in this tree:** `2.2.4` (`VERSION`), prepared locally; no remote publication.
+- **Release in this tree:** `2.3.0` (`VERSION`), distributed through public GitHub
+  Releases with a versioned archive and SHA-256 companion.
 - **Tested targets:** Ubuntu 24.04 LTS / GNOME Shell 46 and Ubuntu 26.04 LTS /
   GNOME Shell 50, Wayland. Other Ubuntu/GNOME versions are not guaranteed.
 - **Dual-stack validation:** Ubuntu 26.04 / GNOME 50 alongside 24.04.
@@ -382,7 +383,7 @@ original backups and installer ownership records for uninstall compatibility.
 
 ## Uninstall and data behavior
 
-### App updater (unreleased; 2.3.0 target)
+### App updater (2.3.0)
 
 `bin/yaru-glass-update` shares bounded release/asset validation in
 `src/yaru_glass/updates.py` with the asynchronous native `updates_ui.py` window.
@@ -420,6 +421,14 @@ installed-CLI update with mocked downloads, real staged Yaru generation, private
 HOME/XDG/D-Bus and stubbed systemd. `test_updates.py` additionally injects archive,
 network, concurrency, generation, replacement/reload/service and recovery errors.
 This is not certification of arbitrary historical layouts or both live desktops.
+
+For 2.3.0, Settings and Files render fixtures use
+`tests/gtk_rendering.py:snapshot_widget` to request/wait for GTK after-paint before
+sampling the paintable cache. Fixed sleeps alone could sample the previous
+opaque/translucent frame. Keep the existing alpha/content assertions; do not
+raise tolerances to hide capture timing. GNOME 50/VM revalidation is deferred for
+this release; retain Logo Menu's GNOME 50 exclusion until actual interaction
+validation is available.
 
 - `~/.local/share/yaru-glass/scripts/uninstall.sh` restores the original backed-up settings.
 - `--remove-extensions` also removes extensions recorded as installed by this installer;

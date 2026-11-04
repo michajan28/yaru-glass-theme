@@ -129,7 +129,7 @@ for path, class_name in (
             temporary = Path(directory)
             project = temporary / "project"
             project.mkdir()
-            for name in ("README.md", "CHANGELOG.md", "AGENTS.md", "VERSION", ".github/skills",
+            for name in ("README.md", "CHANGELOG.md", "AGENTS.md", "CONTRIBUTING.md", "SECURITY.md", "VERSION", ".github/skills",
                          "src", "scripts", "bin", "assets", "docs", "demo", "tests"):
                 source = ROOT / name
                 target = project / name
@@ -192,7 +192,8 @@ for path, class_name in (
                             parts = Path(name).parts
                             self.assertFalse(set(parts) & {".git", "dist", "backup", "state", "__pycache__"})
                             self.assertFalse(name.endswith((".pyc", ".pyo")))
-                        for name in ("CHANGELOG.md", "AGENTS.md", ".github/skills/yaru-release/SKILL.md",
+                        for name in ("CHANGELOG.md", "AGENTS.md", "CONTRIBUTING.md", "SECURITY.md",
+                                     ".github/skills/yaru-release/SKILL.md",
                                      "scripts/install.sh", "scripts/uninstall.sh", "scripts/build.py",
                                      "bin/yaru-glass-settings", "bin/yaru-glass-sync", "bin/yaru-glass-logs",
                                      "src/yaru_glass/diagnostics.py", "src/yaru_glass/diagnostics_ui.py",

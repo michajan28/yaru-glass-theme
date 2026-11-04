@@ -1,6 +1,6 @@
 # Yaru Glass
 
-Version **2.2.4** — Ubuntu 24.04 / GNOME Shell 46 and Ubuntu 26.04 / GNOME Shell 50.
+Version **2.3.0** — Ubuntu 24.04 / GNOME Shell 46 and Ubuntu 26.04 / GNOME Shell 50.
 
 See the [changelog](CHANGELOG.md) for release history starting at 1.0.0 and
 unreleased repository changes. Contributor and agent guidance is in
@@ -38,6 +38,12 @@ square gray halo on bright backgrounds. See [2.2.3 release evidence](docs/RELEAS
 **2.2.4:** notification banners drop the Layered gradient that caused the
 square halo, and Settings shows a labeled **Diagnostics** header button.
 See [2.2.4 release evidence](docs/RELEASE-2.2.4.md).
+
+**2.3.0 adds user-confirmed GitHub app updates.** Diagnostics and Updates are
+inline pages after Wallpapers, and logs use readable summaries instead of raw
+JSON. App-grid tiles have clearer hover, focus and pressed states. This release
+was checked on GNOME 46; GNOME 50/VM revalidation is deferred, not claimed.
+See [2.3.0 release evidence and limits](docs/RELEASE-2.3.0.md).
 
 **2.2.1 fixes missing/unselectable Frost/Crystal pipelines** for the panel,
 popups and dock. A color serialization defect made Blur my Shell reject the
@@ -101,14 +107,14 @@ confirmed restart; it cannot inspect a running Files process's CSS.
 Development direction: [roadmap (Markdown)](docs/ROADMAP.md) ·
 [roadmap (HTML)](docs/ROADMAP.html).
 
-**Next feature release: 2.3.0 app updates.** The unreleased implementation adds
+**2.3.0 app updates.** This release adds
 manual **Updates** controls in Settings and `yaru-glass-update check|install`.
 Stable public GitHub releases are checksum-verified and staged without resetting
 preferences, wallpapers, customized profiles or extensions. Failed/interrupted
 replacement has a recovery path. Existing 2.2.4 installations need a one-time
-verified-archive bootstrap after an updater-enabled release is published; they
+verified-archive bootstrap using the 2.3.0 release; they
 do not already contain these controls. See [updating and bootstrap](docs/MANUAL.md#6-updating).
-Custom lock screen is now later and unnumbered. `VERSION` remains 2.2.4.
+Custom lock screen is now later and unnumbered.
 
 **Breaking rename:** commands, theme names, app IDs and configuration paths now
 use Yaru Glass. There are no legacy aliases or automatic migration. Before

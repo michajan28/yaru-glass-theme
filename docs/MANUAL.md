@@ -1,6 +1,6 @@
 # Yaru Glass — User Manual
 
-Version 2.2.4 · for Ubuntu 24.04 LTS (GNOME Shell 46) and Ubuntu 26.04 LTS (GNOME Shell 50)
+Version 2.3.0 · for Ubuntu 24.04 LTS (GNOME Shell 46) and Ubuntu 26.04 LTS (GNOME Shell 50)
 
 Yaru Glass is a pair of desktop themes for Ubuntu, **Yaru-Glass** (light) and
 **Yaru-Glass-dark** (dark). Both are built on top of Ubuntu's own Yaru theme with
@@ -486,7 +486,7 @@ Missing Markdown rendering is reported; the existing HTML manual is then require
 
 ## 6. Updating
 
-### App updates (unreleased, targeting 2.3.0)
+### App updates (2.3.0)
 
 In an updater-enabled installation, open **Yaru Glass Settings → Updates**,
 choose **Check for updates**, then confirm **Install update**. Checks happen only
@@ -528,8 +528,8 @@ are errors, not an "up to date" result. Retry after resolving the reported cause
 2.2.4 and earlier installations do not gain an update button retroactively.
 After the updater-enabled release is published, close all old Settings windows,
 finish appearance changes, and use its verified archive once on each account.
-The example below targets the future 2.3.0 release; do not run it before that
-release exists. Use a new empty directory and inspect the release notes first.
+The example below installs 2.3.0. Use a new empty directory and inspect the
+release notes first. Start only after the release archive and checksum are published.
 
 ```bash
 mkdir yaru-glass-bootstrap-2.3.0
