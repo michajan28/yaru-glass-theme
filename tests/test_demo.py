@@ -10,9 +10,10 @@ from pathlib import Path
 try:
     import gi
     gi.require_version("Gtk", "4.0")
+    gi.require_version("Gdk", "4.0")
     gi.require_version("WebKit", "6.0")
-    from gi.repository import GLib, Gtk, WebKit
-    AVAILABLE = Gtk.init_check()
+    from gi.repository import Gdk, GLib, Gtk, WebKit
+    AVAILABLE = Gtk.init_check() and Gdk.Display.get_default() is not None
 except (ImportError, ValueError):
     AVAILABLE = False
 

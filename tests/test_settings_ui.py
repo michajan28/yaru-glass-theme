@@ -15,9 +15,10 @@ sys.path.insert(0, str(ROOT / "src/yaru_glass"))
 try:
     import gi
     gi.require_version("Gtk", "4.0")
+    gi.require_version("Gdk", "4.0")
     gi.require_version("Adw", "1")
-    from gi.repository import Adw, GLib, Gtk
-    UI_AVAILABLE = Gtk.init_check()
+    from gi.repository import Adw, Gdk, GLib, Gtk
+    UI_AVAILABLE = Gtk.init_check() and Gdk.Display.get_default() is not None
 except (ImportError, ValueError):
     UI_AVAILABLE = False
 

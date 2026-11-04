@@ -4,7 +4,7 @@ Version **2.2.4** — Ubuntu 24.04 / GNOME Shell 46 and Ubuntu 26.04 / GNOME She
 
 See the [changelog](CHANGELOG.md) for release history starting at 1.0.0 and
 unreleased repository changes. Contributor and agent guidance is in
-[AGENTS.md](AGENTS.md).
+[AGENTS.md](AGENTS.md); contribution rules are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 **2.1.1 was a local branding and demo release** on the 2.1.0 dual-stack baseline.
 It completes the Yaru Glass rename, clarifies Yaru reuse and licensing, and adds
@@ -160,6 +160,11 @@ bash -n scripts/install.sh scripts/uninstall.sh scripts/make-package.sh
 UI tests require GTK 4, libadwaita, WebKit 6, and a display; unavailable UI tests
 are skipped. Rendering the manual requires `python3-markdown`.
 
+GitHub Actions runs the Python suite and shell syntax checks on pull requests,
+pushes to `main`, and manual dispatch. The CI runner installs GJS and GNOME Shell
+so the isolated native Shell layout check can run; display-dependent UI tests and
+checks requiring an installed Blur my Shell extension remain optional skips.
+
 Building themes changes the installed themes in `~/.local/share/themes`:
 
 ```bash
@@ -181,6 +186,9 @@ Use **`--curated-profiles` for a release built from supplied profiles without
 desktop capture**. Existing same-version archives/checksums are never overwritten.
 If Markdown is unavailable, packaging explicitly reports that the existing HTML
 manual was included without regeneration.
+
+For the tag-from-`main` release and draft-publication steps, see the
+[release process](docs/RELEASING.md). Releases are not published automatically.
 
 ## Local Git setup
 

@@ -21,6 +21,27 @@ def setUpModule():
 
 
 class RepositoryLayoutTests(unittest.TestCase):
+    def test_ui_suites_skip_without_a_display(self):
+        script = """
+import runpy
+
+for path, class_name in (
+    ("tests/test_demo.py", "DemoTests"),
+    ("tests/test_settings_ui.py", "SettingsUITests"),
+    ("tests/test_files_appearance.py", "FilesRenderTests"),
+):
+    suite = runpy.run_path(path)
+    assert getattr(suite[class_name], "__unittest_skip__", False), path
+"""
+        result = subprocess.run(
+            ["/usr/bin/python3", "-c", script],
+            cwd=ROOT,
+            env={**os.environ, "GDK_BACKEND": "x11", "DISPLAY": "",
+                 "WAYLAND_DISPLAY": ""},
+            capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_project_identity_is_consistent(self):
         for relative in ("src/yaru_glass/theme_settings.py",
                          "src/theme/gtk-3.0/glass.css",
@@ -70,7 +91,7 @@ class RepositoryLayoutTests(unittest.TestCase):
                                       f'DEST="{root}"\n' + profiles)
                     result = subprocess.run(
                         ["bash", str(script), "--no-apt", "--yes"],
-                        env={**os.environ, "PATH": f"{root}:/usr/bin:/bin", "HOME": str(home),
+                        env={**os.environ, "HOME": str(home), "PATH": f"{root}:/usr/bin:/bin",
                              "DBUS_SESSION_BUS_ADDRESS": "unix:path=/nonexistent"},
                         check=True, capture_output=True, text=True,
                     )
