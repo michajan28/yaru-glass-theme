@@ -160,13 +160,12 @@ class FilesRenderTests(unittest.TestCase):
         context = GLib.MainContext.default()
 
         def alpha_at(x, y):
+            from gtk_rendering import snapshot_widget
             for _ in range(12):
                 while context.pending():
                     context.iteration(False)
                 time.sleep(.025)
-            snapshot = Gtk.Snapshot.new()
-            paintable.snapshot(snapshot, window.get_width(), window.get_height())
-            texture = window.get_renderer().render_texture(snapshot.to_node(), None)
+            texture = snapshot_widget(window, paintable)
             image = Gdk.pixbuf_get_from_texture(texture)
             offset = y * image.get_rowstride() + x * image.get_n_channels()
             pixel = image.get_pixels()[offset:offset + 4]

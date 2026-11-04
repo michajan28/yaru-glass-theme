@@ -1,5 +1,11 @@
 # Project Guidance
 
+## Progress Reporting
+
+- For every task and progress update, show the user a visible TODO checklist.
+  Mark completed steps with `[x]` and remaining steps with `[ ]`; keep it current
+  as work proceeds. Include the checklist in the final outcome as well.
+
 ## Start Here
 
 - This is an Ubuntu GNOME theme/tooling project: Python, Bash, GTK CSS, and a
@@ -35,7 +41,12 @@ Use Ubuntu's system interpreter: GI bindings are system packages, and shell
 bash -n scripts/install.sh scripts/uninstall.sh scripts/make-package.sh
 ```
 
-- Run the relevant existing test slice first, then the full suite for shared changes.
+- Avoid repetitive testing. Batch coherent changes, then run the smallest relevant
+  test set once. After a relevant failure, fix it and rerun only the affected
+  tests; do not repeatedly rerun passing slices.
+- For shared changes, run the full suite once after focused checks. Ask before
+  repeating a full suite or investigating unrelated flaky/rendering failures;
+  report those failures instead of chasing them automatically.
   Run a slice with `-p test_transparency.py`, `test_appearance.py`,
   `test_glass_wallpapers.py`, `test_settings_ui.py`, `test_files_appearance.py`,
   `test_demo.py`, or `test_repository_layout.py` as appropriate.

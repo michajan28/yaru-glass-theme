@@ -28,7 +28,7 @@ motion behavior. Ten complete demo runs pass on each GNOME stack.
 See [2.2.2 release evidence](docs/RELEASE-2.2.2.md).
 
 **2.2.3 adds private local diagnostics** for Settings, appearance transactions,
-sync, extensions and installation. Open **Diagnostics** in the Settings header,
+sync, extensions and installation. Open the **Diagnostics** Settings page,
 or use `yaru-glass-logs show`, `follow`, `verbose on|off` and `export NEW_FILE.json`.
 Reports are sanitized and saved locally only; nothing is uploaded. Logs retain
 at most 10 MiB. See [diagnostics and privacy](docs/MANUAL.md#local-diagnostics).
@@ -77,7 +77,10 @@ After installation, open **Yaru Glass Settings** from the application launcher t
 choose **Frost / Crystal** tints, adjust transparency, and select separate light/dark
 wallpapers. Changes apply automatically and are saved. Glass styles require Blur my Shell.
 
-Settings are organized into **Shell**, **Applications**, and **Wallpapers** pages.
+Settings pages are ordered **Shell**, **Applications**, **Wallpapers**,
+**Diagnostics**, **Updates** in one navigation group. Diagnostics and Updates
+stay inside Settings instead of opening separate windows. Logs show readable
+timestamped summaries and details; exported reports remain structured JSON.
 Settings-app and Files transparency are separate opt-in features. Files changes
 require a full restart; the confirmed restart action opens Home, not previous tabs.
 The Layered styles use rounded dynamic blur for Shell surfaces by

@@ -11,22 +11,17 @@ import diagnostics
 import updates
 
 
-class UpdatesWindow(Adw.Window):
+class UpdatesPage(Gtk.Box):
     def __init__(self, parent, root):
-        super().__init__(title="Yaru Glass Updates", transient_for=parent, modal=False,
-                         destroy_with_parent=True)
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         self.parent = parent
         self.root = root
         self.process = None
         self.installing = False
         self.closed = False
         self.available = None
-        self.connect("close-request", self.on_close)
-        self.set_default_size(440, 400)
-        body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        body.append(Adw.HeaderBar())
         content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12,
-                          margin_start=20, margin_end=20, margin_bottom=20)
+                          margin_top=20, margin_start=20, margin_end=20, margin_bottom=20)
         self.version_label = Gtk.Label(xalign=0, wrap=True)
         try:
             installed = updates.read_version(Path.home() / ".local/share/yaru-glass")
@@ -55,8 +50,7 @@ class UpdatesWindow(Adw.Window):
         content.append(self.finish_button)
         scroll = Gtk.ScrolledWindow(vexpand=True, hscrollbar_policy=Gtk.PolicyType.NEVER)
         scroll.set_child(content)
-        body.append(scroll)
-        self.set_content(body)
+        self.append(scroll)
 
     def on_close(self, *_args):
         if self.installing:
@@ -81,7 +75,7 @@ class UpdatesWindow(Adw.Window):
             self.error("Finish pending appearance changes or Files restart before installing.")
             return
         dialog = Adw.MessageDialog.new(
-            self, f"Install Yaru Glass {self.available}?",
+            self.parent, f"Install Yaru Glass {self.available}?",
             "The verified app and theme files will be replaced for this account. "
             "Your customization and original backup stay unchanged. "
             "Settings must be closed and reopened afterward. Files will not restart automatically.")
@@ -106,7 +100,7 @@ class UpdatesWindow(Adw.Window):
         self.installing = installing
         self.parent.update_installing = installing
         if installing:
-            self.parent.pages.set_sensitive(False)
+            self.parent.set_appearance_sensitive(False)
         self.check_button.set_sensitive(False)
         self.install_button.set_sensitive(False)
         self.status.remove_css_class("error")
@@ -129,7 +123,7 @@ class UpdatesWindow(Adw.Window):
         self.installing = False
         self.parent.update_installing = False
         if was_installing and not getattr(self.parent, "update_installed", False):
-            self.parent.pages.set_sensitive(True)
+            self.parent.set_appearance_sensitive(True)
         self.check_button.set_sensitive(True)
         self.install_button.set_sensitive(self.available is not None)
 
@@ -146,7 +140,7 @@ class UpdatesWindow(Adw.Window):
             if not process.get_successful():
                 if was_installing and data.get("recovery_required") is True:
                     self.parent.update_installed = True
-                    self.parent.pages.set_sensitive(False)
+                    self.parent.set_appearance_sensitive(False)
                     self.finish_button.set_visible(True)
                 self.error(data.get("message") or stderr.strip() or "Update failed; inspect Diagnostics.")
                 return
@@ -171,7 +165,7 @@ class UpdatesWindow(Adw.Window):
                         type(data.get("files_restart_required")) is not bool):
                     raise ValueError("Incomplete installation result")
                 self.parent.update_installed = True
-                self.parent.pages.set_sensitive(False)
+                self.parent.set_appearance_sensitive(False)
                 self.available = None
                 self.install_button.set_sensitive(False)
                 self.check_button.set_sensitive(False)
@@ -190,7 +184,7 @@ class UpdatesWindow(Adw.Window):
             if was_installing:
                 # An invalid response cannot prove that the old payload is still installed.
                 self.parent.update_installed = True
-                self.parent.pages.set_sensitive(False)
+                self.parent.set_appearance_sensitive(False)
                 self.finish_button.set_visible(True)
             self.error(f"Updater result unavailable; reopen Settings and inspect Diagnostics. {exc}")
 
@@ -201,5 +195,4 @@ class UpdatesWindow(Adw.Window):
 
     def finish(self, *_args):
         if not self.installing:
-            self.close()
             self.parent.close()

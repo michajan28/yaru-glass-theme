@@ -238,9 +238,11 @@ bar theme and Dark Style setting.
 Open **Yaru Glass Settings** from the application launcher, or run
 `~/.local/bin/yaru-glass-settings`.
 
-The window has three pages: **Shell** for glass style and Shell transparency,
+The window has five pages: **Shell** for glass style and Shell transparency,
 **Applications** for Settings-app and Files transparency, presets and restart,
-and **Wallpapers** for the light/dark image previews and pickers. Each page scrolls
+**Wallpapers** for the light/dark image previews and pickers, then **Diagnostics**
+and **Updates**. All five share one navigation group; diagnostics and update
+controls are inline pages, not separate windows. Each page scrolls
 independently. At narrow window widths, page navigation switches to a compact
 drop-down; the pages scroll vertically without horizontal scrolling. Switching
 pages does not apply, reset or save any settings.
@@ -624,10 +626,14 @@ journalctl -b /usr/bin/gnome-shell | grep -i theme  # GNOME Shell theme loading
 ### Local diagnostics
 
 Available starting with version 2.2.3.
-In Yaru Glass Settings, choose the **Diagnostics** button at the left of the
-header. (In 2.2.3 it was an unlabeled ⓘ icon next to the window controls.) View up to 200
+In Yaru Glass Settings, choose **Diagnostics** immediately after **Wallpapers**
+in the page navigation. (2.2.3 used an unlabeled header icon; 2.2.4 a labeled
+header button.) View up to 200
 recent sanitized events, filter by minimum level, refresh, copy the visible
-records, or enable optional verbose logging. Reads and exports run in the
+events, or enable optional verbose logging. Events are newest first, with local
+timestamps and UTC offsets, emphasized severity/action summaries, and indented
+details and operation IDs instead of raw JSON. Copy uses this readable text;
+export remains sanitized structured JSON. Reads and exports run in the
 background; storage/export failures appear explicitly, never as confirmed success.
 
 The command-line equivalent is:

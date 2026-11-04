@@ -98,22 +98,22 @@ class SettingsUITests(unittest.TestCase):
             self.window.timeout_id = 0
 
     def diagnostics_window(self):
-        from diagnostics_ui import DiagnosticsWindow
+        from diagnostics_ui import DiagnosticsPage
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         env = patch.dict(os.environ, {"XDG_STATE_HOME": directory.name})
         env.start()
         self.addCleanup(env.stop)
-        window = DiagnosticsWindow(self.window)
-        self.addCleanup(window.destroy)
+        window = DiagnosticsPage(self.window)
+        self.addCleanup(window.on_close)
         self.wait_diagnostics(window)
         return window
 
     def updates_window(self):
-        from updates_ui import UpdatesWindow
+        from updates_ui import UpdatesPage
         with patch("updates.read_version", return_value="2.2.4"):
-            window = UpdatesWindow(self.window, ROOT)
-        self.addCleanup(window.destroy)
+            window = UpdatesPage(self.window, ROOT)
+        self.addCleanup(window.on_close)
         return window
 
     def updater_result(self, window, result, installing=False, successful=True):
@@ -124,12 +124,13 @@ class SettingsUITests(unittest.TestCase):
         process.stdout = json.dumps(result)
         window.completed(process, None, None)
 
-    def test_updates_header_opens_manual_controls_without_network(self):
-        from updates_ui import UpdatesWindow
-        with patch.object(UpdatesWindow, "start") as start:
-            self.window.updates_button.emit("clicked")
-            window = self.window.updates_window
-            self.addCleanup(window.destroy)
+    def test_updates_navigation_opens_manual_controls_without_network(self):
+        from updates_ui import UpdatesPage
+        with patch.object(UpdatesPage, "start") as start:
+            self.window.open_updates()
+            window = self.window.updates_page
+            self.assertIs(window.get_root(), self.window)
+            self.assertEqual(self.window.pages.get_visible_child_name(), "updates")
             self.assertTrue(window.check_button.get_sensitive())
             self.assertFalse(window.install_button.get_sensitive())
             start.assert_not_called()
@@ -188,7 +189,8 @@ class SettingsUITests(unittest.TestCase):
             "settings_relaunch_required": True, "shell_reload_requested": False,
             "files_restart_required": True}, installing=True)
         self.assertTrue(self.window.update_installed)
-        self.assertFalse(self.window.pages.get_sensitive())
+        self.assertFalse(self.window.page_bodies["shell"].get_sensitive())
+        self.assertTrue(self.window.pages.get_sensitive())
         self.assertTrue(window.finish_button.get_visible())
         self.assertIn("Inactive project theme was not activated", window.status.get_label())
         self.assertIn("has not been restarted", window.status.get_label())
@@ -201,11 +203,11 @@ class SettingsUITests(unittest.TestCase):
         self.assertTrue(window.check_button.get_sensitive())
         self.updater_result(window, {"status": "error", "message": "Rollback incomplete",
                                     "recovery_required": True}, installing=True, successful=False)
-        self.assertFalse(self.window.pages.get_sensitive())
+        self.assertFalse(self.window.page_bodies["shell"].get_sensitive())
         self.assertTrue(window.finish_button.get_visible())
         self.updater_result(window, {"status": "installed"}, installing=True)
         self.assertIn("unavailable", window.status.get_label())
-        self.assertFalse(self.window.pages.get_sensitive())
+        self.assertFalse(self.window.page_bodies["shell"].get_sensitive())
 
     def test_external_app_update_disables_stale_appearance_controls(self):
         window = self.window
@@ -213,7 +215,7 @@ class SettingsUITests(unittest.TestCase):
         window.queue_patch({"shell": {"transparency": 13}})
         self.assertTrue(window.update_installed)
         self.assertIsNone(window.requested)
-        self.assertFalse(window.pages.get_sensitive())
+        self.assertFalse(window.page_bodies["shell"].get_sensitive())
 
     def wait_diagnostics(self, window):
         deadline = time.monotonic() + 10
@@ -224,38 +226,34 @@ class SettingsUITests(unittest.TestCase):
             time.sleep(.01)
         self.assertFalse(window.busy, "Diagnostic worker failed to complete")
 
-    def test_diagnostics_has_visible_labeled_header_button_that_opens_viewer(self):
-        from diagnostics_ui import DiagnosticsWindow
+    def test_diagnostics_has_visible_labeled_navigation_button_that_opens_viewer(self):
+        from diagnostics_ui import DiagnosticsPage
         window = self.window
-        button = window.diagnostics_button
         context = GLib.MainContext.default()
-        for size in ((900, 700), (360, 420)):
+        for size in ((900, 700), (740, 650), (360, 420)):
             window.set_default_size(*size)
             window.present()
             for _ in range(12):
                 while context.pending():
                     context.iteration(False)
                 time.sleep(.025)
-            self.assertIsInstance(button.get_ancestor(Adw.HeaderBar), Adw.HeaderBar)
-            self.assertTrue(button.get_mapped(), f"Diagnostics button hidden at {size}")
-            self.assertGreater(button.get_width(), 0)
-            labels, child = [], button.get_child()
-            stack = [child]
-            while stack:
-                widget = stack.pop()
-                if isinstance(widget, Gtk.Label) and widget.get_mapped():
-                    labels.append(widget.get_label())
-                item = widget.get_first_child()
-                while item:
-                    stack.append(item)
-                    item = item.get_next_sibling()
-            self.assertIn("Diagnostics", labels, f"Diagnostics button lost its text label at {size}")
-        with patch.object(DiagnosticsWindow, "present") as present:
-            button.emit("clicked")
-        self.addCleanup(window.diagnostics_window.destroy)
-        self.wait_diagnostics(window.diagnostics_window)
-        self.assertIsInstance(window.diagnostics_window, DiagnosticsWindow)
-        present.assert_called_once()
+            model = window.pages.get_pages()
+            self.assertEqual([model.get_item(i).get_title() for i in range(model.get_n_items())],
+                             ["Shell", "Applications", "Wallpapers", "Diagnostics", "Updates"])
+            if size[0] >= 740:
+                self.assertTrue(window.navigation.get_mapped())
+                self.assertLessEqual(window.navigation.get_width(), window.get_width())
+            else:
+                self.assertTrue(window.compact_navigation.get_mapped())
+            window.open_diagnostics()
+            self.wait_diagnostics(window.diagnostics_page)
+            self.assertIsInstance(window.diagnostics_page, DiagnosticsPage)
+            self.assertIs(window.diagnostics_page.get_root(), window)
+            self.assertEqual(window.pages.get_visible_child_name(), "diagnostics")
+            window.compact_navigation.set_selected(4)
+            self.assertEqual(window.pages.get_visible_child_name(), "updates")
+            self.assertIs(window.updates_page.get_root(), window)
+            self.assertLessEqual(window.get_width(), size[0])
 
     def test_diagnostics_reads_filters_and_toggles_without_appearance_changes(self):
         import diagnostics
@@ -267,8 +265,10 @@ class SettingsUITests(unittest.TestCase):
         self.wait_diagnostics(window)
         buffer = window.text.get_buffer()
         text = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), False)
-        self.assertIn('"ERROR"', text)
-        self.assertNotIn('"sync"', text)
+        self.assertIn("[ERROR]", text)
+        self.assertIn("Worker / Apply - Failed", text)
+        self.assertNotIn("Sync /", text)
+        self.assertNotIn('{"action":', text)
         window.verbose_switch.set_active(True)
         self.wait_diagnostics(window)
         self.assertTrue(diagnostics.verbose())
@@ -284,6 +284,26 @@ class SettingsUITests(unittest.TestCase):
         self.assertIn("unavailable", window.status.get_label())
         self.assertNotIn("private", window.status.get_label())
         self.assertTrue(window.status.has_css_class("error"))
+
+    def test_diagnostics_formats_details_and_errors_without_changing_json_export(self):
+        from diagnostics_ui import format_record
+        record = {"timestamp": "2026-11-04T13:34:36+00:00", "level": "ERROR",
+                  "component": "updater", "action": "install", "phase": "failure",
+                  "fields": {"duration_ms": 125, "reload_requested": False},
+                  "error": {"type": "PermissionError", "errno": "EACCES",
+                            "frames": [{"file": "updates.py", "line": 42}]},
+                  "operation": "a" * 32, "version": "2.2.4", "pid": 42}
+        before = copy.deepcopy(record)
+        summary, details = format_record(record)
+        self.assertIn("[ERROR]", summary)
+        self.assertIn("Updater / Install - Failed", summary)
+        self.assertIn("Duration ms: 125", details)
+        self.assertIn("Reload requested: No", details)
+        self.assertIn("Error: PermissionError", details)
+        self.assertIn("System error: EACCES", details)
+        self.assertIn("At: updates.py:42", details)
+        self.assertIn("Operation: " + "a" * 32, details)
+        self.assertEqual(record, before)
 
     def test_diagnostics_export_requires_explicit_choice_and_surfaces_failure(self):
         import diagnostics
@@ -403,6 +423,7 @@ class SettingsUITests(unittest.TestCase):
         self.assertIn("inactive", window.files_status.get_label())
 
     def test_pages_render_at_default_size_and_keep_transparent_background(self):
+        from gtk_rendering import snapshot_widget
         window = self.window
         window.app_appearance = {"enabled": True, "transparency": 50}
         window.update_app_style()
@@ -415,14 +436,12 @@ class SettingsUITests(unittest.TestCase):
                 while context.pending():
                     context.iteration(False)
                 time.sleep(.025)
-            self.assertLessEqual(window.get_width(), 540)
+            self.assertLessEqual(window.get_width(), 740)
             self.assertEqual(window.get_height(), 650)
             page = window.pages.get_child_by_name(name)
             self.assertTrue(page.get_mapped())
             self.assertLessEqual(window.page_bodies[name].get_width(), page.get_width())
-            snapshot = Gtk.Snapshot.new()
-            paintable.snapshot(snapshot, window.get_width(), window.get_height())
-            texture = window.get_renderer().render_texture(snapshot.to_node(), None)
+            texture = snapshot_widget(window, paintable)
             image = self.ui["Gdk"].pixbuf_get_from_texture(texture)
             alpha = image.get_pixels()[150 * image.get_rowstride() + 12 * image.get_n_channels() + 3]
             self.assertLess(alpha, 255, name)
@@ -725,6 +744,7 @@ class SettingsUITests(unittest.TestCase):
             manager.set_color_scheme(original)
 
     def test_rendered_app_background_is_transparent_but_controls_are_solid(self):
+        from gtk_rendering import snapshot_widget
         window = self.window
         manager = window.style_manager
         original = manager.get_color_scheme()
@@ -748,9 +768,7 @@ class SettingsUITests(unittest.TestCase):
                             while context.pending():
                                 context.iteration(False)
                             time.sleep(.025)
-                        snapshot = Gtk.Snapshot.new()
-                        paintable.snapshot(snapshot, window.get_width(), window.get_height())
-                        texture = window.get_renderer().render_texture(snapshot.to_node(), None)
+                        texture = snapshot_widget(window, paintable)
                         image = self.ui["Gdk"].pixbuf_get_from_texture(texture)
                         pixels = image.get_pixels()
                         stride, channels = image.get_rowstride(), image.get_n_channels()

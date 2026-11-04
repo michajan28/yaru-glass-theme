@@ -99,7 +99,11 @@ readability compared with the earlier straight-alpha theme. Text uses opaque for
 colors; GTK app styling and solid accents are unchanged.
 
 The settings app remembers the level in `~/.config/yaru-glass/settings.json`
-and groups controls in three Gtk.Stack pages: Shell, Applications and Wallpapers.
+and groups controls in five Gtk.Stack pages: Shell, Applications, Wallpapers,
+Diagnostics and Updates. The latter two are lazily created inline Gtk.Box pages,
+not popup windows. Their confirmation/export dialogs remain explicitly invoked.
+The diagnostic viewer formats sanitized records as newest-first summaries and
+detail blocks; JSON storage/export and the CLI protocol remain unchanged.
 A keyboard-accessible StackSwitcher stays above independent scrollers. Page changes
 never save/rebuild. Error handlers select the relevant page; Files status distinguishes
 saved/restart-required from confirmed restart and does not claim live CSS on startup.

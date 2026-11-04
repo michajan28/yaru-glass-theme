@@ -207,6 +207,14 @@ class RepositoryLayoutTests(unittest.TestCase):
         template = (ROOT / "src/theme/gnome-shell/glass.css.in").read_text()
         self.assertNotIn(".app-grid-running-dot", template)
 
+    def test_app_grid_tiles_have_clear_interaction_states(self):
+        template = (ROOT / "src/theme/gnome-shell/glass.css.in").read_text()
+        self.assertIn(".overview-tile:hover", template)
+        self.assertIn(".overview-tile:focus", template)
+        self.assertIn("box-shadow: inset 0 0 0 2px ${accent};", template)
+        self.assertIn(".overview-tile:active", template)
+        self.assertIn(".overview-icon.overview-icon-with-label > StBoxLayout", template)
+
     @unittest.skipIf(os.geteuid() == 0, "The uninstaller rejects root before checking its source path")
     def test_purge_refuses_to_delete_the_checkout(self):
         with tempfile.TemporaryDirectory() as directory:

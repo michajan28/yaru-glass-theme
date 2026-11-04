@@ -22,12 +22,23 @@ record them. Validation dates are not treated as publication dates.
 
 ### Changed
 
+- Diagnostics and Updates now follow Wallpapers in the same Settings navigation
+  group and open inline instead of in separate windows. Narrow layouts use the
+  same five-page dropdown. The header contains only the title/window controls.
+- Diagnostic events display newest first with local timestamps, severity and
+  action summaries, indented fields/errors and operation IDs. Copy uses readable
+  text; sanitized JSON storage and export are unchanged.
 - The next feature milestone is **2.3.0 app updater**; custom lock screen moves
   to Later, unnumbered. No release/version bump is included.
 - Installer, uninstaller, generation and sync coordinate with the updater.
   Purge removes updater-owned runner/staging data and its launcher, retaining
   the coordination inode. Native updater and failure/recovery tests use private
   HOME/XDG and mocked networking or isolated desktop services.
+
+### Improved
+
+- GNOME app-grid and folder tiles now have clearer hover, keyboard-focus and
+  pressed states, with more room between each icon and its label.
 
 ## 2.2.4
 
