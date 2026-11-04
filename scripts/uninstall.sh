@@ -30,6 +30,9 @@ if [[ $PURGE -eq 1 && "$ROOT" != "$HOME/.local/share/yaru-glass" ]]; then
   echo "Run --purge from ~/.local/share/yaru-glass/scripts/uninstall.sh, not the source checkout."
   exit 1
 fi
+if ! /usr/bin/python3 "$ROOT/src/yaru_glass/operation_lock.py" --held; then
+  exec /usr/bin/python3 "$ROOT/src/yaru_glass/operation_lock.py" bash "$0" "$@"
+fi
 
 DIAGNOSTIC_CLI="$ROOT/bin/yaru-glass-logs"
 LOGGING_PURGED=0
@@ -96,6 +99,8 @@ if [[ $PURGE -eq 1 ]]; then
   rm -f "$HOME/.config/systemd/user/yaru-glass-sync.service" "$HOME/.local/bin/yaru-glass-sync"
   rm -f "$HOME/.local/share/applications/org.yaru.glass.Settings.desktop" "$HOME/.local/bin/yaru-glass-settings"
   rm -f "$HOME/.local/bin/yaru-glass-logs"
+  rm -f "$HOME/.local/bin/yaru-glass-update"
+  rm -rf "$HOME/.local/share/yaru-glass-update/runner" "$HOME/.local/share/yaru-glass-update/transaction"
   SETTINGS_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/yaru-glass"
   rm -f "$SETTINGS_DIR/settings.json" "$SETTINGS_DIR/app-appearance.json" "$SETTINGS_DIR/files-appearance.json" "$SETTINGS_DIR/build.lock"
   if [[ -d "$SETTINGS_DIR" ]]; then rmdir --ignore-fail-on-non-empty "$SETTINGS_DIR"; fi

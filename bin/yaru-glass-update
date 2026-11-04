@@ -1,0 +1,136 @@
+#!/usr/bin/python3
+"""Check and explicitly install stable Yaru Glass releases for this account."""
+import argparse
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "src/yaru_glass"))
+import diagnostics
+import operation_lock
+import updates
+import update_transaction as transaction
+
+
+def parser():
+    result = argparse.ArgumentParser(description=__doc__)
+    commands = result.add_subparsers(dest="command", required=True)
+    check = commands.add_parser("check", help="Check stable public GitHub releases (no changes)")
+    check.add_argument("--json", action="store_true")
+    install = commands.add_parser("install", help="Confirm and install a newer verified release")
+    install.add_argument("--yes", action="store_true", help="Explicitly confirm installation")
+    install.add_argument("--json", action="store_true")
+    install.add_argument("--target", help="Require the exact confirmed version")
+    install.add_argument("--bootstrap", action="store_true", help="Use a verified local release archive")
+    install.add_argument("--archive", type=Path)
+    install.add_argument("--checksum", type=Path)
+    recover = commands.add_parser("recover", help="Restore an interrupted update before retrying")
+    recover.add_argument("--json", action="store_true")
+    return result
+
+
+def execute(args):
+    root = transaction.installed_root()
+    if args.command == "check":
+        with operation_lock.locked():
+            return updates.check(updates.read_version(root))[1]
+    with operation_lock.locked(exclusive=True, recovery=True) as fd:
+        workspace = operation_lock.directory() / "transaction"
+        if args.command == "recover":
+            restored = transaction.recover(workspace)
+            return {"status": "recovered" if restored else "no-recovery-needed"}
+        if (workspace / "journal.json").exists():
+            transaction.recover(workspace)
+        transaction.preflight()
+        if args.bootstrap:
+            if not args.archive or not args.checksum:
+                raise updates.UpdateError("Bootstrap requires --archive and --checksum for the local release.")
+            selected = updates.read_version(ROOT)
+            updates.verify(args.archive, args.checksum, selected)
+            release = None
+        else:
+            if args.archive or args.checksum:
+                raise updates.UpdateError("--archive and --checksum require --bootstrap.")
+            release, status = updates.check(updates.read_version(root))
+            selected = release.version
+            if status["status"] == "up-to-date":
+                return status
+        if args.target and args.target != selected:
+            raise updates.UpdateError("The available release changed. Check again and confirm the new version.")
+        if updates.version(selected) <= updates.version(updates.read_version(root)):
+            raise updates.UpdateError("The selected release is not newer than the installed version.")
+        if not args.yes:
+            if not sys.stdin.isatty():
+                raise updates.UpdateError("Installation requires interactive confirmation or --yes.")
+            answer = input(f"Install Yaru Glass {selected} for this account? Settings will need reopening. [y/N] ")
+            if answer.lower() != "y":
+                return {"status": "cancelled"}
+        runner = operation_lock.directory() / "runner"
+        if ROOT != runner:
+            transaction.remove(runner)
+            (runner / "bin").mkdir(parents=True)
+            (runner / "src").mkdir()
+            shutil.copytree(ROOT / "src/yaru_glass", runner / "src/yaru_glass",
+                            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+            shutil.copy2(ROOT / "bin/yaru-glass-update", runner / "bin/yaru-glass-update")
+            shutil.copy2(ROOT / "VERSION", runner / "VERSION")
+            command = ["/usr/bin/python3", str(runner / "bin/yaru-glass-update"),
+                       "install", "--yes", "--target", selected]
+            if args.json:
+                command.append("--json")
+            if args.bootstrap:
+                command += ["--bootstrap", "--archive", str(args.archive.resolve()),
+                            "--checksum", str(args.checksum.resolve())]
+            result = subprocess.run(command, env=operation_lock.child_environment(fd), pass_fds=(fd,))
+            raise SystemExit(result.returncode)
+        if workspace.exists():
+            transaction.remove(workspace)
+        workspace.mkdir(mode=0o700)
+        try:
+            if args.bootstrap:
+                payload = workspace / "payload"
+                updates.extract(args.archive, payload, selected)
+            else:
+                payload = updates.fetch(release, workspace)
+            if not args.bootstrap and updates.latest() != release:
+                raise updates.UpdateError("Release assets changed during download. Check again and retry.")
+            return transaction.install(payload, workspace, fd)
+        finally:
+            if workspace.exists() and not (workspace / "journal.json").exists():
+                transaction.remove(workspace)
+
+
+def main():
+    args = parser().parse_args()
+    operation = diagnostics.new_operation()
+    action = {"check": "read", "install": "install", "recover": "restore"}[args.command]
+    diagnostics.event("updater", action, "start", operation=operation)
+    try:
+        result = execute(args)
+    except operation_lock.BusyError as exc:
+        result, code = {"status": "busy", "message": str(exc)}, 3
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
+        message = str(exc)
+        try:
+            pending = (Path.home() / ".local/share/yaru-glass-update/transaction/journal.json").exists()
+        except OSError:
+            pending = True
+            message += " Recovery state could not be inspected; check workspace permissions."
+        result, code = {"status": "error", "message": message, "recovery_required": pending}, 1
+    else:
+        code = 0
+    diagnostics.event("updater", action, "failure" if code else "success",
+                      level="ERROR" if code else "INFO", operation=operation)
+    if args.json:
+        print(json.dumps(result))
+    else:
+        print(result.get("message") or json.dumps(result), file=sys.stderr if code else sys.stdout)
+    raise SystemExit(code)
+
+
+if __name__ == "__main__":
+    main()

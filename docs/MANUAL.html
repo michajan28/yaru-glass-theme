@@ -607,10 +607,85 @@ the supplied profiles. Existing archives or checksums are never overwritten.
 Missing Markdown rendering is reported; the existing HTML manual is then required.</p>
 <hr />
 <h2 id="6-updating">6. Updating</h2>
+<h3 id="app-updates-unreleased-targeting-230">App updates (unreleased, targeting 2.3.0)</h3>
+<p>In an updater-enabled installation, open <strong>Yaru Glass Settings → Updates</strong>,
+choose <strong>Check for updates</strong>, then confirm <strong>Install update</strong>. Checks happen only
+when requested. Public stable GitHub releases require no login; drafts,
+prereleases, equal versions and older versions are not installed.</p>
+<pre><code class="language-bash">yaru-glass-update check
+yaru-glass-update check --json
+yaru-glass-update install              # interactive confirmation
+yaru-glass-update install --yes        # explicit non-interactive confirmation
+</code></pre>
+<p>The CLI returns 0 for successful checks, installation, cancellation or recovery,
+3 when busy, and 1 on error. JSON <code>status</code> distinguishes <code>available</code>,
+<code>up-to-date</code>, <code>installed</code>, <code>cancelled</code>, <code>recovered</code>, <code>no-recovery-needed</code>, <code>busy</code>
+and <code>error</code>. <code>install --target VERSION</code> refuses a changed release instead of
+silently installing a different version.</p>
+<p>Updates affect only the current account's existing installation. Preferences,
+independent transparency opt-ins, wallpapers, customized profiles, extensions,
+ownership records and the original installation backup are preserved. No apt,
+sudo, automatic checks, telemetry, remote account management or profile import
+is involved. Close Settings and reopen it from the application launcher after
+success. A Shell reload request is not proof of compositor output. Files is
+never restarted automatically; restart it yourself after finishing transfers.
+An inactive project theme is not selected automatically.</p>
+<p>The updater requires the versioned release archive and SHA-256 companion.
+Downloads are HTTPS-only, bounded and checksum-verified; archive paths, types,
+size, version and required payload are validated before installed files change.
+Checksums and optional GitHub asset digests establish integrity against GitHub's
+release metadata, <strong>not an independent publisher signature</strong>.
+Network/TLS failures, GitHub rate limits, missing assets and verification failures
+are errors, not an "up to date" result. Retry after resolving the reported cause.</p>
+<h3 id="one-time-bootstrap-for-existing-accounts">One-time bootstrap for existing accounts</h3>
+<p>2.2.4 and earlier installations do not gain an update button retroactively.
+After the updater-enabled release is published, close all old Settings windows,
+finish appearance changes, and use its verified archive once on each account.
+The example below targets the future 2.3.0 release; do not run it before that
+release exists. Use a new empty directory and inspect the release notes first.</p>
+<pre><code class="language-bash">mkdir yaru-glass-bootstrap-2.3.0
+cd yaru-glass-bootstrap-2.3.0
+curl --fail --location --proto '=https' --proto-redir '=https' \
+  -O https://github.com/michajan28/yaru-glass-theme/releases/download/v2.3.0/yaru-glass-theme-2.3.0.tar.gz
+curl --fail --location --proto '=https' --proto-redir '=https' \
+  -O https://github.com/michajan28/yaru-glass-theme/releases/download/v2.3.0/yaru-glass-theme-2.3.0.tar.gz.sha256
+sha256sum --check yaru-glass-theme-2.3.0.tar.gz.sha256
+# Continue only if checksum verification succeeded.
+tar -xzf yaru-glass-theme-2.3.0.tar.gz
+/usr/bin/python3 yaru-glass-theme-2.3.0/bin/yaru-glass-update install --bootstrap \
+  --archive "$PWD/yaru-glass-theme-2.3.0.tar.gz" \
+  --checksum "$PWD/yaru-glass-theme-2.3.0.tar.gz.sha256"
+</code></pre>
+<p>Bootstrap re-verifies and validates the local archive, uses the same preserving
+transaction, and installs the updater command. There is no second download or
+<code>curl | sh</code>. Do not rerun the normal installer for a preservation-only update:
+it can reapply fonts, icons, profiles and activation. Synthetic 2.2.4-layout
+bootstrap is tested; arbitrary historical or earlier-branded layouts are not
+promised. Fresh installations still use the normal installer.</p>
+<h3 id="failed-or-interrupted-updates">Failed or interrupted updates</h3>
+<p>Before replacement, the updater stages complete app/themes and records private
+recovery state outside the package. Concurrent lifecycle/appearance operations
+are excluded; the original sync running state is restored without enabling a
+disabled service. Replacement across directories is recoverable, not one
+indivisible filesystem operation.</p>
+<p>An ordinary failure attempts to restore the prior package/themes and affected
+runtime state. If restoration fails, the error is explicit and recovery data is
+retained. Do not delete it or run the installer over it. Recover before retrying:</p>
+<pre><code class="language-bash">yaru-glass-update recover
+# If the installed package/launcher is unavailable:
+/usr/bin/python3 ~/.local/share/yaru-glass-update/runner/bin/yaru-glass-update recover
+</code></pre>
+<p>The private <code>~/.local/share/yaru-glass-update/</code> directory contains the recovery
+runner, a coordination lock and, while needed, a transaction journal/backups.
+Successful transactions clean their staging/backups. Ordinary uninstall retains
+the runner; purge removes known runner/staging paths and the updater launcher,
+but keeps the empty coordination inode. The first-install backup is separate
+from temporary update recovery; user-exported reports are not deleted.
+There is no manual downgrade/history command in this milestone.</p>
+<h3 id="system-yaru-and-extensions">System Yaru and extensions</h3>
 <ul>
 <li><strong>After Ubuntu updates the Yaru theme:</strong> run <code>~/.local/share/yaru-glass/scripts/build.py</code>
   to rebuild on top of the new Yaru.</li>
-<li><strong>New package version:</strong> extract it and run <code>./scripts/install.sh</code> again.</li>
 <li>Extensions can be updated through <strong>Extension Manager</strong>, but the
   exact-version policy rejects unvalidated releases; check compatibility first.</li>
 </ul>

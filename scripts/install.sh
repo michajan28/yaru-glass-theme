@@ -16,6 +16,9 @@
 set -euo pipefail
 
 PKG="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if ! /usr/bin/python3 "$PKG/src/yaru_glass/operation_lock.py" --held; then
+  exec /usr/bin/python3 "$PKG/src/yaru_glass/operation_lock.py" bash "$0" "$@"
+fi
 DEST="$HOME/.local/share/yaru-glass"
 LIGHT="Yaru-Glass"
 DARK="Yaru-Glass-dark"
@@ -204,6 +207,7 @@ step "Settings application"
 mkdir -p "$HOME/.local/bin" "$HOME/.local/share/applications"
 ln -sf "$DEST/bin/yaru-glass-settings" "$HOME/.local/bin/yaru-glass-settings"
 ln -sf "$DEST/bin/yaru-glass-logs" "$HOME/.local/bin/yaru-glass-logs"
+ln -sf "$DEST/bin/yaru-glass-update" "$HOME/.local/bin/yaru-glass-update"
 cat > "$HOME/.local/share/applications/org.yaru.glass.Settings.desktop" <<EOF
 [Desktop Entry]
 Type=Application

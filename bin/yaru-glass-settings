@@ -78,6 +78,9 @@ class SettingsWindow(Adw.ApplicationWindow):
         self.files_restart_process = None
         self.files_restart_watch = 0
         self.files_restart_timeout = 0
+        self.update_installing = False
+        self.update_installed = False
+        self.loaded_version = (ROOT / "VERSION").read_text()
         error = None
         try:
             settings = load_settings()
@@ -110,6 +113,9 @@ class SettingsWindow(Adw.ApplicationWindow):
         self.diagnostics_button.update_property([Gtk.AccessibleProperty.LABEL], ["Open diagnostics"])
         self.diagnostics_button.connect("clicked", self.open_diagnostics)
         header.pack_start(self.diagnostics_button)
+        self.updates_button = Gtk.Button(label="Updates", tooltip_text="Check and install Yaru Glass updates")
+        self.updates_button.connect("clicked", self.open_updates)
+        header.pack_end(self.updates_button)
         content.append(header)
         self.pages = Gtk.Stack(vexpand=True)
         self.page_bodies = {}
@@ -387,6 +393,26 @@ class SettingsWindow(Adw.ApplicationWindow):
         self.diagnostics_window = DiagnosticsWindow(self)
         self.diagnostics_window.present()
 
+    def open_updates(self, *_args):
+        from updates_ui import UpdatesWindow
+        window = getattr(self, "updates_window", None)
+        if window is None or window.closed:
+            self.updates_window = UpdatesWindow(self, ROOT)
+        self.updates_window.present()
+
+    def package_changed(self):
+        try:
+            changed = (ROOT / "VERSION").read_text() != self.loaded_version
+        except OSError as exc:
+            diagnostics.event("settings", "read", "failure", level="ERROR", error=exc)
+            print(f"yaru-glass-settings: installed version unavailable: {exc}", file=sys.stderr)
+            changed = True
+        if changed:
+            self.update_installed = True
+            self.pages.set_sensitive(False)
+            self.status.set_label("App files changed. Close and reopen Settings before changing appearance.")
+        return changed
+
     def update_page_navigation(self, *_args):
         width = self.get_width() or self.get_default_size()[0]
         compact = width < 420
@@ -525,6 +551,9 @@ window.yaru-settings-window headerbar label {{
         dialog.present()
 
     def on_files_restart_confirmed(self, _dialog, response):
+        if self.update_installing or self.update_installed or self.package_changed():
+            self.files_status.set_label("Reopen Settings after the app update before restarting Files.")
+            return
         if response != "restart" or self.files_restart_process is not None or self.files_restart_watch:
             return
         self.files_restart_operation = diagnostics.new_operation()
@@ -665,6 +694,9 @@ window.yaru-settings-window headerbar label {{
         chooser.show()
 
     def on_wallpaper_chosen(self, chooser, response, key):
+        if self.update_installing or self.update_installed or self.package_changed():
+            chooser.destroy()
+            return
         try:
             if response == Gtk.ResponseType.ACCEPT:
                 file = chooser.get_file()
@@ -683,6 +715,8 @@ window.yaru-settings-window headerbar label {{
             self.chooser = None
 
     def restore_wallpaper(self, _button, key):
+        if self.update_installing or self.update_installed or self.package_changed():
+            return
         try:
             wallpapers.restore_slot(key)
             self.refresh_wallpapers()
@@ -793,6 +827,9 @@ window.yaru-settings-window headerbar label {{
             self.queue_patch(self.failed_patch)
 
     def queue_patch(self, patch):
+        if self.update_installing or self.update_installed or self.package_changed():
+            self.status.set_label("Wait for the app update, then close and reopen Settings.")
+            return
         if self.syncing:
             return
         if not self.files_restart.get_sensitive():
@@ -945,6 +982,8 @@ window.yaru-settings-window headerbar label {{
             self.pages.set_visible_child_name("shell")
 
     def on_close(self, _window):
+        if self.update_installing:
+            return True
         if not self.files_restart.get_sensitive():
             self.files_status.set_label("Please wait for the Files restart to finish.")
             return True

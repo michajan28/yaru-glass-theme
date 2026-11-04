@@ -75,6 +75,8 @@ class SettingsUITests(unittest.TestCase):
 
     def tearDown(self):
         self.cancel_timeout()
+        if not self.window.get_realized():
+            self.window.realize()
         self.window.destroy()
 
     def test_files_description_does_not_exclude_verified_nautilus_50(self):
@@ -106,6 +108,112 @@ class SettingsUITests(unittest.TestCase):
         self.addCleanup(window.destroy)
         self.wait_diagnostics(window)
         return window
+
+    def updates_window(self):
+        from updates_ui import UpdatesWindow
+        with patch("updates.read_version", return_value="2.2.4"):
+            window = UpdatesWindow(self.window, ROOT)
+        self.addCleanup(window.destroy)
+        return window
+
+    def updater_result(self, window, result, installing=False, successful=True):
+        process = FakeProcess(successful=successful)
+        window.process = process
+        window.installing = installing
+        window.parent.update_installing = installing
+        process.stdout = json.dumps(result)
+        window.completed(process, None, None)
+
+    def test_updates_header_opens_manual_controls_without_network(self):
+        from updates_ui import UpdatesWindow
+        with patch.object(UpdatesWindow, "start") as start:
+            self.window.updates_button.emit("clicked")
+            window = self.window.updates_window
+            self.addCleanup(window.destroy)
+            self.assertTrue(window.check_button.get_sensitive())
+            self.assertFalse(window.install_button.get_sensitive())
+            start.assert_not_called()
+            window.check_button.emit("clicked")
+            start.assert_called_once_with(["check", "--json"], False)
+
+    def test_updates_check_uses_async_cli_and_accepts_only_expected_release_link(self):
+        from updates_ui import Gio
+        window = self.updates_window()
+        process = FakeProcess()
+        with patch.object(Gio.Subprocess, "new", return_value=process) as start:
+            window.check()
+        arguments, flags = start.call_args.args
+        self.assertIn("check", arguments)
+        self.assertIn("--json", arguments)
+        self.assertIs(window.process, process)
+        self.assertFalse(window.check_button.get_sensitive())
+        process.stdout = json.dumps({
+            "status": "available", "installed_version": "2.2.4", "available_version": "2.3.0",
+            "release_url": "https://github.com/michajan28/yaru-glass-theme/releases/tag/v2.3.0"})
+        process.finish()
+        self.assertTrue(window.install_button.get_sensitive())
+        self.assertEqual(window.available, "2.3.0")
+        self.updater_result(window, {
+            "status": "available", "installed_version": "2.2.4", "available_version": "2.3.0",
+            "release_url": "https://example.com/untrusted"})
+        self.assertIn("unavailable", window.status.get_label())
+        self.assertTrue(window.status.has_css_class("error"))
+
+    def test_updates_busy_cancel_and_parent_close_gates(self):
+        window = self.updates_window()
+        window.available = "2.3.0"
+        with patch.object(window, "start") as start:
+            window.on_confirmed(None, "cancel", "2.3.0")
+            start.assert_not_called()
+            self.window.requested = {"shell": {"transparency": 13}}
+            window.on_confirmed(None, "install", "2.3.0")
+            start.assert_not_called()
+            self.window.requested = None
+            window.on_confirmed(None, "install", "2.3.0")
+            start.assert_called_once_with(
+                ["install", "--yes", "--json", "--target", "2.3.0"], True)
+        window.installing = True
+        self.window.update_installing = True
+        self.assertTrue(window.on_close())
+        self.assertTrue(self.window.on_close(self.window))
+        self.window.queue_patch({"shell": {"transparency": 12}})
+        self.assertIsNone(self.window.requested)
+        self.window.update_installing = False
+        window.installing = False
+
+    def test_updates_success_requires_reopening_and_never_restarts_files(self):
+        window = self.updates_window()
+        self.updater_result(window, {
+            "status": "installed", "installed_version": "2.3.0",
+            "settings_relaunch_required": True, "shell_reload_requested": False,
+            "files_restart_required": True}, installing=True)
+        self.assertTrue(self.window.update_installed)
+        self.assertFalse(self.window.pages.get_sensitive())
+        self.assertTrue(window.finish_button.get_visible())
+        self.assertIn("Inactive project theme was not activated", window.status.get_label())
+        self.assertIn("has not been restarted", window.status.get_label())
+
+    def test_updates_failure_and_unavailable_result_are_truthful(self):
+        window = self.updates_window()
+        self.updater_result(window, {"status": "error", "message": "offline",
+                                    "recovery_required": False}, successful=False)
+        self.assertEqual(window.status.get_label(), "offline")
+        self.assertTrue(window.check_button.get_sensitive())
+        self.updater_result(window, {"status": "error", "message": "Rollback incomplete",
+                                    "recovery_required": True}, installing=True, successful=False)
+        self.assertFalse(self.window.pages.get_sensitive())
+        self.assertTrue(window.finish_button.get_visible())
+        self.updater_result(window, {"status": "installed"}, installing=True)
+        self.assertIn("unavailable", window.status.get_label())
+        self.assertFalse(self.window.pages.get_sensitive())
+
+    def test_external_app_update_disables_stale_appearance_controls(self):
+        window = self.window
+        window.loaded_version = "a different installed version"
+        window.queue_patch({"shell": {"transparency": 13}})
+        self.assertTrue(window.update_installed)
+        self.assertIsNone(window.requested)
+        self.assertFalse(window.pages.get_sensitive())
 
     def wait_diagnostics(self, window):
         deadline = time.monotonic() + 10

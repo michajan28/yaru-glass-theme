@@ -42,6 +42,17 @@ class RepositoryLayoutTests(unittest.TestCase):
         profiles = 'for f in "$DEST"/assets/profiles/*.ini; do' + profiles.split("  done", 1)[0] + "done\n"
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
+            (root / "scripts").mkdir()
+            (root / "src").mkdir()
+            (root / "bin").mkdir()
+            shutil.copytree(ROOT / "src/yaru_glass", root / "src/yaru_glass")
+            shutil.copy2(ROOT / "bin/yaru-glass-logs", root / "bin/yaru-glass-logs")
+            shutil.copy2(ROOT / "VERSION", root / "VERSION")
+            home = root / "home"
+            for uuid in ("logomenu@aryan_k", "just-perfection-desktop@just-perfection"):
+                metadata = home / ".local/share/gnome-shell/extensions" / uuid / "metadata.json"
+                metadata.parent.mkdir(parents=True)
+                metadata.write_text("{}")
             stub = root / "gnome-shell"
             dconf = root / "dconf"
             dconf.write_text("#!/bin/sh\nprintf '%s\\n' \"$*\"\n")
@@ -54,12 +65,12 @@ class RepositoryLayoutTests(unittest.TestCase):
                 with self.subTest(version=version):
                     stub.write_text(f"#!/bin/sh\necho 'GNOME Shell {version}'\n")
                     stub.chmod(0o755)
-                    script = root / "preflight.sh"
+                    script = root / "scripts/preflight.sh"
                     script.write_text(preflight + '\nprintf "EXTENSION:%s\\n" "${EXTENSIONS[@]}"\n'
                                       f'DEST="{root}"\n' + profiles)
                     result = subprocess.run(
                         ["bash", str(script), "--no-apt", "--yes"],
-                        env={**os.environ, "PATH": f"{root}:/usr/bin:/bin",
+                        env={**os.environ, "PATH": f"{root}:/usr/bin:/bin", "HOME": str(home),
                              "DBUS_SESSION_BUS_ADDRESS": "unix:path=/nonexistent"},
                         check=True, capture_output=True, text=True,
                     )

@@ -484,9 +484,103 @@ Missing Markdown rendering is reported; the existing HTML manual is then require
 
 ## 6. Updating
 
+### App updates (unreleased, targeting 2.3.0)
+
+In an updater-enabled installation, open **Yaru Glass Settings → Updates**,
+choose **Check for updates**, then confirm **Install update**. Checks happen only
+when requested. Public stable GitHub releases require no login; drafts,
+prereleases, equal versions and older versions are not installed.
+
+```bash
+yaru-glass-update check
+yaru-glass-update check --json
+yaru-glass-update install              # interactive confirmation
+yaru-glass-update install --yes        # explicit non-interactive confirmation
+```
+
+The CLI returns 0 for successful checks, installation, cancellation or recovery,
+3 when busy, and 1 on error. JSON `status` distinguishes `available`,
+`up-to-date`, `installed`, `cancelled`, `recovered`, `no-recovery-needed`, `busy`
+and `error`. `install --target VERSION` refuses a changed release instead of
+silently installing a different version.
+
+Updates affect only the current account's existing installation. Preferences,
+independent transparency opt-ins, wallpapers, customized profiles, extensions,
+ownership records and the original installation backup are preserved. No apt,
+sudo, automatic checks, telemetry, remote account management or profile import
+is involved. Close Settings and reopen it from the application launcher after
+success. A Shell reload request is not proof of compositor output. Files is
+never restarted automatically; restart it yourself after finishing transfers.
+An inactive project theme is not selected automatically.
+
+The updater requires the versioned release archive and SHA-256 companion.
+Downloads are HTTPS-only, bounded and checksum-verified; archive paths, types,
+size, version and required payload are validated before installed files change.
+Checksums and optional GitHub asset digests establish integrity against GitHub's
+release metadata, **not an independent publisher signature**.
+Network/TLS failures, GitHub rate limits, missing assets and verification failures
+are errors, not an "up to date" result. Retry after resolving the reported cause.
+
+### One-time bootstrap for existing accounts
+
+2.2.4 and earlier installations do not gain an update button retroactively.
+After the updater-enabled release is published, close all old Settings windows,
+finish appearance changes, and use its verified archive once on each account.
+The example below targets the future 2.3.0 release; do not run it before that
+release exists. Use a new empty directory and inspect the release notes first.
+
+```bash
+mkdir yaru-glass-bootstrap-2.3.0
+cd yaru-glass-bootstrap-2.3.0
+curl --fail --location --proto '=https' --proto-redir '=https' \
+  -O https://github.com/michajan28/yaru-glass-theme/releases/download/v2.3.0/yaru-glass-theme-2.3.0.tar.gz
+curl --fail --location --proto '=https' --proto-redir '=https' \
+  -O https://github.com/michajan28/yaru-glass-theme/releases/download/v2.3.0/yaru-glass-theme-2.3.0.tar.gz.sha256
+sha256sum --check yaru-glass-theme-2.3.0.tar.gz.sha256
+# Continue only if checksum verification succeeded.
+tar -xzf yaru-glass-theme-2.3.0.tar.gz
+/usr/bin/python3 yaru-glass-theme-2.3.0/bin/yaru-glass-update install --bootstrap \
+  --archive "$PWD/yaru-glass-theme-2.3.0.tar.gz" \
+  --checksum "$PWD/yaru-glass-theme-2.3.0.tar.gz.sha256"
+```
+
+Bootstrap re-verifies and validates the local archive, uses the same preserving
+transaction, and installs the updater command. There is no second download or
+`curl | sh`. Do not rerun the normal installer for a preservation-only update:
+it can reapply fonts, icons, profiles and activation. Synthetic 2.2.4-layout
+bootstrap is tested; arbitrary historical or earlier-branded layouts are not
+promised. Fresh installations still use the normal installer.
+
+### Failed or interrupted updates
+
+Before replacement, the updater stages complete app/themes and records private
+recovery state outside the package. Concurrent lifecycle/appearance operations
+are excluded; the original sync running state is restored without enabling a
+disabled service. Replacement across directories is recoverable, not one
+indivisible filesystem operation.
+
+An ordinary failure attempts to restore the prior package/themes and affected
+runtime state. If restoration fails, the error is explicit and recovery data is
+retained. Do not delete it or run the installer over it. Recover before retrying:
+
+```bash
+yaru-glass-update recover
+# If the installed package/launcher is unavailable:
+/usr/bin/python3 ~/.local/share/yaru-glass-update/runner/bin/yaru-glass-update recover
+```
+
+The private `~/.local/share/yaru-glass-update/` directory contains the recovery
+runner, a coordination lock and, while needed, a transaction journal/backups.
+Successful transactions clean their staging/backups. Ordinary uninstall retains
+the runner; purge removes known runner/staging paths and the updater launcher,
+but keeps the empty coordination inode. The first-install backup is separate
+from temporary update recovery; user-exported reports are not deleted.
+There is no manual downgrade/history command in this milestone.
+
+### System Yaru and extensions
+
 - **After Ubuntu updates the Yaru theme:** run `~/.local/share/yaru-glass/scripts/build.py`
   to rebuild on top of the new Yaru.
-- **New package version:** extract it and run `./scripts/install.sh` again.
 - Extensions can be updated through **Extension Manager**, but the
   exact-version policy rejects unvalidated releases; check compatibility first.
 

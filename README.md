@@ -98,6 +98,15 @@ confirmed restart; it cannot inspect a running Files process's CSS.
 Development direction: [roadmap (Markdown)](docs/ROADMAP.md) ·
 [roadmap (HTML)](docs/ROADMAP.html).
 
+**Next feature release: 2.3.0 app updates.** The unreleased implementation adds
+manual **Updates** controls in Settings and `yaru-glass-update check|install`.
+Stable public GitHub releases are checksum-verified and staged without resetting
+preferences, wallpapers, customized profiles or extensions. Failed/interrupted
+replacement has a recovery path. Existing 2.2.4 installations need a one-time
+verified-archive bootstrap after an updater-enabled release is published; they
+do not already contain these controls. See [updating and bootstrap](docs/MANUAL.md#6-updating).
+Custom lock screen is now later and unnumbered. `VERSION` remains 2.2.4.
+
 **Breaking rename:** commands, theme names, app IDs and configuration paths now
 use Yaru Glass. There are no legacy aliases or automatic migration. Before
 switching from an earlier-branded installation, back up its preferences and

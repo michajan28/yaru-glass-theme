@@ -142,6 +142,12 @@ class GlassTests(unittest.TestCase):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.backup = Path(directory.name) / "glass.json"
+        import operation_lock
+        lock_directory = Path(directory.name) / "updater"
+        lock_directory.mkdir()
+        lock_patch = patch.object(operation_lock, "directory", return_value=lock_directory)
+        lock_patch.start()
+        self.addCleanup(lock_patch.stop)
         self.keys = {key: None for key in glass.desired_keys("frost")}
         self.keys["popup/pipeline"] = "'existing'"
         self.pipelines = {"existing": {"name": "Unrelated", "effects": []}}

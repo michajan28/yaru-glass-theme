@@ -20,7 +20,7 @@ MAX_BYTES = 2 * 1024 * 1024
 BACKUPS = 4
 MAX_RECORD = 4096
 COMPONENTS = frozenset({"settings", "worker", "sync", "glass", "files", "wallpaper",
-                        "extensions", "install", "uninstall", "diagnostics"})
+                        "extensions", "install", "uninstall", "diagnostics", "updater"})
 ACTIONS = frozenset({"startup", "apply", "rollback", "repair", "restart", "activate",
                      "deactivate", "restore", "choose", "preview", "retry", "worker",
                      "install", "uninstall", "stage", "compatibility", "export",
@@ -43,7 +43,9 @@ EXTENSIONS = frozenset({
 SOURCE_FILES = frozenset({"diagnostics.py", "diagnostics_ui.py", "managed_glass.py",
                           "files_appearance.py", "wallpapers.py", "theme_settings.py",
                           "build.py", "yaru-glass-settings", "yaru-glass-sync",
-                          "install-extensions.py", "enable-extension.py"})
+                          "install-extensions.py", "enable-extension.py",
+                          "updates.py", "update_transaction.py", "operation_lock.py",
+                          "yaru-glass-update", "updates_ui.py"})
 ERROR_TYPES = frozenset({"OSError", "PermissionError", "FileNotFoundError", "ValueError",
                          "TypeError", "RuntimeError", "TimeoutError", "KeyError",
                          "JSONDecodeError", "CalledProcessError", "Error",

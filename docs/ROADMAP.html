@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Yaru Glass roadmap: Layered glass, rounded dynamic blur, exact extension versions and a custom lock screen milestone.">
+  <meta name="description" content="Yaru Glass roadmap: user-confirmed GitHub app updates, preserving customization; custom lock screen deferred.">
   <title>Yaru Glass — Development roadmap</title>
   <style>
 :root {
@@ -117,7 +117,9 @@ footer { max-width: 1320px; margin: 0 auto 32px; padding: 0 32px; color: var(--m
 <li><a href="#exit-criteria_2">Exit criteria</a></li>
 </ul>
 </li>
-<li><a href="#7-next-230-custom-lock-screen">7. Next: 2.3.0 — custom lock screen</a></li>
+<li><a href="#7-next-230-app-updater">7. Next: 2.3.0 — app updater</a><ul>
+<li><a href="#later-unnumbered-custom-lock-screen">Later, unnumbered — custom lock screen</a></li>
+</ul></li>
 <li><a href="#8-later-unnumbered-personal-appearance-profiles">8. Later, unnumbered — personal appearance profiles</a><ul>
 <li><a href="#work-packages_2">Work packages</a></li>
 <li><a href="#exit-criteria_3">Exit criteria</a></li>
@@ -135,8 +137,8 @@ footer { max-width: 1320px; margin: 0 auto 32px; padding: 0 32px; color: var(--m
     </aside>
     <main id="roadmap"><h1 id="yaru-glass-development-roadmap">Yaru Glass development roadmap</h1>
 <p>Readable glass. Consistent controls. Safe upgrades.</p>
-<p><strong>Baseline:</strong> 2.2.4 (local release; historical milestone evidence below retained)<br />
-<strong>Status:</strong> Private diagnostics delivered; custom lock screen follows<br />
+<p><strong>Baseline:</strong> 2.2.4 (published on GitHub; historical milestone evidence below retained)<br />
+<strong>Status:</strong> Private diagnostics delivered; user-confirmed app updates next<br />
 <strong>Target stacks:</strong> Ubuntu 24.04 / GNOME 46 and Ubuntu 26.04 / GNOME 50, Wayland<br />
 <strong>Limits:</strong> Earlier compatibility evidence is not certification of new effects</p>
 <p>This roadmap covers the light <code>Yaru-Glass</code> and dark
@@ -257,8 +259,14 @@ the <a href="MANUAL.md">manual</a> and <a href="KNOWLEDGE_BASE.md">maintenance k
 <td>Compositor captures on GNOME 46/50; native St gradient regression; 211 tests per stack</td>
 </tr>
 <tr>
-<td>2.3.0: custom lock screen</td>
-<td>After diagnostics</td>
+<td>2.3.0: app updater</td>
+<td>Next, approved</td>
+<td>Check and install stable GitHub releases from Settings or CLI, preserving customization</td>
+<td>Verified staging, failure recovery, older-install bootstrap and isolated lifecycle checks</td>
+</tr>
+<tr>
+<td>Custom lock screen</td>
+<td>Later, unnumbered</td>
 <td>Adapt the browser concept using a supported native mechanism</td>
 <td>Approve native scope, privacy and safe authentication boundaries</td>
 </tr>
@@ -272,7 +280,8 @@ the <a href="MANUAL.md">manual</a> and <a href="KNOWLEDGE_BASE.md">maintenance k
 </table></div>
 <p>Maintenance fixes need not wait for the next feature milestone.
 Diagnostics ships in 2.2.3; 2.2.4 makes it discoverable and fixes the notification halo.
-Retain the 2.3.0 lockscreen planning label. Logs are enabled by
+2.3.0 now targets app updates; custom lock screen is deferred without a version.
+Logs are enabled by
 default for key actions/warnings/errors, with optional verbose mode; private
 10 MiB rotation and sanitized local reports do not collect full preferences,
 personal paths or journal dumps. Ordinary uninstall retains logs; purge removes
@@ -401,7 +410,25 @@ background blur, with reliable integrations and a quality-gated local release.</
 </ul>
 <p><strong>Dependency:</strong> retain the accepted 2.1 visual baseline. Tooling must not become
 a reason to rewrite the theme or add a large build framework.</p>
-<h2 id="7-next-230-custom-lock-screen">7. Next: 2.3.0 — custom lock screen</h2>
+<h2 id="7-next-230-app-updater">7. Next: 2.3.0 — app updater</h2>
+<p><strong>Goal:</strong> make upgrades convenient across machines and accounts, without resetting
+each user's appearance or requiring a GitHub account.</p>
+<ul>
+<li>Manual <strong>Check for updates</strong> and confirmed <strong>Install update</strong> in Settings,
+backed by an equivalent CLI and public stable GitHub release assets.</li>
+<li>Verify SHA-256, validate archive paths and payload, stage the new app/themes,
+and recover failed or interrupted replacement.</li>
+<li>Preserve preferences, wallpapers, customized profiles, extension versions and
+ownership, original backups, and the previous sync-service state.</li>
+<li>Provide a verified-archive bootstrap for existing installations; subsequent
+updates use Settings or CLI. Updates are per account, not remote administration.</li>
+<li>No unattended updates, sudo, profile resets, automatic Files restarts or theme
+activation. Describe reload requests separately from verified visual output.</li>
+<li>Cover network failures, invalid assets, concurrency, rollback, bootstrap and a
+subsequent update in isolated fixtures on the supported stacks.</li>
+</ul>
+<p>Tracking: <a href="https://github.com/michajan28/yaru-glass-theme/issues/6">implementation issue #6</a>.</p>
+<h3 id="later-unnumbered-custom-lock-screen">Later, unnumbered — custom lock screen</h3>
 <p><strong>Goal:</strong> adapt the approved offline lock-screen concept to a supported native
 GNOME mechanism, without replacing or weakening authentication.</p>
 <ul>
@@ -470,9 +497,10 @@ Add coverage for behavior changes, not arbitrary numeric targets.</p>
 <p><strong>2.2.0</strong> delivers Layered glass, automatic rounded Blur my Shell integration,
 extension-version enforcement, dock dashes and demo regressions. See its
 <a href="RELEASE-2.2.0.md">release evidence and limits</a>.
-The next milestone is custom lock screen <strong>2.3.0</strong>, with a separately approved
-native mechanism and safe authentication boundaries. Personal appearance
-profiles remain later and unnumbered.</p>
+The next milestone is <strong>2.3.0 app updater</strong>, with user-confirmed stable GitHub
+updates and a preservation-focused transaction. Custom lock screen and personal
+appearance profiles remain later and unnumbered. Native lock-screen work still
+requires a separately approved mechanism and safe authentication boundaries.</p>
 <h2 id="12-maintaining-this-roadmap">12. Maintaining this roadmap</h2>
 <p><code>ROADMAP.md</code> is the content source of truth; <code>ROADMAP.html</code> is its matching,
 offline-readable presentation. Update both in the same change. After each

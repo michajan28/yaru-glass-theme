@@ -7,6 +7,28 @@ record them. Validation dates are not treated as publication dates.
 
 ## Unreleased
 
+### Added
+
+- Manual stable GitHub release checks and confirmed app/theme updates through
+  Settings **Updates** and `yaru-glass-update`, without GitHub login, sudo,
+  unattended updates or extension/profile resets.
+- Bounded HTTPS downloads, exact release assets and SHA-256 verification,
+  validated archive staging, complete generated-theme replacement, lifecycle
+  coordination, and persistent recovery for failed/interrupted updates.
+- Verified local-archive bootstrap for existing installations, with isolated
+  synthetic 2.2.4-to-feature and subsequent installed-CLI upgrade regressions.
+  Settings distinguishes installation, reload requests and relaunch/Files
+  restart requirements; no Files restart or inactive-theme activation is forced.
+
+### Changed
+
+- The next feature milestone is **2.3.0 app updater**; custom lock screen moves
+  to Later, unnumbered. No release/version bump is included.
+- Installer, uninstaller, generation and sync coordinate with the updater.
+  Purge removes updater-owned runner/staging data and its launcher, retaining
+  the coordination inode. Native updater and failure/recovery tests use private
+  HOME/XDG and mocked networking or isolated desktop services.
+
 ## 2.2.4
 
 Notification halo and Diagnostics discoverability fix. See
