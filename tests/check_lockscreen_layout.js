@@ -116,7 +116,7 @@ function verifyLayout() {
                     `${clock.get_preferred_size()[3]} > ${stack.get_allocation_box().get_height()}`);
                 if (notificationHeight > 0) {
                     const adjustment = scroll.vadjustment;
-                    const overflow = adjustment.upper - adjustment.lower > adjustment.page_size + 1;
+                    const overflow = adjustment.upper - adjustment.lower > adjustment.page_size;
                     check(scroll.vscrollbar_visible === overflow,
                         `Vertical scrollbar visibility does not match actual overflow: ` +
                         `${width}x${height}, scale ${scale}, content ${notificationHeight}; ` +

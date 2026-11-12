@@ -69,6 +69,10 @@ There is no new updater migration for 2.4.0.
 - Packaging regressions passed in curated, default and custom-output modes,
   including checksum verification and the unchanged updater's safe extraction,
   archive exclusions, executable modes and profile preservation.
+- Headless CI reports unavailable GUI/installed-extension checks as skips;
+  desktop coverage comes from the VM runs above. The new native harness counts
+  even one pixel of clipped content as overflow, matching GNOME's scrollbar
+  behavior rather than treating it as fitting content.
 
 VM checks do not certify every GPU, monitor layout, accessibility configuration,
 image provider or wallpaper. Earlier native password/privacy checks remain
