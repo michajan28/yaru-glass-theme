@@ -39,13 +39,14 @@ EXTENSIONS = frozenset({
     "user-theme@gnome-shell-extensions.gcampax.github.com", "blur-my-shell@aunetx",
     "just-perfection-desktop@just-perfection", "auto-theme-switcher@amritashan.github.io",
     "logomenu@aryan_k", "ubuntu-dock@ubuntu.com", "ubuntu-appindicators@ubuntu.com",
+    "lockscreen@yaru-glass",
 })
 SOURCE_FILES = frozenset({"diagnostics.py", "diagnostics_ui.py", "managed_glass.py",
                           "files_appearance.py", "wallpapers.py", "theme_settings.py",
                           "build.py", "yaru-glass-settings", "yaru-glass-sync",
                           "install-extensions.py", "enable-extension.py",
                           "updates.py", "update_transaction.py", "operation_lock.py",
-                          "yaru-glass-update", "updates_ui.py"})
+                          "yaru-glass-update", "updates_ui.py", "companion_extension.py"})
 ERROR_TYPES = frozenset({"OSError", "PermissionError", "FileNotFoundError", "ValueError",
                          "TypeError", "RuntimeError", "TimeoutError", "KeyError",
                          "JSONDecodeError", "CalledProcessError", "Error",

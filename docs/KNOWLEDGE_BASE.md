@@ -7,13 +7,13 @@ and user manual. It is intended as a starting point for future maintenance.
 
 - **Purpose:** provide light and dark glass-inspired desktop themes for Ubuntu
   GNOME, while retaining Ubuntu's Yaru foundation, icons, and logo.
-- **Release in this tree:** `2.3.0` (`VERSION`), distributed through public GitHub
+- **Release in this tree:** `2.4.0` (`VERSION`), distributed through public GitHub
   Releases with a versioned archive and SHA-256 companion.
 - **Tested targets:** Ubuntu 24.04 LTS / GNOME Shell 46 and Ubuntu 26.04 LTS /
   GNOME Shell 50, Wayland. Other Ubuntu/GNOME versions are not guaranteed.
 - **Dual-stack validation:** Ubuntu 26.04 / GNOME 50 alongside 24.04.
   A persistent Ubuntu 26.04.1 Wayland VM runs Shell/Mutter 50.1, Nautilus 50.2.2,
-  GTK 4.22.4, libadwaita 1.9.1 and Yaru 26.04.5.1. Automated GTK/WebKit tests,
+  GTK 4.22.4, libadwaita 1.9.1 and Yaru 26.04.5.1. Automated native GTK tests,
   theme installation/upgrade, a clean reboot, headless St notification geometry,
   controlled live desktop checks and isolated lifecycle acceptance have run there.
   Broader hardware/background coverage remains separate. See
@@ -30,6 +30,89 @@ and user manual. It is intended as a starting point for future maintenance.
   GNOME extensions and user settings for the complete desktop experience.
 
 ## Source of truth and file map
+
+### Native lock screen: development boundary
+
+`src/gnome-shell-extension/` contains the independent first-party lock screen for
+GNOME 46 and 50. It declares `user` and `unlock-dialog`, never `gdm`.
+`extension.js` decorates the existing unlock dialog; `layout.js` changes only
+clock-view allocation and delegates authentication-view allocation to the saved
+native layout. It does not replace the authentication prompt, screen shield,
+credential handling or native notification model.
+
+The local GSettings schema `org.yaru.glass.lockscreen` defaults `enabled` to
+false. Its wallpaper URI, clock format/weight and card appearance are independent
+of desktop settings. `runtime-status` is extension-reported state, not pixel or
+authentication verification. The extension adds its own covered wallpaper
+actors rather than replacing Blur my Shell's background methods, and restores
+its own layout, clock order and styles on disable.
+
+The responsive allocator measures native clock content, scales its time text
+to the available width/height, and uses compact date/hint/profile styling when
+space is tight. It reserves a notification viewport instead of clipping the
+entire list away. Reuse `NotificationsBox._scrollView`: horizontal scrolling
+is disabled, vertical policy is automatic, and the scoped scrollbar remains
+legible over the wallpaper. A post-default scroll handler prevents overflow
+boundary events from bubbling into GNOME's scroll-to-prompt action; it does not
+intercept events outside the wrapper or change authentication. Disable restores
+the original scrollbar policies, overlay/mouse preferences and clock inline style.
+
+`prefs.js` opens standard GNOME extension Preferences. `preferences.js` builds
+the GTK/libadwaita controls; `settings.js` owns local image validation and
+user-facing reset. They depend on the extension's local schema, not the theme
+app, Python modules, lifecycle lock or sync service. The customization switch
+does not change global or per-extension activation. Extensions/Extension Manager
+owns that activation; a saved preference does not prove live compositor output.
+
+`scripts/make-lockscreen-extension.py OUTPUT` builds a separately versioned
+ZIP with GNOME's pack command. Source metadata version 1 is independent of the
+theme VERSION; the ZIP includes GPL-3.0-or-later license text and notices, no
+theme assets or fonts. It is also buildable from a theme package's source.
+`companion_extension.py` validates the local companion and uses standard
+`gnome-extensions install`, without activation or overwrite. Normal installation
+requires it; `--no-extensions` and `--theme-only` skip installation. Compatible
+existing copies are retained; incompatible copies and symlink collisions are
+errors. New installs are recorded in the existing installed-extensions list
+for optional `--remove-extensions`. Its GSettings preferences are not purged
+by the theme. Explicit ZIP upgrades remain separate from theme updates.
+
+The theme updater, transaction schema, archive allowlist and app pages remain
+unchanged. No package-format marker, special bootstrap, equal-version override
+or extension replacement target is introduced. Yaru Glass app integration is
+omitted by owner decision; activation stays in Extensions/Extension Manager.
+Development testing is restricted to the isolated Ubuntu 24.04/GNOME 46 and
+Ubuntu 26.04/GNOME 50 VMs. The focused command is
+`/usr/bin/python3 -m unittest discover -s tests -p test_lockscreen.py -v`.
+Its native layout harness uses a private D-Bus/Mutter context; real guest
+lock/unlock checks remain separate. It loads the guest's native Shell stylesheet
+as well as the extension CSS, checks 36 viewport/scale/time-format/content
+combinations, tests content growth/shrink and viewport resizing, and asserts
+scrollbar visibility, last-item reachability and restoration. Existing
+notification grouping and privacy
+must remain authoritative as card styling develops.
+
+Earlier native layout/unlock/notification and integrated Settings checks passed
+on both target stacks. The independent implementation subsequently passed 130
+focused tests on GNOME 46, covering standalone packed Preferences, the 36-case
+native layout matrix, local companion installation, compatibility, isolated
+lifecycle, existing updater/archive/app behavior and diagnostics. Equivalent
+focused slices passed on GNOME 50; the reset-followed-by-edit and compiled-schema
+symlink regressions were rerun after their fixes. Both guests loaded the same
+private version-1 ZIP, opened its real GNOME Preferences window and rendered the
+custom lock screen alongside active Blur my Shell. These smoke checks are not a
+new password-authentication, privacy or lifecycle-stress certification.
+The earlier intermittent GNOME 50 re-enable hang was observed during a live
+uninstall/restoration test, not an update. Later attempts passed; its cause is
+unproven. After isolation, one owner-approved standard `gnome-extensions`
+disable/enable cycle passed on GNOME 50.1: disable took 0.53 seconds, enable
+0.19 seconds, and Shell was still responsive after a 10-second wait with the
+same process ID. Saved appearance preferences, enabled/disabled membership/order
+and global extension policy were preserved; Blur my Shell was active afterward.
+This did not reproduce the earlier freeze and does not prove it fixed. No stress
+cycles or speculative product fixes were added; further investigation needs a
+reproducible failure or a separate owner decision.
+Validation targets the theme, native app and extension. The browser preview is
+outside automated validation scope.
 
 | Path | Responsibility |
 |---|---|
@@ -406,6 +489,10 @@ complete app/theme trees. `build.py --stage-themes NEW_DIRECTORY` reads saved
 preferences and system Yaru resources but never activates or reloads the desktop.
 Keep this path free of managed-effect application and preference writes.
 
+Lock Screen is a separate extension. Theme updates may carry its source/build
+tool but never deploy or upgrade the installed extension. Existing theme users
+install its ZIP separately. Do not add a post-update copy or activation hook.
+
 `operation_lock.py` coordinates shared appearance/sync activity with exclusive
 update/install/uninstall activity. An inherited validated descriptor allows
 installer children to participate without deadlocking. Lock order is lifecycle
@@ -434,8 +521,8 @@ For 2.3.0, Settings and Files render fixtures use
 `tests/gtk_rendering.py:snapshot_widget` to request/wait for GTK after-paint before
 sampling the paintable cache. Fixed sleeps alone could sample the previous
 opaque/translucent frame. Keep the existing alpha/content assertions; do not
-raise tolerances to hide capture timing. GNOME 50/VM revalidation is deferred for
-this release; retain Logo Menu's GNOME 50 exclusion until actual interaction
+raise tolerances to hide capture timing. The 2.4.0 native release suite passes
+220 tests without skips on each GNOME 46/50 VM; retain Logo Menu's GNOME 50 exclusion until actual interaction
 validation is available.
 
 - `~/.local/share/yaru-glass/scripts/uninstall.sh` restores the original backed-up settings.
@@ -457,7 +544,7 @@ cover original backup bytes, mixed independent preferences, legacy Search Light
 records, managed pipeline removal, original GTK CSS, conditional wallpaper
 restoration, extension ownership boundaries and retained purge backups.
 Run it independently with `/usr/bin/python3 -m unittest discover -s tests -p test_lifecycle.py -v`.
-The 2.2.0 full suite passes 168 tests on each Ubuntu stack, with no skips.
+The 2.2.0 native lifecycle checks passed on each Ubuntu stack.
 See the [release evidence](RELEASE-2.2.0.md) for environments and validation limits.
 
 A separate isolated Ubuntu 24.04 check verified the preserved 1.2.1 archive
@@ -495,61 +582,11 @@ or a live desktop uninstall/purge. Historical archives were not modified.
   large guest display and record software-rendering limits. GTK snapshot fixtures
   retain their `Gtk.WidgetPaintable` through frame updates.
 
-### Guest WebKit test launch
+### Validation scope
 
-The Python WebKit harness needs permission to create its sandbox's user
-namespaces. A test launched inside VS Code may inherit that permission from its
-AppArmor profile, while identical Python/WebKit packages launched over SSH do not.
-A bubblewrap UID-map denial is a harness launch failure, not evidence that the
-HTML demo is incompatible with the guest's GNOME version.
-
-For an explicitly approved disposable Ubuntu guest, a dedicated AppArmor profile
-can grant this permission only when selected for the test command. The validated
-guest uses `/etc/apparmor.d/yaru-glass-webkit-tests`:
-
-```text
-abi <abi/4.0>,
-include <tunables/global>
-
-profile yaru-glass-webkit-tests flags=(unconfined) {
-  userns,
-}
-```
-
-Load that profile using `sudo apparmor_parser -r` with the exact profile path.
-This follows Ubuntu's named application-profile mechanism; it is not a confined
-application policy. Do not attach it to all Python processes, disable AppArmor,
-turn off the global user-namespace restriction, or disable WebKit's sandbox.
-Do not install test policies on the user's host as part of theme installation.
-
-Use the guest's real session bus/runtime paths and Wayland display. Ensure the
-session is unlocked and the display can accommodate the largest tested viewport
-(currently 1366px wide). Run from the guest checkout:
-
-```sh
-gnome-session-inhibit --inhibit idle --reason "Yaru Glass guest UI regression validation" \
-  aa-exec -p yaru-glass-webkit-tests -- \
-  /usr/bin/python3 -m unittest discover -s tests -p 'test_*.py' -q
-```
-
-Idle inhibition lasts only for the command; it does not change lock preferences.
-It does not unlock a session that was already locked. Confirm the guest is
-unlocked before starting: a locked GNOME 46 session reproduced stale
-1100x650 allocations and viewport-resize timeouts despite idle inhibition.
-
-Version 2.2.2 separately fixes the real intermittent mobile overflow: WebKit on
-GNOME 46 could resolve the notification banner's animated `translateX(-50%)` to
-zero during early layout. Captured geometry at 390px showed a banner from x=195
-to x=569 and desktop `scrollWidth=569`. The banner now uses opposing insets and
-automatic inline margins; animation changes only vertical translation/opacity.
-Do not hide notifications, disable all animations, add retry-until-pass logic or
-relax the mobile overflow assertion to mask this defect. The new regression
-pauses the actual animation at four positions at 1100/320/390/680px and asserts
-bounds and centering. Reduced motion uses a separate check; its test-owned inline
-copy of the real stylesheet avoids forbidden `file:` cross-origin CSSOM access.
-Ten independent complete 29-test demo runs passed per stack with sandboxing and
-`kernel.apparmor_restrict_unprivileged_userns=1` retained. See
-[2.2.2 release evidence](RELEASE-2.2.2.md).
+Automated validation covers the native theme, Settings app, companion extension,
+updater and isolated install/uninstall lifecycle. The HTML demo remains available
+as a preview, but is not a release gate.
 
 ## Maintenance workflow
 

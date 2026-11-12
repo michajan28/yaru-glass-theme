@@ -20,7 +20,6 @@ subsystem, rather than rereading the entire project for every task.
 | Native controls, async workers, Files restart | [settings launcher](../../../bin/yaru-glass-settings) | `test_settings_ui.py` |
 | Nautilus-scoped generated CSS | [files_appearance.py](../../../src/yaru_glass/files_appearance.py) | `test_files_appearance.py`, `test_settings_ui.py` |
 | Managed effects, wallpaper ownership, activation | [managed_glass.py](../../../src/yaru_glass/managed_glass.py), [wallpapers.py](../../../src/yaru_glass/wallpapers.py), [sync launcher](../../../bin/yaru-glass-sync) | `test_glass_wallpapers.py` |
-| Standalone browser preview | [index.html](../../../demo/index.html) | `test_demo.py` |
 | Layout, imports, installation payload | [maintenance scripts](../../../scripts/), [layout tests](../../../tests/test_repository_layout.py) | `test_repository_layout.py` |
 
 ## Implement And Verify
@@ -42,7 +41,7 @@ subsystem, rather than rereading the entire project for every task.
    Substitute one test pattern from the table; run multiple patterns separately.
    Tests should not depend on another test file first importing `build` or adding
    a search path. Reproduce import failures with the affected slice alone.
-4. On failure, distinguish incorrect behavior from unavailable display/GI/WebKit
+4. On failure, distinguish incorrect behavior from unavailable display/GI
    dependencies. Repair the touched behavior and rerun the same check before
    widening scope. Preserve existing fixture isolation and report actual skips.
 5. Run the full suite when changing shared models, CSS generation, worker behavior,
@@ -75,8 +74,8 @@ subsystem, rather than rereading the entire project for every task.
 
 - Edit source templates, not generated themes. Check both light/dark variants and
   Frost/Crystal/Solid behavior where relevant; level 0 and Solid are not synonyms.
-- Native GTK render tests and WebKit tests inspect different surfaces. Test both
-  when changing shared appearance behavior. Keep file content/controls opaque and
+- Validate shared appearance behavior with native GTK render tests.
+  Keep file content/controls opaque and
   unrelated windows unstyled when adjusting scoped app transparency.
 - Shell notification sizing has directional St/Clutter behavior that CSS string
   assertions cannot prove. For notification geometry changes, inspect
@@ -86,6 +85,7 @@ subsystem, rather than rereading the entire project for every task.
 - The HTML demo is independent of desktop preferences. Preserve semantic controls,
   keyboard focus, confirmation/cancel behavior, reduced motion, narrow layouts,
   and parity with the shared appearance model without adding a framework by default.
+  Keep the browser preview outside automated validation and release gates.
 
 ## Close Out
 

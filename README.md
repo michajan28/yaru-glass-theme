@@ -1,10 +1,21 @@
 # Yaru Glass
 
-Version **2.3.1** — Ubuntu 24.04 / GNOME Shell 46 and Ubuntu 26.04 / GNOME Shell 50.
+Version **2.4.0** — Ubuntu 24.04 / GNOME Shell 46 and Ubuntu 26.04 / GNOME Shell 50.
 
 See the [changelog](CHANGELOG.md) for release history starting at 1.0.0 and
 unreleased repository changes. Contributor and agent guidance is in
 [AGENTS.md](AGENTS.md); contribution rules are in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+**2.4.0:** Lock Screen is an independent GNOME 46/50 extension
+with its own Preferences window and separately versioned ZIP. Normal theme
+installation includes it, initially off; `--no-extensions` and `--theme-only`
+skip installation. Open its Preferences through Extension Manager, not the
+Yaru Glass app. Theme updates do not install or update the extension. Authentication
+and notification privacy remain GNOME-owned; GDM is unchanged. The earlier
+intermittent re-enable freeze did not reproduce in the bounded standalone check;
+no root cause or fix is claimed. See
+[independent extension usage](docs/MANUAL.md#independent-lock-screen-extension)
+and [2.4.0 release notes](docs/RELEASE-2.4.0.md).
 
 **2.1.1 was a local branding and demo release** on the 2.1.0 dual-stack baseline.
 It completes the Yaru Glass rename, clarifies Yaru reuse and licensing, and adds
@@ -24,7 +35,7 @@ Later milestones remain in the [roadmap](docs/ROADMAP.md).
 **2.2.2 fixes notification animation overflow in the demo**, including the
 intermittent GNOME 46 mobile-layout failures. Notifications are centered by layout
 instead of an animated percentage transform, retaining the slide/fade and reduced
-motion behavior. Ten complete demo runs pass on each GNOME stack.
+motion behavior.
 See [2.2.2 release evidence](docs/RELEASE-2.2.2.md).
 
 **2.2.3 adds private local diagnostics** for Settings, appearance transactions,
@@ -122,7 +133,8 @@ preferences, wallpapers, customized profiles or extensions. Failed/interrupted
 replacement has a recovery path. Existing 2.2.4 installations need a one-time
 verified-archive bootstrap using the 2.3.1 release; they
 do not already contain these controls. See [updating and bootstrap](docs/MANUAL.md#6-updating).
-Custom lock screen is now later and unnumbered.
+The independent Lock Screen companion is available starting with 2.4.0;
+existing users install its separate ZIP explicitly.
 
 **Breaking rename:** commands, theme names, app IDs and configuration paths now
 use Yaru Glass. There are no legacy aliases or automatic migration. Before
@@ -171,7 +183,7 @@ bash -n scripts/install.sh scripts/uninstall.sh scripts/make-package.sh
 /usr/bin/python3 scripts/render-manual.py
 ```
 
-UI tests require GTK 4, libadwaita, WebKit 6, and a display; unavailable UI tests
+UI tests require GTK 4, libadwaita, and a display; unavailable UI tests
 are skipped. Rendering the manual requires `python3-markdown`.
 
 GitHub Actions runs the Python suite and shell syntax checks on pull requests,

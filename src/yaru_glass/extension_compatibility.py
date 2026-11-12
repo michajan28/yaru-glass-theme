@@ -73,6 +73,12 @@ UBUNTU_RELEASES = {
 
 ACTIVE_STATE = 1
 REQUIRED_SCHEMA_KEYS = {
+    "lockscreen@yaru-glass": {
+        "org.yaru.glass.lockscreen": {
+            "contract-version", "enabled", "wallpaper-uri", "clock-format",
+            "clock-weight", "appearance", "runtime-status",
+        },
+    },
     "user-theme@gnome-shell-extensions.gcampax.github.com": {
         "org.gnome.shell.extensions.user-theme": {"name"},
     },

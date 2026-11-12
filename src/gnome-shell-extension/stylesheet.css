@@ -1,0 +1,100 @@
+.yaru-lock-wallpaper {
+  background-color: #222825;
+  background-size: cover;
+}
+
+.yaru-lock-shade {
+  background-gradient-direction: vertical;
+  background-gradient-start: rgba(0, 0, 0, 0.25);
+  background-gradient-end: rgba(0, 0, 0, 0.56);
+}
+
+.yaru-glass-lock .unlock-dialog-clock {
+  font-family: "Inter Variable", sans-serif;
+  color: white;
+  spacing: 3px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+.yaru-glass-lock .unlock-dialog-clock-time {
+  font-size: 128px;
+  font-weight: 650;
+}
+
+.yaru-glass-lock .unlock-dialog-clock.yaru-lock-compact .unlock-dialog-clock-date {
+  font-size: 14px;
+}
+
+.yaru-glass-lock .unlock-dialog-clock.yaru-lock-compact .unlock-dialog-clock-hint {
+  font-size: 11px;
+  margin-top: 4px;
+  padding: 0;
+}
+
+.yaru-glass-lock.yaru-lock-light-clock .unlock-dialog-clock-time {
+  font-weight: 300;
+}
+
+.yaru-glass-lock .unlock-dialog-clock-date {
+  font-size: 18px;
+  font-weight: 550;
+}
+
+.yaru-glass-lock .unlock-dialog-clock-hint {
+  font-size: 13px;
+}
+
+.yaru-glass-lock .unlock-dialog-notifications-container {
+  min-width: 0;
+  max-width: 360px;
+}
+
+.yaru-glass-lock .yaru-lock-notifications-scroll StScrollBar {
+  min-width: 10px;
+}
+
+.yaru-glass-lock .yaru-lock-notifications-scroll StScrollBar > .vhandle {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+.yaru-glass-lock .unlock-dialog-notification-source {
+  padding: 12px;
+  margin: 4px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background-color: rgba(25, 30, 28, 0.94);
+  color: white;
+}
+
+.yaru-glass-lock .unlock-dialog-notification-count-text {
+  color: white;
+}
+
+.yaru-glass-lock.yaru-lock-light .unlock-dialog-notification-source {
+  border-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(246, 248, 245, 0.96);
+  color: #1c2721;
+}
+
+.yaru-glass-lock.yaru-lock-light .unlock-dialog-notification-count-text {
+  color: #1c2721;
+}
+
+.yaru-glass-lock .yaru-lock-profile {
+  color: white;
+  spacing: 12px;
+  padding: 8px 12px;
+  font-size: 14px;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.8);
+}
+
+.yaru-glass-lock .yaru-lock-profile .user-icon {
+  icon-size: 52px;
+  border-radius: 99px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.yaru-glass-lock .yaru-lock-profile.yaru-lock-compact .user-icon {
+  icon-size: 32px;
+}

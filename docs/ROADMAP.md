@@ -50,17 +50,17 @@ the [manual](MANUAL.md) and [maintenance knowledge base](KNOWLEDGE_BASE.md).
 | 2.0.x maintenance | Continuous | Fix verified regressions without appearance drift | Reproducible issue on a supported configuration |
 | 2.0.0: dual-stack compatibility | Delivered locally | Ubuntu 24.04 / GNOME 46 and Ubuntu 26.04 / GNOME 50 together | Completed controlled desktop and isolated lifecycle checks |
 | 2.1.0: visual coherence | Local package prepared | Finish the daily-use controls and readability experience | Automated checks pass; broader desktop acceptance remains open |
-| 2.2.0: Layered glass and reliable integration | Delivered locally | Rounded live blur, exact extension policy, dock dashes, demo login and curated local release | Both isolated GNOME 46/50 stacks passed regression, controlled compositor and lifecycle checks |
-| 2.2.1 / 2.2.2: maintenance | Delivered locally | Repair rejected/cached pipelines; fix GNOME 46 demo notification animation overflow | Separate release evidence and dual-stack regressions |
+| 2.2.0: Layered glass and reliable integration | Delivered locally | Rounded live blur, exact extension policy, dock dashes and curated local release | Both isolated GNOME 46/50 stacks passed native, controlled compositor and lifecycle checks |
+| 2.2.1 / 2.2.2: maintenance | Delivered locally | Repair rejected/cached pipelines; notification animation improvement | Separate release evidence |
 | 2.2.3: private diagnostics | Delivered locally | Local bounded logs, safe operation/error correlation, Settings viewer, CLI and explicit sanitized report export | 209 regression tests pass per GNOME stack; privacy/concurrency/rollback/lifecycle covered; no automatic uploads |
 | 2.2.4: maintenance | Delivered locally | Remove the square notification halo; labeled Diagnostics header button | Compositor captures on GNOME 46/50; native St gradient regression; 211 tests per stack |
 | 2.3.0: app updater | Delivered | Check and install stable GitHub releases; inline Diagnostics/Updates, readable logs and app-grid feedback | Verified staging, recovery and bootstrap; GNOME 46 checks; GNOME 50/VM revalidation deferred |
-| Custom lock screen | Later, unnumbered | Adapt the browser concept using a supported native mechanism | Approve native scope, privacy and safe authentication boundaries |
+| 2.4.0: independent lock screen | Release prepared | Native companion with its own Preferences and ZIP | 220 native tests pass per GNOME stack; owner confirmed manual experience |
 | Personal appearance profiles | Later, unnumbered | Safely save, preview and restore appearance choices | Approve format and reuse validated transactions |
 
 Maintenance fixes need not wait for the next feature milestone.
 Diagnostics ships in 2.2.3; 2.2.4 makes it discoverable and fixes the notification halo.
-2.3.0 delivers app updates; custom lock screen is deferred without a version.
+2.3.0 delivers app updates; 2.4.0 adds the independent Lock Screen companion.
 Logs are enabled by
 default for key actions/warnings/errors, with optional verbose mode; private
 10 MiB rotation and sanitized local reports do not collect full preferences,
@@ -281,7 +281,7 @@ implementation. Do not add a database or service unless a demonstrated need exis
    user changes and original backups.
 3. Run targeted tests during development and the full applicable suite on the
    final extracted package. Skips and environment limits must be recorded.
-4. Use real St/GTK/WebKit checks for geometry, alpha and contrast where relevant.
+4. Use real St/GTK checks for geometry, alpha and contrast where relevant.
    Inspect actual compositor output for desktop-facing visual changes.
 5. Test light/dark, Solid/transparent, boost off/on, disabled/focus/error states
    and white/dark/busy backdrops for affected surfaces.
@@ -298,13 +298,14 @@ Add coverage for behavior changes, not arbitrary numeric targets.
 ## 11. Next delivery
 
 **2.2.0** delivers Layered glass, automatic rounded Blur my Shell integration,
-extension-version enforcement, dock dashes and demo regressions. See its
+extension-version enforcement and dock dashes. See its
 [release evidence and limits](RELEASE-2.2.0.md).
 **2.3.0 delivers the app updater**, with user-confirmed stable GitHub updates,
 a preservation-focused transaction and integrated utility pages.
-Next, handle reproducible maintenance issues; custom lock screen and personal
-appearance profiles remain later and unnumbered. Native lock-screen work still
-requires a separately approved mechanism and safe authentication boundaries.
+**2.4.0 delivers the independent native Lock Screen extension**, with its own
+Preferences and separate ZIP. Activation stays in Extensions/Extension Manager;
+theme updates do not install or update it. See [2.4.0](RELEASE-2.4.0.md).
+Personal appearance profiles remain later and unnumbered.
 
 ## 12. Maintaining this roadmap
 

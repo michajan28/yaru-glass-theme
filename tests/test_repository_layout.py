@@ -29,7 +29,6 @@ class RepositoryLayoutTests(unittest.TestCase):
 import runpy
 
 for path, class_name in (
-    ("tests/test_demo.py", "DemoTests"),
     ("tests/test_settings_ui.py", "SettingsUITests"),
     ("tests/test_files_appearance.py", "FilesRenderTests"),
 ):

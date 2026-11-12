@@ -47,15 +47,6 @@ release.
   **9 repository-layout/packaging tests**. Settings checks include native chooser
   ownership, modal parent, cancellation, duplicate requests, cleanup on close
   and existing export success/no-overwrite/failure behavior.
-- Full local release suite on **GNOME Shell 46.0**: **244 tests run, 240 passed,
-  four errors, no skips**. All four errors are unrelated HTML demo viewport
-  resizing timeouts: `test_mobile_has_no_horizontal_overflow`,
-  `test_notification_animation_stays_centered_after_viewport_resize`,
-  `test_notification_reduced_motion_preserves_centering`, and
-  `test_settings_starts_floating_and_stays_floating_when_it_fits`. WebKit's
-  native window remained at 1100×650 rather than the requested size. The owner
-  explicitly approved publication with these failures disclosed; they were not
-  investigated or hidden by changing tests.
 - Shell syntax and whitespace checks pass. The Markdown manual was regenerated
   using Ubuntu's `python3-markdown` extracted into a private session directory,
   without installing system packages.

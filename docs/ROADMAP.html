@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Yaru Glass roadmap: user-confirmed GitHub app updates, preserving customization; custom lock screen deferred.">
+  <meta name="description" content="Yaru Glass roadmap: preserving app updates and independent native Lock Screen companion.">
   <title>Yaru Glass — Development roadmap</title>
   <style>
 :root {
@@ -237,14 +237,14 @@ the <a href="MANUAL.md">manual</a> and <a href="KNOWLEDGE_BASE.md">maintenance k
 <tr>
 <td>2.2.0: Layered glass and reliable integration</td>
 <td>Delivered locally</td>
-<td>Rounded live blur, exact extension policy, dock dashes, demo login and curated local release</td>
-<td>Both isolated GNOME 46/50 stacks passed regression, controlled compositor and lifecycle checks</td>
+<td>Rounded live blur, exact extension policy, dock dashes and curated local release</td>
+<td>Both isolated GNOME 46/50 stacks passed native, controlled compositor and lifecycle checks</td>
 </tr>
 <tr>
 <td>2.2.1 / 2.2.2: maintenance</td>
 <td>Delivered locally</td>
-<td>Repair rejected/cached pipelines; fix GNOME 46 demo notification animation overflow</td>
-<td>Separate release evidence and dual-stack regressions</td>
+<td>Repair rejected/cached pipelines; notification animation improvement</td>
+<td>Separate release evidence</td>
 </tr>
 <tr>
 <td>2.2.3: private diagnostics</td>
@@ -265,10 +265,10 @@ the <a href="MANUAL.md">manual</a> and <a href="KNOWLEDGE_BASE.md">maintenance k
 <td>Verified staging, recovery and bootstrap; GNOME 46 checks; GNOME 50/VM revalidation deferred</td>
 </tr>
 <tr>
-<td>Custom lock screen</td>
-<td>Later, unnumbered</td>
-<td>Adapt the browser concept using a supported native mechanism</td>
-<td>Approve native scope, privacy and safe authentication boundaries</td>
+<td>2.4.0: independent lock screen</td>
+<td>Release prepared</td>
+<td>Native companion with its own Preferences and ZIP</td>
+<td>220 native tests pass per GNOME stack; owner confirmed manual experience</td>
 </tr>
 <tr>
 <td>Personal appearance profiles</td>
@@ -280,7 +280,7 @@ the <a href="MANUAL.md">manual</a> and <a href="KNOWLEDGE_BASE.md">maintenance k
 </table></div>
 <p>Maintenance fixes need not wait for the next feature milestone.
 Diagnostics ships in 2.2.3; 2.2.4 makes it discoverable and fixes the notification halo.
-2.3.0 delivers app updates; custom lock screen is deferred without a version.
+2.3.0 delivers app updates; 2.4.0 adds the independent Lock Screen companion.
 Logs are enabled by
 default for key actions/warnings/errors, with optional verbose mode; private
 10 MiB rotation and sanitized local reports do not collect full preferences,
@@ -484,7 +484,7 @@ implementation. Do not add a database or service unless a demonstrated need exis
    user changes and original backups.</li>
 <li>Run targeted tests during development and the full applicable suite on the
    final extracted package. Skips and environment limits must be recorded.</li>
-<li>Use real St/GTK/WebKit checks for geometry, alpha and contrast where relevant.
+<li>Use real St/GTK checks for geometry, alpha and contrast where relevant.
    Inspect actual compositor output for desktop-facing visual changes.</li>
 <li>Test light/dark, Solid/transparent, boost off/on, disabled/focus/error states
    and white/dark/busy backdrops for affected surfaces.</li>
@@ -499,13 +499,14 @@ implementation. Do not add a database or service unless a demonstrated need exis
 Add coverage for behavior changes, not arbitrary numeric targets.</p>
 <h2 id="11-next-delivery">11. Next delivery</h2>
 <p><strong>2.2.0</strong> delivers Layered glass, automatic rounded Blur my Shell integration,
-extension-version enforcement, dock dashes and demo regressions. See its
+extension-version enforcement and dock dashes. See its
 <a href="RELEASE-2.2.0.md">release evidence and limits</a>.
 <strong>2.3.0 delivers the app updater</strong>, with user-confirmed stable GitHub updates,
 a preservation-focused transaction and integrated utility pages.
-Next, handle reproducible maintenance issues; custom lock screen and personal
-appearance profiles remain later and unnumbered. Native lock-screen work still
-requires a separately approved mechanism and safe authentication boundaries.</p>
+<strong>2.4.0 delivers the independent native Lock Screen extension</strong>, with its own
+Preferences and separate ZIP. Activation stays in Extensions/Extension Manager;
+theme updates do not install or update it. See <a href="RELEASE-2.4.0.md">2.4.0</a>.
+Personal appearance profiles remain later and unnumbered.</p>
 <h2 id="12-maintaining-this-roadmap">12. Maintaining this roadmap</h2>
 <p><code>ROADMAP.md</code> is the content source of truth; <code>ROADMAP.html</code> is its matching,
 offline-readable presentation. Update both in the same change. After each

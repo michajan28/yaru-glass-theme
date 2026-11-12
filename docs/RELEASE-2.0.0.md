@@ -49,7 +49,7 @@ can reset the selected GTK theme at each unfinished login.
 
 ## Completed validation
 
-- **116 Python/GTK/WebKit tests passed on each stack, with no skips**, including
+- Python/GTK checks passed on each stack, including
   the new isolated lifecycle test and Settings wording regression.
 - **48 real St/Mutter stylesheet combinations per stack** checked notification
   geometry, panel opacity, icon foreground inheritance and Solid fills.

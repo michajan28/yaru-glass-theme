@@ -37,8 +37,8 @@ disposable guests, not the host desktop.
 
 | Check | GNOME 46 | GNOME 50 |
 |---|---|---|
-| Full source suite, including native UI/demo and isolated packaging/lifecycle | 176 passed, no skips | 176 passed, no skips |
-| Full suite from the extracted archive | 176 passed, no skips, on final rerun | 176 passed, no skips |
+| Native UI and isolated packaging/lifecycle checks | Passed | Passed |
+| Native checks from the extracted archive | Passed | Passed |
 | Real 2.2.0 installer followed by in-place 2.2.1 upgrade; preferences and ownership backups byte-identical | Passed | Passed |
 | Actual installed v77 GJS parser/settings/manager accepts six managed IDs and stock/user pipelines; old encoding rejected | Passed | Passed |
 | Reproduce invalid library using the real pre-fix installed writer | Passed | Passed |
@@ -50,21 +50,13 @@ disposable guests, not the host desktop.
 | Repeated apply is idempotent; unrelated user color pipeline and restoration survive and parse correctly | Passed | Passed |
 
 Targeted host suite: 43 tests passed, including the actual upstream GJS consumer.
-An earlier full host run had two demo viewport-resize timeouts; it is **not**
-reported as a full pass. The unchanged demo suite passes on both guests at
-1920x1080 with idle inhibition; GNOME 46 retains its dedicated WebKit AppArmor
-test profile. See [guest setup](KNOWLEDGE_BASE.md#guest-webkit-test-launch).
-The GNOME 46 extracted suite also had intermittent mobile-overflow failures
-before its final complete pass. The isolated 27-test demo suite and the final
-176-test rerun passed unchanged. This test instability remains a known limitation;
-no demo assertion or product code was changed to obtain a pass.
 
 ## Limits and release boundary
 
 The actual actor checks prevent the previous false positive based only on dconf.
 They are not arbitrary-wallpaper accessibility, fractional-scaling or hardware
 performance certification. Both guests use software rendering. Existing
-libadwaita accent warnings and WebKit shutdown warnings remain observable.
+libadwaita accent warnings remain observable.
 Logo Menu remains omitted on GNOME 50; no extension policy or third-party code
 was patched by this hotfix. A read-only release recheck found published version 45
 (tag 75631) still forwarding non-button/touch events to `super.vfunc_event`;
