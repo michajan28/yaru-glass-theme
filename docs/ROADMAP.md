@@ -2,14 +2,15 @@
 
 Readable glass. Consistent controls. Safe upgrades.
 
-**Baseline:** 2.3.0 (GitHub release; historical milestone evidence below retained)<br />
-**Status:** User-confirmed app updates delivered; later feature scope remains unnumbered<br />
+**Current delivery:** 2.4.0 — independent native Lock Screen companion<br />
+**Status:** Independent extension implemented and owner-tested; app/theme updates stay separate<br />
 **Target stacks:** Ubuntu 24.04 / GNOME 46 and Ubuntu 26.04 / GNOME 50, Wayland  
-**Limits:** Earlier compatibility evidence is not certification of new effects
+**Limits:** VM coverage is not certification of every GPU, backdrop or monitor layout
 
 This roadmap covers the light `Yaru-Glass` and dark
-`Yaru-Glass-dark` variants, the native Settings app, installer and browser
-demo. Future version numbers are planning labels; scope must be approved before
+`Yaru-Glass-dark` variants, the native Settings app, installer, updater and
+independent Lock Screen extension. The browser preview is not a validation gate.
+Future version numbers are planning labels; scope must be approved before
 implementation. Releases are quality-gated, not tied to calendar deadlines.
 
 ## 1. Product direction
@@ -29,33 +30,35 @@ text readability or the user's control of their system.
 - **Honest status:** saved settings, reload requests and confirmed restarts are
   distinct from verified pixels or a running application's actual CSS.
 
-## 2. Where we are: 2.0.0
+## 2. Where we are: 2.4.0
 
 | Area | Delivered | Remaining boundary |
 |---|---|---|
 | Shell | Light/dark Frost and Crystal, relative transparency, true Solid fills, readability boost | Not certified for every backdrop, extension or display scale |
-| Native Settings | Coordinated presets, previews, section resets, async updates, rollback, recovery and status | Some confirmation content is technical; disabled slider marks remain muted |
+| Native Settings | Coordinated presets, previews, confirmed resets, async workers, Diagnostics and Updates | Reload requests are not proof of compositor output |
 | Application integration | Independent Settings-app transparency; experimental Nautilus sidebar/header transparency | File content stays solid; arbitrary GTK/libadwaita apps are not supported integrations |
-| Demo | Standalone light/dark preview with themed, accessible HTML controls | A visual mockup, not a live Shell/GTK renderer or desktop settings editor |
-| Validation | 116 passing regression tests per stack; controlled 26.04 desktop checks; isolated install/upgrade/uninstall/purge and historical 1.2.1 upgrade | Fresh-machine extension installation, live purge and broader hardware/background coverage are not certified |
-| Distribution | Local 2.0.0 archive and SHA256; supplied profiles retained; older releases preserved | Default packaging exports live settings; this release uses an isolated copied tree, no remote publication |
+| Lock Screen | Independent GNOME 46/50 extension, own Preferences, wallpaper/clock/appearance options, responsive native notifications | Activation stays in Extensions; no Yaru Glass app page or GDM customization |
+| Updating | Confirmed stable GitHub app/theme updates with checksums, staging, rollback and recovery | Theme updates do not install or update the companion extension |
+| Validation | 220 native tests passed without skips on each GNOME 46/50 VM; real extension smoke and owner manual acceptance | Headless CI has explicit GUI skips; broader hardware/background coverage is not certified |
+| Distribution | Theme archive/checksum and separate extension ZIP/checksum; curated profiles without desktop capture | Existing accounts install the extension ZIP explicitly; published status is shown on GitHub Releases |
 
-See [2.0.0 validation and limits](RELEASE-2.0.0.md),
+See [2.4.0 validation and installation](RELEASE-2.4.0.md),
 the [manual](MANUAL.md) and [maintenance knowledge base](KNOWLEDGE_BASE.md).
 
 ## 3. Release sequence
 
-| Stage | Priority | Proposed outcome | Entry condition |
+| Stage | Status | Outcome | Evidence / boundary |
 |---|---|---|---|
-| 2.0.x maintenance | Continuous | Fix verified regressions without appearance drift | Reproducible issue on a supported configuration |
-| 2.0.0: dual-stack compatibility | Delivered locally | Ubuntu 24.04 / GNOME 46 and Ubuntu 26.04 / GNOME 50 together | Completed controlled desktop and isolated lifecycle checks |
-| 2.1.0: visual coherence | Local package prepared | Finish the daily-use controls and readability experience | Automated checks pass; broader desktop acceptance remains open |
-| 2.2.0: Layered glass and reliable integration | Delivered locally | Rounded live blur, exact extension policy, dock dashes and curated local release | Both isolated GNOME 46/50 stacks passed native, controlled compositor and lifecycle checks |
-| 2.2.1 / 2.2.2: maintenance | Delivered locally | Repair rejected/cached pipelines; notification animation improvement | Separate release evidence |
-| 2.2.3: private diagnostics | Delivered locally | Local bounded logs, safe operation/error correlation, Settings viewer, CLI and explicit sanitized report export | 209 regression tests pass per GNOME stack; privacy/concurrency/rollback/lifecycle covered; no automatic uploads |
-| 2.2.4: maintenance | Delivered locally | Remove the square notification halo; labeled Diagnostics header button | Compositor captures on GNOME 46/50; native St gradient regression; 211 tests per stack |
+| Maintenance | Continuous | Fix verified regressions without appearance drift | Reproducible issue on a supported configuration |
+| 2.0.0: dual-stack compatibility | Implemented | Ubuntu 24.04 / GNOME 46 and Ubuntu 26.04 / GNOME 50 together | Historical controlled desktop and isolated lifecycle checks |
+| 2.1.0: visual coherence | Implemented | Readable confirmations, controls and status | Scoped contrast and native UI checks; historical broader acceptance limits retained |
+| 2.2.0: Layered glass and reliable integration | Implemented | Rounded live blur, exact extension policy, dock dashes and curated packaging | Pipeline encoding required the subsequent 2.2.1 correction |
+| 2.2.1 / 2.2.2: maintenance | Implemented | Repair rejected/cached pipelines; notification animation improvement | Separate release notes |
+| 2.2.3: private diagnostics | Implemented | Bounded local logs, sanitized report export, Settings viewer and CLI | Privacy/concurrency/rollback/lifecycle checks; no automatic uploads |
+| 2.2.4: maintenance | Implemented | Remove the square notification halo; labeled Diagnostics header button | Native St regression and controlled compositor captures |
 | 2.3.0: app updater | Delivered | Check and install stable GitHub releases; inline Diagnostics/Updates, readable logs and app-grid feedback | Verified staging, recovery and bootstrap; GNOME 46 checks; GNOME 50/VM revalidation deferred |
-| 2.4.0: independent lock screen | Release prepared | Native companion with its own Preferences and ZIP | 220 native tests pass per GNOME stack; owner confirmed manual experience |
+| 2.3.1: report export | Delivered | Retained native save chooser; documented older-updater bootstrap | Save/cancel/close ownership and package/updater checks |
+| 2.4.0: independent lock screen | Implemented | Native companion with its own Preferences and ZIP | 220 native tests pass per GNOME stack; owner confirmed manual experience; required CI gates publication |
 | Personal appearance profiles | Later, unnumbered | Safely save, preview and restore appearance choices | Approve format and reuse validated transactions |
 
 Maintenance fixes need not wait for the next feature milestone.
@@ -66,10 +69,13 @@ default for key actions/warnings/errors, with optional verbose mode; private
 10 MiB rotation and sanitized local reports do not collect full preferences,
 personal paths or journal dumps. Ordinary uninstall retains logs; purge removes
 known logs/preferences but keeps the coordination inode and user-owned reports.
-The 2.0.0 evidence and unverified configurations are recorded separately in its
-release notes; a local archive does not imply remote publication.
+Historical evidence and unverified configurations remain in each release's notes.
+Check [GitHub Releases](https://github.com/michajan28/yaru-glass-theme/releases)
+for published artifacts; implementation status does not imply publication.
 
-## 4. Delivered locally: 2.0.0 — dual-stack compatibility
+## 4. Historical milestone: 2.0.0 — dual-stack compatibility
+
+The work packages below describe the completed milestone, not upcoming work.
 
 **Goal:** support Ubuntu 24.04 / GNOME 46 and Ubuntu 26.04 / GNOME 50 in one
 release, without dropping the existing stack or changing saved appearance.
@@ -114,7 +120,9 @@ Mutter and Yaru versions in the test environments rather than inferring them.
 - If a required integration fails, record it and resolve the scope explicitly;
   do not advertise full support based only on successful theme generation.
 
-## 5. 2.1.0 — visual coherence and readability
+## 5. Historical milestone: 2.1.0 — visual coherence and readability
+
+The work packages below retain the original scope and its validation limits.
 
 **Goal:** make controls, dialogs and status feel like one deliberate theme.
 Do not expand transparency to additional applications in this milestone.
@@ -150,38 +158,38 @@ Do not expand transparency to additional applications in this milestone.
 - Existing preferences retain their appearance; any deliberate default or visual
   change is documented and reviewed rather than silently applied.
 
-**Main surfaces:** native Settings, GTK overrides, Shell CSS, demo and their
-rendering/layout tests.
+**Main validated surfaces:** native Settings, GTK overrides and Shell CSS.
 
-The local 2.1.0 package passed 121 repository tests on Ubuntu 24.04 / GNOME 46.
+The local 2.1.0 package passed native checks on Ubuntu 24.04 / GNOME 46.
 The measured contrast result covers only existing automated sample cases.
 100–200% desktop scaling, broader large-text cases and fresh GNOME 50 compositor
 acceptance remain unverified; see [2.1.0 release notes](RELEASE-2.1.0.md).
 
-## 6. Delivered locally: 2.2.0 — Layered glass and reliable integration
+## 6. Historical milestone: 2.2.0 — Layered glass and reliable integration
+
+The work packages describe the historical local release. Its saved pipeline
+format was subsequently corrected in 2.2.1.
 
 **Goal:** deliver more realistic Frost/Crystal lighting and rounded live Shell
 background blur, with reliable integrations and a quality-gated local release.
 
 ### Work packages
 
-1. **Fix the integrated login.** Exercise real account/unlock controls through
-   file and HTTP iframes, plus login/lock/logout and invalid sender/origin cases.
-2. **Deliver Layered Frost/Crystal.** Light/dark Shell surfaces, independent
+1. **Deliver Layered Frost/Crystal.** Light/dark Shell surfaces, independent
    Settings/Files opt-ins and matching demo; preserve protective tints and solid content.
-3. **Audit every used extension.** Select exact candidate releases per GNOME
+2. **Audit every used extension.** Select exact candidate releases per GNOME
    stack, enforce supported versions at install/enable/runtime boundaries, and
    preserve the GNOME 50 Logo Menu omission until real event-handler acceptance.
-4. **Manage rounded dynamic blur.** Default on for Shell only, independent off
+3. **Manage rounded dynamic blur.** Default on for Shell only, independent off
    switch, Solid suppression without preference loss, and reversible owned settings.
-5. **Native dock indicators.** Ubuntu Dock DASHES in each icon's dominant color;
+4. **Native dock indicators.** Ubuntu Dock DASHES in each icon's dominant color;
    preserve native window counts, demo parity and uninstall restoration.
-6. **Validate both isolated desktops.** GNOME 46 and 50 compositor/extension
+5. **Validate both isolated desktops.** GNOME 46 and 50 compositor/extension
    checks, both schemes/styles, Solid, blur on/off, boost, white/dark/busy backdrops,
    rounded corners and moving windows. Containers or metadata are not substitutes.
-7. **Exercise recovery and lifecycle.** Partial updates, corrupted preferences,
+6. **Exercise recovery and lifecycle.** Partial updates, corrupted preferences,
    failures/rollback, old ownership backups, upgrade, uninstall and purge.
-8. **Prepare the local release.** Update manuals/roadmap, package supplied
+7. **Prepare the local release.** Update manuals/roadmap, package supplied
    profiles using `--curated-profiles`, verify checksum, payload and extracted
    tests. No host changes, live profile capture, Git commit or publication.
 
@@ -224,19 +232,27 @@ inline pages after Wallpapers; local logs are formatted for reading while export
 remains JSON. Rendering fixtures synchronize to GTK's painted frame. Validation
 for this milestone is on GNOME 46; no GNOME 50/VM revalidation is claimed.
 
-### Later, unnumbered — custom lock screen
+### Implemented: 2.4.0 — independent native lock screen
 
-**Goal:** adapt the approved offline lock-screen concept to a supported native
-GNOME mechanism, without replacing or weakening authentication.
+- UUID `lockscreen@yaru-glass`, independently versioned extension ZIP and local
+  GSettings schema for GNOME 46/50.
+- Own standard GNOME Preferences: customization switch, local wallpaper/preview,
+  follow desktop, clock format/weight, appearance and confirmed reset.
+- Preserve native account identity, authentication, notification grouping/privacy
+  and responsive scrolling. Do not collect credentials or modify GDM.
+- Fresh normal theme installation adds the companion without activation.
+  `--no-extensions` and `--theme-only` skip it; compatible existing copies stay
+  untouched. Existing accounts install the separate ZIP explicitly.
+- Activation remains in Extensions/Extension Manager. Yaru Glass app integration
+  was explicitly dropped; the theme updater is unchanged.
+- GNOME 46/50 VM checks passed, and the owner confirmed the installed custom
+  lock-screen experience. One bounded GNOME 50 disable/enable cycle also passed.
 
-- Define supported GNOME/extension versions and the available customization API
-  before choosing the implementation.
-- Approve wallpaper, clock, account presentation and notification-privacy scope.
-- Never collect passwords, bypass locking or change authentication as a visual feature.
-- Require isolated GNOME 46/50 locking/unlocking checks and explicit desktop
-  input/capture permission. The current browser demo remains only a concept.
-
-**Decision gate:** native feasibility and safety must be agreed before implementation.
+The earlier intermittent GNOME 50 uninstall/restoration freeze has no established
+root cause and did not reproduce in the independent toggle check. Do not claim
+a fix or resume speculative investigation without reproduction or a new decision.
+See [2.4.0 release notes](RELEASE-2.4.0.md) and
+[issue #10](https://github.com/michajan28/yaru-glass-theme/issues/10).
 
 ## 8. Later, unnumbered — personal appearance profiles
 
@@ -292,20 +308,21 @@ implementation. Do not add a database or service unless a demonstrated need exis
 8. Update the manual, demo, knowledge base and release notes where relevant.
    List observed results separately from automated checks and unverified claims.
 
-The **99-test 1.2.1 baseline is a starting point, not a fixed future test count**.
-Add coverage for behavior changes, not arbitrary numeric targets.
+The current native suite has 220 tests. Add coverage for behavior changes,
+not arbitrary numeric targets; keep the browser preview outside validation.
 
-## 11. Next delivery
+## 11. Distribution and next decisions
 
-**2.2.0** delivers Layered glass, automatic rounded Blur my Shell integration,
-extension-version enforcement and dock dashes. See its
-[release evidence and limits](RELEASE-2.2.0.md).
-**2.3.0 delivers the app updater**, with user-confirmed stable GitHub updates,
-a preservation-focused transaction and integrated utility pages.
-**2.4.0 delivers the independent native Lock Screen extension**, with its own
-Preferences and separate ZIP. Activation stays in Extensions/Extension Manager;
-theme updates do not install or update it. See [2.4.0](RELEASE-2.4.0.md).
-Personal appearance profiles remain later and unnumbered.
+The **2.4.0** release uses required signed-commit/PR checks and the tag-triggered
+packaging workflow. Its distribution consists of the theme archive/checksum and
+independent extension ZIP/checksum together, with separate installation steps.
+Existing private v1 extension users do not need to reinstall just to update
+the theme.
+
+Prioritize reproducible native-product maintenance issues.
+Personal appearance profiles remain the next unnumbered feature candidate;
+their format, storage and behavior need owner approval before implementation.
+No new version or schedule is assigned.
 
 ## 12. Maintaining this roadmap
 
