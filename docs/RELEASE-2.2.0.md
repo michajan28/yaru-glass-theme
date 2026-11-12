@@ -10,9 +10,7 @@ The old tests incorrectly expected colors as variant arrays. Use
 preferences and running panel/popup/dock actors. The 2.2.0 archive is unchanged.
 
 Local release for Ubuntu 24.04 / GNOME 46 and Ubuntu 26.04 / GNOME 50.
-The complete 168-test suite, including all 27 demo tests, passes on both stacks.
-The earlier GNOME 46 guest launch failure was a test-environment issue, not a
-GNOME compatibility defect.
+Native theme, app and lifecycle checks pass on both stacks.
 
 This release implements Layered Frost/Crystal, independently controlled dynamic
 Shell blur, exact extension-release enforcement, dominant-icon-color dock dashes,
@@ -28,9 +26,9 @@ was separately requested; it is not substituted for isolated acceptance.
 
 | Environment | Evidence |
 |---|---|
-| Ubuntu 24.04 / Shell 46.0 host, system Python | Full suite: 168 tests passed; lifecycle shell syntax passed |
-| Ubuntu 26.04.1 / Shell 50.1 / Mutter 50.1 guest | Complete 168-test native/browser/lifecycle suite passed without skips, including all 27 demo tests |
-| Ubuntu 24.04.5 / Shell 46.0 / Mutter 46.2 guest | Complete 168-test native/browser/lifecycle suite passed without skips, including all 27 demo tests |
+| Ubuntu 24.04 / Shell 46.0 host, system Python | Native checks and lifecycle shell syntax passed |
+| Ubuntu 26.04.1 / Shell 50.1 / Mutter 50.1 guest | Native theme/app and lifecycle checks passed |
+| Ubuntu 24.04.5 / Shell 46.0 / Mutter 46.2 guest | Native theme/app and lifecycle checks passed |
 | Both guests | 18 material combinations per stack: light/dark, Frost/Crystal, levels 0/25/50, Solid, readability boost, and blur off/on |
 | Both guests | Generated light/dark styles passed native St notification width, allocation, padding and foreground checks in LTR/RTL and all tested interaction states; Solid opacity assertions passed |
 | Both guests | Actual saved settings and effective panel/popup/dock blur values matched each material case |
@@ -47,27 +45,6 @@ GNOME 50 used GTK 4.22.4, libadwaita 1.9.1 and Nautilus 50.2.2.
 The extension matrix includes the observed Ubuntu 26.04 extension bundle
 `50.26.04.8ubuntu`; an older proposed package pin was corrected before acceptance.
 The preserved 2.1.1 archive checksum still passes.
-
-## Corrected guest test setup
-
-The GNOME 46 host and guest have identical GNOME Shell, AppArmor, bubblewrap and
-WebKit package versions. The host test process inherits VS Code's named AppArmor
-profile, which permits user namespaces. Plain Python launched over SSH did not;
-AppArmor denied bubblewrap's UID-map setup before the demo could load.
-
-The disposable guest now has a dedicated, explicitly selected
-`yaru-glass-webkit-tests` profile granting `userns`, following Ubuntu's named
-application-profile mechanism. It does not attach to Python globally.
-WebKit sandboxing remains enabled; the kernel's
-`apparmor_restrict_unprivileged_userns` remains `1`. This profile is test
-infrastructure, not an installed theme dependency or a change to the host.
-
-Guest UI runs also need an unlocked, unblanked session and a display large enough
-for the requested 1366px viewport. Transient GNOME session idle inhibition keeps
-frames updating during tests. A remapping workaround explored while diagnosing
-stale frames was removed: the final passing runs use the original demo tests and
-unchanged viewport, alpha, layout and interaction assertions.
-See the [guest validation procedure](KNOWLEDGE_BASE.md#guest-webkit-test-launch).
 
 ## Validation limits
 

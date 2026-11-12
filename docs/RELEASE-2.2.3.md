@@ -35,8 +35,8 @@ focus ring are preserved. Other popup shadows and the demo animation are unchang
 
 ## Validation
 
-The implementation passed **209 tests on each GNOME 46/50 stack**, without skips,
-including native GTK/WebKit, actual Blur my Shell consumers, diagnostic privacy,
+The implementation passed native checks on each GNOME 46/50 stack,
+including native GTK, actual Blur my Shell consumers, diagnostic privacy,
 permissions, concurrency, rotation, malformed input, export failures, UI async
 behavior, worker stdout, rollback, sync recovery and isolated lifecycle/package
 checks. Final runs verify the outer diagnostic state is untouched by the tests.
@@ -58,7 +58,7 @@ Earlier archives are preserved. No Git staging, commit, push or remote publicati
 is included. Installation is a separately requested in-place upgrade that retains
 preferences and original backups, not a clean reinstall.
 
-Guests use software rendering. GTK/WebKit checks and native St shadow bounds do
+Guests use software rendering. GTK checks and native St shadow bounds do
 not certify every hardware driver, display scale, compositor capture or arbitrary
 white/colored background. No final host screenshot or Files restart is included.
 Reload requested is not proof of compositor pixels; appearance status retains

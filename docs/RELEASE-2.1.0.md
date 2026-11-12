@@ -29,14 +29,13 @@ new platform validation.
 
 ## Validation
 
-- The complete repository suite passed: **121 tests** on this Ubuntu 24.04 /
-  GNOME Shell 46 Wayland host, including native Settings and WebKit demo checks.
+- Native Settings checks passed on this Ubuntu 24.04 /
+  GNOME Shell 46 Wayland host.
 - Existing automated contrast coverage measured at least **6.47:1** for its
   sampled normal text/surface combinations. This is a scoped test result, not a
   blanket WCAG claim or validation of arbitrary backgrounds.
 - Native Settings tests exercised small-window page sizing, vertical scrolling
-  and compact navigation; browser tests exercised the three sample backdrops,
-  preset previews, mobile widths and keyboard tabs.
+  and compact navigation.
 - `scripts/render-manual.py` could not regenerate `MANUAL.html` because
   `python3-markdown` is unavailable. The Markdown and corresponding HTML manual
   edits were kept aligned manually.

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Yaru Glass roadmap: user-confirmed GitHub app updates, preserving customization; custom lock screen deferred.">
+  <meta name="description" content="Yaru Glass roadmap: preserving app updates and independent native Lock Screen companion.">
   <title>Yaru Glass — Development roadmap</title>
   <style>
 :root {
@@ -100,26 +100,27 @@ footer { max-width: 1320px; margin: 0 auto 32px; padding: 0 32px; color: var(--m
 <ul>
 <li><a href="#yaru-glass-development-roadmap">Yaru Glass development roadmap</a><ul>
 <li><a href="#1-product-direction">1. Product direction</a></li>
-<li><a href="#2-where-we-are-200">2. Where we are: 2.0.0</a></li>
+<li><a href="#2-where-we-are-240">2. Where we are: 2.4.0</a></li>
 <li><a href="#3-release-sequence">3. Release sequence</a></li>
-<li><a href="#4-delivered-locally-200-dual-stack-compatibility">4. Delivered locally: 2.0.0 — dual-stack compatibility</a><ul>
+<li><a href="#4-historical-milestone-200-dual-stack-compatibility">4. Historical milestone: 2.0.0 — dual-stack compatibility</a><ul>
 <li><a href="#delivered-work-packages">Delivered work packages</a></li>
 <li><a href="#exit-criteria">Exit criteria</a></li>
 </ul>
 </li>
-<li><a href="#5-210-visual-coherence-and-readability">5. 2.1.0 — visual coherence and readability</a><ul>
+<li><a href="#5-historical-milestone-210-visual-coherence-and-readability">5. Historical milestone: 2.1.0 — visual coherence and readability</a><ul>
 <li><a href="#work-packages">Work packages</a></li>
 <li><a href="#exit-criteria_1">Exit criteria</a></li>
 </ul>
 </li>
-<li><a href="#6-delivered-locally-220-layered-glass-and-reliable-integration">6. Delivered locally: 2.2.0 — Layered glass and reliable integration</a><ul>
+<li><a href="#6-historical-milestone-220-layered-glass-and-reliable-integration">6. Historical milestone: 2.2.0 — Layered glass and reliable integration</a><ul>
 <li><a href="#work-packages_1">Work packages</a></li>
 <li><a href="#exit-criteria_2">Exit criteria</a></li>
 </ul>
 </li>
 <li><a href="#7-delivered-230-app-updater">7. Delivered: 2.3.0 — app updater</a><ul>
-<li><a href="#later-unnumbered-custom-lock-screen">Later, unnumbered — custom lock screen</a></li>
-</ul></li>
+<li><a href="#implemented-240-independent-native-lock-screen">Implemented: 2.4.0 — independent native lock screen</a></li>
+</ul>
+</li>
 <li><a href="#8-later-unnumbered-personal-appearance-profiles">8. Later, unnumbered — personal appearance profiles</a><ul>
 <li><a href="#work-packages_2">Work packages</a></li>
 <li><a href="#exit-criteria_3">Exit criteria</a></li>
@@ -127,7 +128,7 @@ footer { max-width: 1320px; margin: 0 auto 32px; padding: 0 32px; color: var(--m
 </li>
 <li><a href="#9-not-planned-without-a-new-decision">9. Not planned without a new decision</a></li>
 <li><a href="#10-definition-of-done-for-every-release">10. Definition of done for every release</a></li>
-<li><a href="#11-next-delivery">11. Next delivery</a></li>
+<li><a href="#11-distribution-and-next-decisions">11. Distribution and next decisions</a></li>
 <li><a href="#12-maintaining-this-roadmap">12. Maintaining this roadmap</a></li>
 </ul>
 </li>
@@ -137,13 +138,14 @@ footer { max-width: 1320px; margin: 0 auto 32px; padding: 0 32px; color: var(--m
     </aside>
     <main id="roadmap"><h1 id="yaru-glass-development-roadmap">Yaru Glass development roadmap</h1>
 <p>Readable glass. Consistent controls. Safe upgrades.</p>
-<p><strong>Baseline:</strong> 2.3.0 (GitHub release; historical milestone evidence below retained)<br />
-<strong>Status:</strong> User-confirmed app updates delivered; later feature scope remains unnumbered<br />
+<p><strong>Current delivery:</strong> 2.4.0 — independent native Lock Screen companion<br />
+<strong>Status:</strong> Independent extension implemented and owner-tested; app/theme updates stay separate<br />
 <strong>Target stacks:</strong> Ubuntu 24.04 / GNOME 46 and Ubuntu 26.04 / GNOME 50, Wayland<br />
-<strong>Limits:</strong> Earlier compatibility evidence is not certification of new effects</p>
+<strong>Limits:</strong> VM coverage is not certification of every GPU, backdrop or monitor layout</p>
 <p>This roadmap covers the light <code>Yaru-Glass</code> and dark
-<code>Yaru-Glass-dark</code> variants, the native Settings app, installer and browser
-demo. Future version numbers are planning labels; scope must be approved before
+<code>Yaru-Glass-dark</code> variants, the native Settings app, installer, updater and
+independent Lock Screen extension. The browser preview is not a validation gate.
+Future version numbers are planning labels; scope must be approved before
 implementation. Releases are quality-gated, not tied to calendar deadlines.</p>
 <h2 id="1-product-direction">1. Product direction</h2>
 <p>Build a coherent glass-inspired Ubuntu desktop without sacrificing Yaru identity,
@@ -161,7 +163,7 @@ text readability or the user's control of their system.</p>
 <li><strong>Honest status:</strong> saved settings, reload requests and confirmed restarts are
   distinct from verified pixels or a running application's actual CSS.</li>
 </ul>
-<h2 id="2-where-we-are-200">2. Where we are: 2.0.0</h2>
+<h2 id="2-where-we-are-240">2. Where we are: 2.4.0</h2>
 <div class="table-scroll"><table>
 <thead>
 <tr>
@@ -178,8 +180,8 @@ text readability or the user's control of their system.</p>
 </tr>
 <tr>
 <td>Native Settings</td>
-<td>Coordinated presets, previews, section resets, async updates, rollback, recovery and status</td>
-<td>Some confirmation content is technical; disabled slider marks remain muted</td>
+<td>Coordinated presets, previews, confirmed resets, async workers, Diagnostics and Updates</td>
+<td>Reload requests are not proof of compositor output</td>
 </tr>
 <tr>
 <td>Application integration</td>
@@ -187,76 +189,81 @@ text readability or the user's control of their system.</p>
 <td>File content stays solid; arbitrary GTK/libadwaita apps are not supported integrations</td>
 </tr>
 <tr>
-<td>Demo</td>
-<td>Standalone light/dark preview with themed, accessible HTML controls</td>
-<td>A visual mockup, not a live Shell/GTK renderer or desktop settings editor</td>
+<td>Lock Screen</td>
+<td>Independent GNOME 46/50 extension, own Preferences, wallpaper/clock/appearance options, responsive native notifications</td>
+<td>Activation stays in Extensions; no Yaru Glass app page or GDM customization</td>
+</tr>
+<tr>
+<td>Updating</td>
+<td>Confirmed stable GitHub app/theme updates with checksums, staging, rollback and recovery</td>
+<td>Theme updates do not install or update the companion extension</td>
 </tr>
 <tr>
 <td>Validation</td>
-<td>116 passing regression tests per stack; controlled 26.04 desktop checks; isolated install/upgrade/uninstall/purge and historical 1.2.1 upgrade</td>
-<td>Fresh-machine extension installation, live purge and broader hardware/background coverage are not certified</td>
+<td>220 native tests passed without skips on each GNOME 46/50 VM; real extension smoke and owner manual acceptance</td>
+<td>Headless CI has explicit GUI skips; broader hardware/background coverage is not certified</td>
 </tr>
 <tr>
 <td>Distribution</td>
-<td>Local 2.0.0 archive and SHA256; supplied profiles retained; older releases preserved</td>
-<td>Default packaging exports live settings; this release uses an isolated copied tree, no remote publication</td>
+<td>Theme archive/checksum and separate extension ZIP/checksum; curated profiles without desktop capture</td>
+<td>Existing accounts install the extension ZIP explicitly; published status is shown on GitHub Releases</td>
 </tr>
 </tbody>
 </table></div>
-<p>See <a href="RELEASE-2.0.0.md">2.0.0 validation and limits</a>,
+<p>See <a href="RELEASE-2.4.0.md">2.4.0 validation and installation</a>,
 the <a href="MANUAL.md">manual</a> and <a href="KNOWLEDGE_BASE.md">maintenance knowledge base</a>.</p>
 <h2 id="3-release-sequence">3. Release sequence</h2>
 <div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Stage</th>
-<th>Priority</th>
-<th>Proposed outcome</th>
-<th>Entry condition</th>
+<th>Status</th>
+<th>Outcome</th>
+<th>Evidence / boundary</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>2.0.x maintenance</td>
+<td>Maintenance</td>
 <td>Continuous</td>
 <td>Fix verified regressions without appearance drift</td>
 <td>Reproducible issue on a supported configuration</td>
 </tr>
 <tr>
 <td>2.0.0: dual-stack compatibility</td>
-<td>Delivered locally</td>
+<td>Implemented</td>
 <td>Ubuntu 24.04 / GNOME 46 and Ubuntu 26.04 / GNOME 50 together</td>
-<td>Completed controlled desktop and isolated lifecycle checks</td>
+<td>Historical controlled desktop and isolated lifecycle checks</td>
 </tr>
 <tr>
 <td>2.1.0: visual coherence</td>
-<td>Local package prepared</td>
-<td>Finish the daily-use controls and readability experience</td>
-<td>Automated checks pass; broader desktop acceptance remains open</td>
+<td>Implemented</td>
+<td>Readable confirmations, controls and status</td>
+<td>Scoped contrast and native UI checks; historical broader acceptance limits retained</td>
 </tr>
 <tr>
 <td>2.2.0: Layered glass and reliable integration</td>
-<td>Delivered locally</td>
-<td>Rounded live blur, exact extension policy, dock dashes, demo login and curated local release</td>
-<td>Both isolated GNOME 46/50 stacks passed regression, controlled compositor and lifecycle checks</td>
+<td>Implemented</td>
+<td>Rounded live blur, exact extension policy, dock dashes and curated packaging</td>
+<td>Pipeline encoding required the subsequent 2.2.1 correction</td>
 </tr>
 <tr>
 <td>2.2.1 / 2.2.2: maintenance</td>
-<td>Delivered locally</td>
-<td>Repair rejected/cached pipelines; fix GNOME 46 demo notification animation overflow</td>
-<td>Separate release evidence and dual-stack regressions</td>
+<td>Implemented</td>
+<td>Repair rejected/cached pipelines; notification animation improvement</td>
+<td>Separate release notes</td>
 </tr>
 <tr>
 <td>2.2.3: private diagnostics</td>
-<td>Delivered locally</td>
-<td>Local bounded logs, safe operation/error correlation, Settings viewer, CLI and explicit sanitized report export</td>
-<td>209 regression tests pass per GNOME stack; privacy/concurrency/rollback/lifecycle covered; no automatic uploads</td>
+<td>Implemented</td>
+<td>Bounded local logs, sanitized report export, Settings viewer and CLI</td>
+<td>Privacy/concurrency/rollback/lifecycle checks; no automatic uploads</td>
 </tr>
 <tr>
 <td>2.2.4: maintenance</td>
-<td>Delivered locally</td>
+<td>Implemented</td>
 <td>Remove the square notification halo; labeled Diagnostics header button</td>
-<td>Compositor captures on GNOME 46/50; native St gradient regression; 211 tests per stack</td>
+<td>Native St regression and controlled compositor captures</td>
 </tr>
 <tr>
 <td>2.3.0: app updater</td>
@@ -265,10 +272,16 @@ the <a href="MANUAL.md">manual</a> and <a href="KNOWLEDGE_BASE.md">maintenance k
 <td>Verified staging, recovery and bootstrap; GNOME 46 checks; GNOME 50/VM revalidation deferred</td>
 </tr>
 <tr>
-<td>Custom lock screen</td>
-<td>Later, unnumbered</td>
-<td>Adapt the browser concept using a supported native mechanism</td>
-<td>Approve native scope, privacy and safe authentication boundaries</td>
+<td>2.3.1: report export</td>
+<td>Delivered</td>
+<td>Retained native save chooser; documented older-updater bootstrap</td>
+<td>Save/cancel/close ownership and package/updater checks</td>
+</tr>
+<tr>
+<td>2.4.0: independent lock screen</td>
+<td>Implemented</td>
+<td>Native companion with its own Preferences and ZIP</td>
+<td>220 native tests pass per GNOME stack; owner confirmed manual experience; required CI gates publication</td>
 </tr>
 <tr>
 <td>Personal appearance profiles</td>
@@ -280,15 +293,17 @@ the <a href="MANUAL.md">manual</a> and <a href="KNOWLEDGE_BASE.md">maintenance k
 </table></div>
 <p>Maintenance fixes need not wait for the next feature milestone.
 Diagnostics ships in 2.2.3; 2.2.4 makes it discoverable and fixes the notification halo.
-2.3.0 delivers app updates; custom lock screen is deferred without a version.
+2.3.0 delivers app updates; 2.4.0 adds the independent Lock Screen companion.
 Logs are enabled by
 default for key actions/warnings/errors, with optional verbose mode; private
 10 MiB rotation and sanitized local reports do not collect full preferences,
 personal paths or journal dumps. Ordinary uninstall retains logs; purge removes
 known logs/preferences but keeps the coordination inode and user-owned reports.
-The 2.0.0 evidence and unverified configurations are recorded separately in its
-release notes; a local archive does not imply remote publication.</p>
-<h2 id="4-delivered-locally-200-dual-stack-compatibility">4. Delivered locally: 2.0.0 — dual-stack compatibility</h2>
+Historical evidence and unverified configurations remain in each release's notes.
+Check <a href="https://github.com/michajan28/yaru-glass-theme/releases">GitHub Releases</a>
+for published artifacts; implementation status does not imply publication.</p>
+<h2 id="4-historical-milestone-200-dual-stack-compatibility">4. Historical milestone: 2.0.0 — dual-stack compatibility</h2>
+<p>The work packages below describe the completed milestone, not upcoming work.</p>
 <p><strong>Goal:</strong> support Ubuntu 24.04 / GNOME 46 and Ubuntu 26.04 / GNOME 50 in one
 release, without dropping the existing stack or changing saved appearance.
 Wayland is the 26.04 session target. Record the actual Nautilus, GTK, libadwaita,
@@ -331,7 +346,8 @@ Mutter and Yaru versions in the test environments rather than inferring them.</p
 <li>If a required integration fails, record it and resolve the scope explicitly;
   do not advertise full support based only on successful theme generation.</li>
 </ul>
-<h2 id="5-210-visual-coherence-and-readability">5. 2.1.0 — visual coherence and readability</h2>
+<h2 id="5-historical-milestone-210-visual-coherence-and-readability">5. Historical milestone: 2.1.0 — visual coherence and readability</h2>
+<p>The work packages below retain the original scope and its validation limits.</p>
 <p><strong>Goal:</strong> make controls, dialogs and status feel like one deliberate theme.
 Do not expand transparency to additional applications in this milestone.</p>
 <h3 id="work-packages">Work packages</h3>
@@ -365,19 +381,18 @@ Do not expand transparency to additional applications in this milestone.</p>
 <li>Existing preferences retain their appearance; any deliberate default or visual
   change is documented and reviewed rather than silently applied.</li>
 </ul>
-<p><strong>Main surfaces:</strong> native Settings, GTK overrides, Shell CSS, demo and their
-rendering/layout tests.</p>
-<p>The local 2.1.0 package passed 121 repository tests on Ubuntu 24.04 / GNOME 46.
+<p><strong>Main validated surfaces:</strong> native Settings, GTK overrides and Shell CSS.</p>
+<p>The local 2.1.0 package passed native checks on Ubuntu 24.04 / GNOME 46.
 The measured contrast result covers only existing automated sample cases.
 100–200% desktop scaling, broader large-text cases and fresh GNOME 50 compositor
 acceptance remain unverified; see <a href="RELEASE-2.1.0.md">2.1.0 release notes</a>.</p>
-<h2 id="6-delivered-locally-220-layered-glass-and-reliable-integration">6. Delivered locally: 2.2.0 — Layered glass and reliable integration</h2>
+<h2 id="6-historical-milestone-220-layered-glass-and-reliable-integration">6. Historical milestone: 2.2.0 — Layered glass and reliable integration</h2>
+<p>The work packages describe the historical local release. Its saved pipeline
+format was subsequently corrected in 2.2.1.</p>
 <p><strong>Goal:</strong> deliver more realistic Frost/Crystal lighting and rounded live Shell
 background blur, with reliable integrations and a quality-gated local release.</p>
 <h3 id="work-packages_1">Work packages</h3>
 <ol>
-<li><strong>Fix the integrated login.</strong> Exercise real account/unlock controls through
-   file and HTTP iframes, plus login/lock/logout and invalid sender/origin cases.</li>
 <li><strong>Deliver Layered Frost/Crystal.</strong> Light/dark Shell surfaces, independent
    Settings/Files opt-ins and matching demo; preserve protective tints and solid content.</li>
 <li><strong>Audit every used extension.</strong> Select exact candidate releases per GNOME
@@ -415,35 +430,44 @@ a reason to rewrite the theme or add a large build framework.</p>
 each user's appearance or requiring a GitHub account.</p>
 <ul>
 <li>Manual <strong>Check for updates</strong> and confirmed <strong>Install update</strong> in Settings,
-backed by an equivalent CLI and public stable GitHub release assets.</li>
+  backed by an equivalent CLI and public stable GitHub release assets.</li>
 <li>Verify SHA-256, validate archive paths and payload, stage the new app/themes,
-and recover failed or interrupted replacement.</li>
+  and recover failed or interrupted replacement.</li>
 <li>Preserve preferences, wallpapers, customized profiles, extension versions and
-ownership, original backups, and the previous sync-service state.</li>
+  ownership, original backups, and the previous sync-service state.</li>
 <li>Provide a verified-archive bootstrap for existing installations; subsequent
-updates use Settings or CLI. Updates are per account, not remote administration.</li>
+  updates use Settings or CLI. Updates are per account, not remote administration.</li>
 <li>No unattended updates, sudo, profile resets, automatic Files restarts or theme
-activation. Describe reload requests separately from verified visual output.</li>
+  activation. Describe reload requests separately from verified visual output.</li>
 <li>Cover network failures, invalid assets, concurrency, rollback, bootstrap and a
-subsequent update in isolated fixtures on the supported stacks.</li>
+  subsequent update in isolated fixtures on the supported stacks.</li>
 </ul>
-<p>Tracking: <a href="https://github.com/michajan28/yaru-glass-theme/issues/6">implementation issue #6</a>.</p>
-<p>See <a href="RELEASE-2.3.0.md">release evidence and limits</a>. Diagnostics and Updates are
+<p>Tracking: <a href="https://github.com/michajan28/yaru-glass-theme/issues/6">implementation issue #6</a>.
+See <a href="RELEASE-2.3.0.md">release evidence and limits</a>. Diagnostics and Updates are
 inline pages after Wallpapers; local logs are formatted for reading while export
 remains JSON. Rendering fixtures synchronize to GTK's painted frame. Validation
 for this milestone is on GNOME 46; no GNOME 50/VM revalidation is claimed.</p>
-<h3 id="later-unnumbered-custom-lock-screen">Later, unnumbered — custom lock screen</h3>
-<p><strong>Goal:</strong> adapt the approved offline lock-screen concept to a supported native
-GNOME mechanism, without replacing or weakening authentication.</p>
+<h3 id="implemented-240-independent-native-lock-screen">Implemented: 2.4.0 — independent native lock screen</h3>
 <ul>
-<li>Define supported GNOME/extension versions and the available customization API
-  before choosing the implementation.</li>
-<li>Approve wallpaper, clock, account presentation and notification-privacy scope.</li>
-<li>Never collect passwords, bypass locking or change authentication as a visual feature.</li>
-<li>Require isolated GNOME 46/50 locking/unlocking checks and explicit desktop
-  input/capture permission. The current browser demo remains only a concept.</li>
+<li>UUID <code>lockscreen@yaru-glass</code>, independently versioned extension ZIP and local
+  GSettings schema for GNOME 46/50.</li>
+<li>Own standard GNOME Preferences: customization switch, local wallpaper/preview,
+  follow desktop, clock format/weight, appearance and confirmed reset.</li>
+<li>Preserve native account identity, authentication, notification grouping/privacy
+  and responsive scrolling. Do not collect credentials or modify GDM.</li>
+<li>Fresh normal theme installation adds the companion without activation.
+  <code>--no-extensions</code> and <code>--theme-only</code> skip it; compatible existing copies stay
+  untouched. Existing accounts install the separate ZIP explicitly.</li>
+<li>Activation remains in Extensions/Extension Manager. Yaru Glass app integration
+  was explicitly dropped; the theme updater is unchanged.</li>
+<li>GNOME 46/50 VM checks passed, and the owner confirmed the installed custom
+  lock-screen experience. One bounded GNOME 50 disable/enable cycle also passed.</li>
 </ul>
-<p><strong>Decision gate:</strong> native feasibility and safety must be agreed before implementation.</p>
+<p>The earlier intermittent GNOME 50 uninstall/restoration freeze has no established
+root cause and did not reproduce in the independent toggle check. Do not claim
+a fix or resume speculative investigation without reproduction or a new decision.
+See <a href="RELEASE-2.4.0.md">2.4.0 release notes</a> and
+<a href="https://github.com/michajan28/yaru-glass-theme/issues/10">issue #10</a>.</p>
 <h2 id="8-later-unnumbered-personal-appearance-profiles">8. Later, unnumbered — personal appearance profiles</h2>
 <p><strong>Goal:</strong> save and compare favorite appearances without losing independent controls.</p>
 <h3 id="work-packages_2">Work packages</h3>
@@ -484,7 +508,7 @@ implementation. Do not add a database or service unless a demonstrated need exis
    user changes and original backups.</li>
 <li>Run targeted tests during development and the full applicable suite on the
    final extracted package. Skips and environment limits must be recorded.</li>
-<li>Use real St/GTK/WebKit checks for geometry, alpha and contrast where relevant.
+<li>Use real St/GTK checks for geometry, alpha and contrast where relevant.
    Inspect actual compositor output for desktop-facing visual changes.</li>
 <li>Test light/dark, Solid/transparent, boost off/on, disabled/focus/error states
    and white/dark/busy backdrops for affected surfaces.</li>
@@ -495,17 +519,18 @@ implementation. Do not add a database or service unless a demonstrated need exis
 <li>Update the manual, demo, knowledge base and release notes where relevant.
    List observed results separately from automated checks and unverified claims.</li>
 </ol>
-<p>The <strong>99-test 1.2.1 baseline is a starting point, not a fixed future test count</strong>.
-Add coverage for behavior changes, not arbitrary numeric targets.</p>
-<h2 id="11-next-delivery">11. Next delivery</h2>
-<p><strong>2.2.0</strong> delivers Layered glass, automatic rounded Blur my Shell integration,
-extension-version enforcement, dock dashes and demo regressions. See its
-<a href="RELEASE-2.2.0.md">release evidence and limits</a>.
-<strong>2.3.0 delivers the app updater</strong>, with user-confirmed stable GitHub updates,
-a preservation-focused transaction and integrated utility pages.
-Next, handle reproducible maintenance issues; custom lock screen and personal
-appearance profiles remain later and unnumbered. Native lock-screen work still
-requires a separately approved mechanism and safe authentication boundaries.</p>
+<p>The current native suite has 220 tests. Add coverage for behavior changes,
+not arbitrary numeric targets; keep the browser preview outside validation.</p>
+<h2 id="11-distribution-and-next-decisions">11. Distribution and next decisions</h2>
+<p>The <strong>2.4.0</strong> release uses required signed-commit/PR checks and the tag-triggered
+packaging workflow. Its distribution consists of the theme archive/checksum and
+independent extension ZIP/checksum together, with separate installation steps.
+Existing private v1 extension users do not need to reinstall just to update
+the theme.</p>
+<p>Prioritize reproducible native-product maintenance issues.
+Personal appearance profiles remain the next unnumbered feature candidate;
+their format, storage and behavior need owner approval before implementation.
+No new version or schedule is assigned.</p>
 <h2 id="12-maintaining-this-roadmap">12. Maintaining this roadmap</h2>
 <p><code>ROADMAP.md</code> is the content source of truth; <code>ROADMAP.html</code> is its matching,
 offline-readable presentation. Update both in the same change. After each
@@ -513,6 +538,6 @@ release, move delivered work into release notes, record deferred decisions and
 re-prioritize the next milestone. This document does not change the installed
 theme, saved settings or release version.</p></main>
   </div>
-  <footer>Baseline: 2.1.1 · 2.2.0 acceptance pending · Proposed milestones, not delivery promises.</footer>
+  <footer>Current delivery: 2.4.0 · Native theme, app and independent Lock Screen · Future scope requires approval.</footer>
 </body>
 </html>

@@ -7,6 +7,40 @@ record them. Validation dates are not treated as publication dates.
 
 ## Unreleased
 
+## 2.4.0
+
+Independent native Lock Screen companion. See
+[release evidence and installation steps](docs/RELEASE-2.4.0.md).
+
+### Added
+
+- Add an opt-in native session lock-screen extension based on the offline
+  demo: independent wallpaper and clock choices, date above the clock, and real
+  account presentation. Keep GNOME authentication and notification grouping/
+  privacy authoritative; do not modify GDM. The owner confirmed the standalone
+  extension works on their account after VM validation.
+- Add private schema and native St/Mutter allocation checks for the prototype,
+  including narrow/HiDPI layouts and delegation to GNOME's authentication layout.
+- Adapt the prototype clock/profile to available space and reuse GNOME's native
+  notification scroll wrapper. Show a vertical scrollbar only for overflow,
+  keep the last group reachable, and restore native scrolling settings on disable.
+- Isolate Lock Screen as an independent extension with standard GNOME
+  Preferences: customization switch, local wallpaper/preview, clock choices,
+  light/dark appearance and confirmed reset. No theme app or service is required.
+- Build a separate versioned extension ZIP under GPL-3.0-or-later. Normal theme
+  installation adds it without enabling it; existing skip flags are honored.
+  Compatible installed copies are retained, and new copies use the existing
+  extension ownership/removal records.
+- Keep the theme updater, archive format and app Settings unchanged. Extension
+  upgrades are separate explicit ZIP installations. Activation stays in
+  Extensions/Extension Manager; no Yaru Glass app integration is included.
+- Defer investigation of the earlier intermittent GNOME 50 re-enable hang until
+  after isolation. Passing focused checks does not establish that it is fixed.
+
+### Validation scope
+
+- Release validation targets the theme, native app and extension.
+
 ## 2.3.1
 
 Diagnostic report saving and recovery from older development updater validators.
@@ -158,17 +192,6 @@ Local demo reliability hotfix. See
   banner off-center and overflowing mobile widths. Vertical slide/fade animation
   and reduced-motion behavior are preserved.
 
-### Validation
-
-- New regression checks exact banner bounds and centering at four animation
-  positions across four viewport widths; it fails against the old CSS. A separate
-  reduced-motion check confirms centered, non-animated notifications.
-- Ten independent complete demo runs pass on each GNOME stack: 29 tests per run,
-  290 per stack, with the original mobile overflow assertions unchanged.
-- Locked guest sessions independently reproduce the viewport-resize timeouts.
-  UI checks require an unlocked, unblanked session; no desktop locking policy or
-  sandbox restriction was changed by the fix.
-
 ## 2.2.1
 
 Local pipeline compatibility hotfix. See
@@ -252,11 +275,7 @@ Local Layered glass and integration release. See
 
 ### Validation
 
-- The full 168-test suite, including all 27 demo tests, now passes on both stacks.
-  The GNOME 46 guest launch issue was a test-environment configuration error, not
-  missing GNOME 46 demo support: a dedicated AppArmor test profile permits
-  WebKit's sandbox namespaces, and idle inhibition preserves live UI frames.
-  No demo assertions were weakened or sandbox disabled. See
+- Native theme, app and lifecycle checks pass on both stacks. See
   [release evidence and validation limits](docs/RELEASE-2.2.0.md).
 
 ## 2.1.1
@@ -283,8 +302,6 @@ Local branding and lock-screen demo release. See
   wallpapers, clock format/weight controls, light/dark appearance, fictional profile
   customization, privacy-aware mock notifications, and simulated unlock/relock.
   It does not collect passwords, integrate with GNOME locking or change the desktop.
-- Added WebKit coverage for lock-screen transitions, keyboard focus, notification
-  privacy, local assets, clock formats and narrow/short viewport layouts.
 
 ### Fixed
 

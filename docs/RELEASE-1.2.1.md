@@ -56,9 +56,8 @@ Files transparency remains experimental and unrelated applications are unchanged
 
 ## Regression and release validation
 
-- 99 Python/GTK/WebKit tests, including the nonzero-quit exit/owner/error paths,
-  readable percentage labels, existing coordinated-update rollback tests and
-  demo control semantics/styling, 48 appearance combinations and 390px layout.
+- Python/GTK checks cover the nonzero-quit exit/owner/error paths,
+  readable percentage labels and existing coordinated-update rollback tests.
 - Extracted-release install/upgrade/uninstall under private HOME and D-Bus:
   old and new preference formats, original backup and wallpaper preservation.
 - Executable modes, safe archive paths, version, shell syntax and SHA256 checked.

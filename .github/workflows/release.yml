@@ -69,6 +69,10 @@ jobs:
           output_dir="$RUNNER_TEMP/yaru-glass-release"
           mkdir -p "$output_dir"
           ./scripts/make-package.sh --curated-profiles "$output_dir"
+          /usr/bin/python3 scripts/make-lockscreen-extension.py "$output_dir"
+          (cd "$output_dir" && sha256sum lockscreen@yaru-glass-v1.shell-extension.zip \
+            > lockscreen@yaru-glass-v1.shell-extension.zip.sha256 \
+            && sha256sum --check lockscreen@yaru-glass-v1.shell-extension.zip.sha256)
 
           archive="$output_dir/yaru-glass-theme-$VERSION.tar.gz"
           checksum="$archive.sha256"
@@ -94,7 +98,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-assets
-          path: ${{ runner.temp }}/yaru-glass-release/yaru-glass-theme-${{ steps.release.outputs.version }}.tar.gz*
+          path: |
+            ${{ runner.temp }}/yaru-glass-release/yaru-glass-theme-${{ steps.release.outputs.version }}.tar.gz*
+            ${{ runner.temp }}/yaru-glass-release/*.shell-extension.zip*
           if-no-files-found: error
           retention-days: 1
 
@@ -122,6 +128,7 @@ jobs:
         run: |
           archive="release-assets/yaru-glass-theme-$VERSION.tar.gz"
           checksum="$archive.sha256"
+          extension="release-assets/lockscreen@yaru-glass-v1.shell-extension.zip"
           if release="$(gh release view "$TAG" --json isDraft 2>/dev/null)"; then
             if [[ "$(jq -r '.isDraft' <<< "$release")" != "true" ]]; then
               echo "::error::Refusing to overwrite an existing published release"
@@ -131,9 +138,9 @@ jobs:
               --draft \
               --title "Yaru Glass $VERSION" \
               --notes-file "docs/RELEASE-$VERSION.md"
-            gh release upload "$TAG" "$archive" "$checksum" --clobber
+            gh release upload "$TAG" "$archive" "$checksum" "$extension" "$extension.sha256" --clobber
           else
-            gh release create "$TAG" "$archive" "$checksum" \
+            gh release create "$TAG" "$archive" "$checksum" "$extension" "$extension.sha256" \
               --draft \
               --verify-tag \
               --title "Yaru Glass $VERSION" \

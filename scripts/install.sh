@@ -29,6 +29,7 @@ EXTENSIONS=(
   blur-my-shell@aunetx
   just-perfection-desktop@just-perfection
   auto-theme-switcher@amritashan.github.io
+  lockscreen@yaru-glass
 )
 # Ubuntu built-ins that are part of the look (enabled if present).
 SYSTEM_EXTENSIONS=(ubuntu-dock@ubuntu.com ubuntu-appindicators@ubuntu.com)
@@ -253,6 +254,7 @@ if [[ $DO_EXT -eq 1 ]]; then
   /usr/bin/python3 "$DEST/bin/install-extensions.py" "$NEW_EXT_FILE" "${EXTENSIONS[@]}"
   ACTIVATE_EXTENSIONS=()
   for uuid in "${EXTENSIONS[@]}" "${SYSTEM_EXTENSIONS[@]}"; do
+    [[ "$uuid" == lockscreen@yaru-glass ]] && continue
     [[ -f "$HOME/.local/share/gnome-shell/extensions/$uuid/metadata.json" ||
        -f "/usr/share/gnome-shell/extensions/$uuid/metadata.json" ]] || continue
     ACTIVATE_EXTENSIONS+=("$uuid")

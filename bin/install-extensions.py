@@ -30,6 +30,7 @@ from extension_compatibility import (  # noqa: E402
     validate_ubuntu_extension,
 )
 import diagnostics
+import companion_extension
 
 EGO = "https://extensions.gnome.org"
 REQUIRED_EXTENSIONS = {
@@ -104,6 +105,12 @@ def prepare_extensions(
     validate_ubuntu_installs(shell_version)
     prepared: dict[str, bytes | None] = {}
     for uuid in uuids:
+        if uuid == companion_extension.UUID:
+            existing = companion_extension.installed(shell_version)
+            if existing is None and not validate_only:
+                companion_extension.validate_tree(companion_extension.SOURCE, shell_version)
+            prepared[uuid] = None
+            continue
         release_for(uuid, shell_version)
         if validate_existing(uuid, shell_version):
             prepared[uuid] = None
@@ -175,6 +182,8 @@ def main() -> None:
         shell_version = running_shell_version()
         prepared = prepare_extensions(uuids, shell_version, validate_only=validate_only)
         if state is not None:
+            if companion_extension.UUID in uuids:
+                companion_extension.install(shell_version, state)
             for uuid, contents in prepared.items():
                 if contents is not None:
                     install_prepared(uuid, contents, shell_version, state)

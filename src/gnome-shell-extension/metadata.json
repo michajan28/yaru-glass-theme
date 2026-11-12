@@ -1,0 +1,11 @@
+{
+  "uuid": "lockscreen@yaru-glass",
+  "name": "Yaru Glass Lock Screen",
+  "description": "Opt-in session lock-screen appearance. Native GNOME authentication and notification privacy are unchanged.",
+  "shell-version": ["46", "50"],
+  "session-modes": ["user", "unlock-dialog"],
+  "settings-schema": "org.yaru.glass.lockscreen",
+  "url": "https://github.com/michajan28/yaru-glass-theme",
+  "version": 1,
+  "yaru-glass-managed": true
+}

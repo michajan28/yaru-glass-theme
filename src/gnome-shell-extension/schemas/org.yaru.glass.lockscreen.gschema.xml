@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.yaru.glass.lockscreen" path="/org/yaru/glass/lockscreen/">
+    <key name="contract-version" type="u">
+      <range min="1" max="1"/>
+      <default>1</default>
+      <summary>Extension preferences contract</summary>
+    </key>
+    <key name="enabled" type="b">
+      <default>false</default>
+      <summary>Enable the custom session lock-screen appearance</summary>
+    </key>
+    <key name="wallpaper-uri" type="s">
+      <default>''</default>
+      <summary>Independent local lock wallpaper; empty follows the desktop</summary>
+    </key>
+    <key name="clock-format" type="s">
+      <choices><choice value="24"/><choice value="12"/></choices>
+      <default>'24'</default>
+      <summary>Lock-screen clock format, independent of the desktop clock</summary>
+    </key>
+    <key name="clock-weight" type="s">
+      <choices><choice value="bold"/><choice value="light"/></choices>
+      <default>'bold'</default>
+      <summary>Lock-screen clock weight</summary>
+    </key>
+    <key name="appearance" type="s">
+      <choices><choice value="auto"/><choice value="light"/><choice value="dark"/></choices>
+      <default>'auto'</default>
+      <summary>Lock-screen notification card appearance</summary>
+    </key>
+    <key name="runtime-status" type="s">
+      <choices>
+        <choice value="inactive"/><choice value="ready"/><choice value="active"/>
+        <choice value="unsupported"/><choice value="error"/>
+      </choices>
+      <default>'inactive'</default>
+      <summary>Extension-reported status, not proof of compositor output</summary>
+    </key>
+  </schema>
+</schemalist>

@@ -77,8 +77,9 @@ also checks the active release and rounded dynamic renderer. Existing mismatches
 are reported, not silently replaced or downgraded. Automatic extension/system
 updates can move outside this policy; do not automatically downgrade security
 updates to satisfy it. A revised policy needs new validation.
-`--no-extensions` avoids downloading/enabling extensions; `--theme-only` avoids
-extension changes. See the installed helper diagnostics for the required release.
+`--no-extensions` avoids installing/enabling extensions; `--theme-only` also
+avoids importing their settings. Both skip the independent Lock Screen companion.
+See the installed helper diagnostics for the required release.
 Enabling uses one batch request and waits for the Shell's reported state.
 An accepted request is not proof of activation. If managed appearance cannot
 activate, the installer exits with an error after explaining that files were
@@ -436,8 +437,7 @@ change your actual desktop settings. Use the simulated Settings window's
 **Wallpapers** page to compare surfaces over photo, white and dark wallpapers;
 browser blur and contrast are approximations, not a compositor-level guarantee.
 Version 2.2.2 keeps notification banners centered throughout their slide/fade
-animation on mobile layouts, including GNOME 46 WebKit. Reduced motion still
-disables the animation. See [demo regression evidence](RELEASE-2.2.2.md).
+animation on mobile layouts. Reduced motion still disables the animation.
 
 ### Editing theme sources
 
@@ -559,6 +559,57 @@ it can reapply fonts, icons, profiles and activation. Synthetic 2.2.4-layout
 bootstrap is tested; arbitrary historical or earlier-branded layouts are not
 promised. Fresh installations still use the normal installer.
 
+### Independent Lock Screen extension
+
+Lock Screen is an independent GNOME 46/50 extension, not a Yaru Glass Settings
+page. It has its own Preferences window, schema and versioned ZIP; the theme
+updater is unchanged and does not install or update the extension. Existing
+theme users install the supplied ZIP explicitly rather than updating/reinstalling
+the theme just to obtain it.
+
+Download `lockscreen@yaru-glass-v1.shell-extension.zip` and its `.sha256` file
+from the **2.4.0 GitHub release**. In the download directory:
+
+```bash
+sha256sum --check lockscreen@yaru-glass-v1.shell-extension.zip.sha256
+gnome-extensions install ./lockscreen@yaru-glass-v1.shell-extension.zip
+```
+
+Or build a ZIP from source into a new output directory:
+
+```bash
+/usr/bin/python3 scripts/make-lockscreen-extension.py /path/to/empty/output
+gnome-extensions install /path/to/empty/output/lockscreen@yaru-glass-v1.shell-extension.zip
+```
+
+Normal theme installation also installs this local companion, initially off.
+`--no-extensions` and `--theme-only` skip it. The installer leaves compatible
+existing copies alone and refuses incompatible or symlinked collisions.
+After a new install, log out/in if the extension is not yet listed, then:
+
+1. Enable **Yaru Glass Lock Screen** in Extensions or Extension Manager.
+2. Open its **Preferences** (or run `gnome-extensions prefs lockscreen@yaru-glass`).
+3. Turn on **Custom lock-screen appearance** and choose wallpaper, clock and
+   appearance options. The extension toggle and customization preference are
+   separate; neither bypasses GNOME's global extension policy.
+
+**Follow desktop** removes the independent wallpaper override. Reset asks for
+confirmation, turns customization off and resets only its own appearance
+choices. It does not change desktop preferences or extension activation.
+GNOME retains native authentication and notification privacy; GDM is unchanged.
+
+For a deliberate extension upgrade, inspect the new ZIP/version, close Preferences,
+and use `gnome-extensions install --force NEW_EXTENSION.zip`, then log out/in to
+load the new code. This is an explicit extension operation, not a theme update.
+The installer never performs that replacement automatically.
+
+The source is GPL-3.0-or-later; its ZIP includes COPYING and NOTICE, but no theme
+assets, fonts or wallpapers. The earlier intermittent GNOME 50 re-enable freeze
+did not reproduce in a bounded standard disable/enable check of the independent
+extension. No root cause or fix is claimed. The owner confirmed the custom lock
+screen works on their account. Activation remains in Extensions/Extension Manager;
+no Yaru Glass app integration is planned for this release.
+
 ### Failed or interrupted updates
 
 Before replacement, the updater stages complete app/themes and records private
@@ -607,6 +658,13 @@ shortcuts, enabled extensions and extension settings. Before `--purge` deletes t
 folder, it copies the backup to `~/.local/share/yaru-glass-backup-<date>`.
 System packages installed with apt are kept, since they are standard Ubuntu packages.
 Log out and back in afterwards for a completely clean state.
+
+The independent Lock Screen extension follows existing extension ownership:
+`--remove-extensions` removes it only if the theme installer added it. A copy
+installed independently or already present is not recorded as installer-owned.
+Theme purge does not reset its independent preferences. To remove an independently
+installed copy, disable it in Extensions and use Extension Manager or
+`gnome-extensions uninstall lockscreen@yaru-glass`. Log out/in to unload cached code.
 
 ---
 

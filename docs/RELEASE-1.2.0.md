@@ -52,7 +52,7 @@ Normal uninstall retains preferences and restores the original appearance backup
 
 ## Automated validation
 
-- 95 Python/GTK/WebKit regression tests, including migrations, invalid inputs,
+- Python/GTK regression checks cover migrations, invalid inputs,
   partial-field preservation, preset cancel/apply, reset isolation, retry,
   failed writes/generation/effects/reloads and explicit failed rollback.
 - Rollback verifies byte preservation including CRLF and previously absent files.
@@ -67,9 +67,6 @@ Normal uninstall retains preferences and restores the original appearance backup
   bounded notification preferred/allocated width, LTR/RTL padding and opaque
   headers across normal/hover/focus/active. Additional St checks verify primary
   Solid fill alpha is 255, including panel, calendar/menu, dock, dialogs and OSD.
-- Installed WebKit exercises 48 light/dark/style/level/solid/boost combinations,
-  independent app/Files alpha, opaque content, preset cancel/apply, keyboard tabs
-  and 390px layout. Rendered demo/native Settings snapshots were inspected.
 - Extracted-release lifecycle: private HOME and D-Bus, actual install, old-config
   upgrade, new solid/boost upgrade and normal uninstall. Preferences, wallpaper
   URIs and original backup survive upgrades; uninstall restores original GTK
@@ -82,8 +79,7 @@ Shell extension process runs on the private bus. This is not full fresh-machine
 extension-install certification. Live purge is not exercised.
 
 Run regressions with `/usr/bin/python3 -m unittest discover -s tests`.
-Native tests require a display and installed GI modules; browser tests additionally
-use WebKit 6 when available and otherwise explicitly skip.
+Native tests require a display and installed GI modules.
 
 ## Manual desktop acceptance: still pending
 
@@ -91,8 +87,8 @@ use WebKit 6 when available and otherwise explicitly skip.
 These checks have since been completed with consent-based desktop portals;
 see [1.2.1 results and the discovered restart fix](RELEASE-1.2.1.md).
 
-Desktop screenshot access was denied during 1.1.0 validation. Native snapshots,
-WebKit renders and headless St actors do not prove final live compositor output.
+Desktop screenshot access was denied during 1.1.0 validation. Native snapshots
+and headless St actors do not prove final live compositor output.
 No new screenshot permission bypass was attempted and no Files restart was
 performed without confirmation. The following checklist remains user-assisted:
 

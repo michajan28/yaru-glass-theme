@@ -49,11 +49,13 @@ bash -n scripts/install.sh scripts/uninstall.sh scripts/make-package.sh
   report those failures instead of chasing them automatically.
   Run a slice with `-p test_transparency.py`, `test_appearance.py`,
   `test_glass_wallpapers.py`, `test_settings_ui.py`, `test_files_appearance.py`,
-  `test_demo.py`, or `test_repository_layout.py` as appropriate.
+  or `test_repository_layout.py` as appropriate.
 - Run `test_lifecycle.py` for isolated install/upgrade/uninstall/purge changes;
   it uses copied payloads, private HOME/XDG and D-Bus, with user-systemd stubbed.
-- UI tests need a display and GI libraries; browser tests also need WebKit 6.
+- UI tests need a display and GI libraries.
   Report skips and unavailable tools rather than claiming those paths passed.
+- Validation exclusively targets the theme, native app and extension.
+  Do not add the browser preview to automated validation or release gates.
 - Packaging tests use temporary copies, a stub `dconf`, and isolated HOME/XDG paths.
   Preserve that isolation. Do not run tests against a real install for convenience.
 
@@ -67,7 +69,7 @@ bash -n scripts/install.sh scripts/uninstall.sh scripts/make-package.sh
   packaging tests for validation and the release skill for an approved release.
 - Rendering `docs/MANUAL.html` needs `python3-markdown`. If unavailable, disclose
   that regeneration was not performed; keep any edited HTML aligned with Markdown.
-- Never bypass desktop screenshot/input permissions. Automated GTK/demo checks
+- Never bypass desktop screenshot/input permissions. Automated GTK checks
   do not prove the final compositor output or arbitrary-background accessibility.
 - Keep unreleased changes in `CHANGELOG.md`; do not bump `VERSION`, rewrite old
   archives, stage/commit, configure Git identity, add remotes, or push unless asked.

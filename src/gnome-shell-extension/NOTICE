@@ -1,0 +1,12 @@
+Yaru Glass Lock Screen
+
+The extension's JavaScript, stylesheet and preferences schema are original
+Yaru Glass project source, licensed under GPL-3.0-or-later.
+See COPYING for the GNU General Public License version 3.
+
+This extension uses GNOME Shell's native authentication, account identity and
+notification APIs. It does not redistribute GNOME Shell or Blur my Shell code,
+theme assets, fonts, wallpapers or icons. System icon names and font families
+are references to resources supplied by the user's desktop.
+
+Source: https://github.com/michajan28/yaru-glass-theme
