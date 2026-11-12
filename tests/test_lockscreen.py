@@ -46,7 +46,8 @@ class LockScreenTests(unittest.TestCase):
                 env={**os.environ, "GSETTINGS_SCHEMA_DIR": str(schemas),
                      "GSETTINGS_BACKEND": "memory"},
                 capture_output=True, text=True, timeout=40)
-            if "cannot open display" in result.stderr:
+            if any(message in result.stderr.lower()
+                   for message in ("cannot open display", "failed to open display")):
                 self.skipTest("GTK display required for Preferences")
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr[-4000:])
             self.assertIn("PASS: independent Preferences", result.stdout)

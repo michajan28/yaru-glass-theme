@@ -118,7 +118,10 @@ function verifyLayout() {
                     const adjustment = scroll.vadjustment;
                     const overflow = adjustment.upper - adjustment.lower > adjustment.page_size + 1;
                     check(scroll.vscrollbar_visible === overflow,
-                        'Vertical scrollbar visibility does not match actual overflow');
+                        `Vertical scrollbar visibility does not match actual overflow: ` +
+                        `${width}x${height}, scale ${scale}, content ${notificationHeight}; ` +
+                        `visible=${scroll.vscrollbar_visible}, lower=${adjustment.lower}, ` +
+                        `upper=${adjustment.upper}, page=${adjustment.page_size}`);
                     check(notificationHeight < 1200 || scroll.vscrollbar_visible,
                         'Overflowing notifications have no scrollbar');
                     check(!scroll.hscrollbar_visible, 'Unexpected horizontal scrollbar');
